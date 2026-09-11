@@ -1,0 +1,49 @@
+name: Self-hosted release checks
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'server/**'
+      - 'apps/web/**'
+      - 'packages/**'
+      - 'scripts/**'
+      - '*Docker*'
+      - 'docker-compose.selfhost.yml'
+      - 'nginx.conf'
+      - 'bun.lock'
+      - '.dockerignore'
+      - '.github/workflows/selfhost.yml'
+permissions:
+  contents: read
+jobs:
+  selfhost:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: server/go.mod
+          cache-dependency-path: server/go.sum
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.2.18
+      - run: bun install --frozen-lockfile
+      - run: bun test scripts/server-lifecycle.test.ts
+      - run: go test -tags sqlite_fts5 ./...
+        working-directory: server
+      - name: Build and check container authentication
+        env:
+          FLUX_SETUP_KEY: ci-only-disposable-setup-key-123456789
+        run: |
+          docker compose -f docker-compose.selfhost.yml up -d --build --wait --wait-timeout 120
+          docker compose -f docker-compose.selfhost.yml exec -T flux-web nginx -t
+          sh scripts/check-selfhost.sh
+          # Disposable CI account. Never use these values in a real deployment.
+          curl --fail -c /tmp/flux-ci-cookies -H 'Origin: http://localhost:3000' -H 'Content-Type: application/json' \
+            --data '{"username":"fixture","password":"ci-only-disposable-password","setupKey":"ci-only-disposable-setup-key-123456789"}' \
+            http://127.0.0.1:3000/api/v1/auth/setup
+          curl --fail -b /tmp/flux-ci-cookies http://127.0.0.1:3000/api/v1/status
+      - name: Container logs on failure
+        if: failure()
+        run: docker compose -f docker-compose.selfhost.yml logs --tail 100

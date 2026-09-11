@@ -36,12 +36,14 @@ export function VaultManager({ open, canClose, activeVaultId, vaults, recentVaul
       <DialogContent showCloseButton={canClose && !busy} className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Vaults</DialogTitle>
-          <DialogDescription>{vaultAccess === "registry" ? "Choose a vault available on this server." : "Open a notes folder or create a new vault."}</DialogDescription>
+          <DialogDescription>{vaultAccess === "registry" ? "Choose a workspace available on this server or create a new one." : "Open a notes folder or create a new vault."}</DialogDescription>
         </DialogHeader>
         <FieldGroup aria-busy={busy}>
-          {canSelectDirectory && vaultAccess !== "registry" ? <Field className="grid grid-cols-2 gap-3">
-            <Button disabled={busy} onClick={() => void run(() => onChooseVault("create"))}>Create vault</Button>
-            <Button disabled={busy} variant="outline" onClick={() => void run(() => onChooseVault("open"))}>Open folder</Button>
+          {canSelectDirectory ? <Field className={`grid gap-3 ${vaultAccess === "registry" ? "grid-cols-1" : "grid-cols-2"}`}>
+            <Button disabled={busy} onClick={() => void run(() => onChooseVault("create"))}>
+              {vaultAccess === "registry" ? "Create workspace" : "Create vault"}
+            </Button>
+            {vaultAccess !== "registry" ? <Button disabled={busy} variant="outline" onClick={() => void run(() => onChooseVault("open"))}>Open folder</Button> : null}
           </Field> : null}
           <Field>
             <FieldLabel htmlFor="vault-search">Available vaults</FieldLabel>
@@ -62,7 +64,7 @@ export function VaultManager({ open, canClose, activeVaultId, vaults, recentVaul
               </li>;
             })}
           </ul>
-          {!vaults.length ? <FieldDescription>{query ? "No matching vaults." : "No vaults yet. Open a folder to get started."}</FieldDescription> : null}
+          {!vaults.length ? <FieldDescription>{query ? "No matching vaults." : vaultAccess === "registry" ? "No workspaces yet. Create one to get started." : "No vaults yet. Open a folder to get started."}</FieldDescription> : null}
           <FieldError>{error}</FieldError>
         </FieldGroup>
       </DialogContent>

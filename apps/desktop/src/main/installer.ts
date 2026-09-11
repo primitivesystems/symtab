@@ -2,15 +2,17 @@ import { app, shell } from "electron";
 import type { MacRelease } from "./github-release";
 import { createHash } from "node:crypto";
 import { createWriteStream } from "node:fs";
-import { access, mkdir, rename, unlink } from "node:fs/promises";
+import { access, mkdir, readdir, rename, unlink } from "node:fs/promises";
 import * as path from "node:path";
 import { Readable, Transform } from "node:stream";
 import { pipeline } from "node:stream/promises";
+import { isDownloadedMacInstaller } from "./downloaded-installer";
 
 export type InstallerPlatform = "darwin" | "win32" | "linux";
 
 export function getPlatformInstaller(): InstallerPlatform {
-  if (process.platform === "darwin" || process.platform === "win32" || process.platform === "linux") return process.platform;
+  if (process.platform === "darwin" || process.platform === "win32" || process.platform === "linux")
+    return process.platform;
   throw new Error(`Unsupported platform: ${process.platform}`);
 }
 
@@ -61,4 +63,15 @@ export async function openMacInstaller(dmgPath: string) {
   const error = await shell.openPath(dmgPath);
   if (error) throw new Error(`Failed to open installer: ${error}`);
   app.quit();
+}
+
+export async function cleanupDownloadedMacInstallers() {
+  if (process.platform !== "darwin") return;
+  const directory = path.join(app.getPath("temp"), "flux-updates");
+  const names = await readdir(directory).catch(() => []);
+  await Promise.all(
+    names
+      .filter(isDownloadedMacInstaller)
+      .map((name) => shell.trashItem(path.join(directory, name)))
+  );
 }

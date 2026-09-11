@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, lazy, Suspense } from "react";
 import type { FileEntry } from "@flux/bridge-contract";
 import {
   Archive,
@@ -30,9 +30,10 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@flux/shared-ui/components/ui/hover-card";
-import ReadingView from "../editor/reading-view";
 import { splitFrontmatter } from "../editor/frontmatter";
 import type { DemoDocument } from "../editor/markdown-editor";
+
+const ReadingView = lazy(() => import("../editor/reading-view"));
 
 interface VaultExplorerProps {
   entries: FileEntry[];
@@ -436,10 +437,12 @@ export function VaultExplorer({
                     </div>
                   ) : preview?.content?.trim() ? (
                     <div className="[&_.flux-reading-view]:max-w-none [&_.flux-reading-view]:px-5 [&_.flux-reading-view]:pb-8 [&_.flux-reading-view]:pt-4 [&_.flux-reading-view]:text-sm">
-                      <ReadingView
-                        value={splitFrontmatter(preview.content).body}
-                        documents={documents}
-                      />
+                      <Suspense fallback={<div>Loading...</div>}>
+                        <ReadingView
+                          value={splitFrontmatter(preview.content).body}
+                          documents={documents}
+                        />
+                      </Suspense>
                     </div>
                   ) : (
                     <p className="p-4 text-xs text-muted-foreground">Empty file</p>

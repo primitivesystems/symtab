@@ -1,4 +1,4 @@
-import { useState, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 
 import { Button } from "../../../ui/button";
 import { Popover, PopoverContent, PopoverTitle, PopoverTrigger } from "../../../ui/popover";
@@ -30,6 +30,14 @@ export function NotificationCenter({
   onClear,
 }: NotificationCenterProps) {
   const [open, setOpen] = useState(false);
+  const lastPushed = useRef<string | undefined>(undefined);
+
+  useEffect(() => {
+    const newest = notifications[0]?.id;
+    if (!newest || newest === lastPushed.current) return;
+    lastPushed.current = newest;
+    queueMicrotask(() => setOpen(true));
+  }, [notifications]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

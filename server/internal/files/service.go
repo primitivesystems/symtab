@@ -22,11 +22,12 @@ import (
 )
 
 var (
-	ErrInvalidPath = errors.New("invalid vault-relative path")
-	ErrConflict    = errors.New("file changed since it was read")
-	ErrInvalidEdit = errors.New("invalid text edit")
-	ErrRetention   = errors.New("retention days must be 7, 30, or 90")
-	ErrLinkRewrite = errors.New("move completed but link rewriting was incomplete")
+	ErrInvalidPath     = errors.New("invalid vault-relative path")
+	ErrConflict        = errors.New("file changed since it was read")
+	ErrInvalidEdit     = errors.New("invalid text edit")
+	ErrRetention       = errors.New("retention days must be 7, 30, or 90")
+	ErrLinkRewrite     = errors.New("move completed but link rewriting was incomplete")
+	ErrUnsupportedPath = errors.New("Flux v1 supports Markdown notes and folders only")
 )
 
 type Service struct {
@@ -111,6 +112,9 @@ func (s *Service) CreateDirectory(relativePath string) (domain.FileEntry, error)
 	if err != nil {
 		return domain.FileEntry{}, err
 	}
+	if err := validateVisiblePath(normalizedPath); err != nil {
+		return domain.FileEntry{}, err
+	}
 	if err := rejectSymlinks(s.root, filepath.Dir(resolvedPath)); err != nil {
 		return domain.FileEntry{}, err
 	}
@@ -129,6 +133,9 @@ func (s *Service) Create(relativePath, content string) (domain.FileDocument, dom
 	defer s.tree.Unlock()
 	resolvedPath, normalizedPath, err := s.resolve(relativePath)
 	if err != nil {
+		return domain.FileDocument{}, domain.FileEntry{}, err
+	}
+	if err := validateMarkdownNotePath(normalizedPath); err != nil {
 		return domain.FileDocument{}, domain.FileEntry{}, err
 	}
 	if err := rejectSymlinks(s.root, filepath.Dir(resolvedPath)); err != nil {
@@ -175,6 +182,9 @@ func (s *Service) Read(relativePath string) (domain.FileDocument, error) {
 	if err != nil {
 		return domain.FileDocument{}, err
 	}
+	if err := validateMarkdownNotePath(normalizedPath); err != nil {
+		return domain.FileDocument{}, err
+	}
 	if err := rejectSymlinks(s.root, resolvedPath); err != nil {
 		return domain.FileDocument{}, err
 	}
@@ -199,11 +209,44 @@ func (s *Service) Read(relativePath string) (domain.FileDocument, error) {
 	}, nil
 }
 
+func (s *Service) ReadRaw(relativePath string) ([]byte, error) {
+	s.tree.RLock()
+	defer s.tree.RUnlock()
+	resolvedPath, normalizedPath, err := s.resolve(relativePath)
+	if err != nil {
+		return nil, err
+	}
+	if err := validateVisiblePath(normalizedPath); err != nil {
+		return nil, err
+	}
+	if !IsSupportedVaultFile(normalizedPath) {
+		return nil, ErrUnsupportedPath
+	}
+	if err := rejectSymlinks(s.root, resolvedPath); err != nil {
+		return nil, err
+	}
+	content, err := os.ReadFile(resolvedPath)
+	if err != nil {
+		return nil, err
+	}
+	info, err := os.Stat(resolvedPath)
+	if err != nil {
+		return nil, err
+	}
+	if !info.Mode().IsRegular() {
+		return nil, fmt.Errorf("%w: path is not a regular file", ErrInvalidPath)
+	}
+	return content, nil
+}
+
 func (s *Service) Save(relativePath, content, expectedHash string) (domain.SaveResult, domain.FileEntry, error) {
 	s.tree.RLock()
 	defer s.tree.RUnlock()
 	resolvedPath, normalizedPath, err := s.resolve(relativePath)
 	if err != nil {
+		return domain.SaveResult{}, domain.FileEntry{}, err
+	}
+	if err := validateMarkdownNotePath(normalizedPath); err != nil {
 		return domain.SaveResult{}, domain.FileEntry{}, err
 	}
 	if err := rejectSymlinks(s.root, filepath.Dir(resolvedPath)); err != nil {
@@ -244,6 +287,9 @@ func (s *Service) Patch(relativePath, expectedHash string, edits []domain.TextEd
 	defer s.tree.RUnlock()
 	resolvedPath, normalizedPath, err := s.resolve(relativePath)
 	if err != nil {
+		return domain.SaveResult{}, domain.FileEntry{}, err
+	}
+	if err := validateMarkdownNotePath(normalizedPath); err != nil {
 		return domain.SaveResult{}, domain.FileEntry{}, err
 	}
 	if err := rejectSymlinks(s.root, resolvedPath); err != nil {
@@ -309,6 +355,9 @@ func (s *Service) move(
 	if err != nil {
 		return domain.FileEntry{}, err
 	}
+	if err := validateVisiblePath(normalizedDestination); err != nil {
+		return domain.FileEntry{}, err
+	}
 	if err := rejectSymlinks(s.root, source); err != nil {
 		return domain.FileEntry{}, err
 	}
@@ -342,6 +391,14 @@ func (s *Service) move(
 	sourceInfo, err := os.Stat(source)
 	if err != nil {
 		return domain.FileEntry{}, err
+	}
+	if err := validateManagedEntry(normalizedSource, sourceInfo); err != nil {
+		return domain.FileEntry{}, err
+	}
+	if !sourceInfo.IsDir() {
+		if err := validateMarkdownNotePath(normalizedDestination); err != nil {
+			return domain.FileEntry{}, err
+		}
 	}
 	if destinationInfo, err := os.Stat(destination); !errors.Is(err, os.ErrNotExist) {
 		if err == nil && os.SameFile(sourceInfo, destinationInfo) {
@@ -411,6 +468,9 @@ func (s *Service) Delete(relativePath string) (domain.TrashEntry, error) {
 	}
 	info, err := os.Stat(resolvedPath)
 	if err != nil {
+		return domain.TrashEntry{}, err
+	}
+	if err := validateManagedEntry(normalizedPath, info); err != nil {
 		return domain.TrashEntry{}, err
 	}
 
@@ -547,6 +607,16 @@ func (s *Service) Restore(trashID string) (domain.FileEntry, error) {
 	}
 	destination, normalizedPath, err := s.resolve(entry.OriginalPath)
 	if err != nil {
+		return domain.FileEntry{}, err
+	}
+	if err := validateVisiblePath(normalizedPath); err != nil {
+		return domain.FileEntry{}, err
+	}
+	dataInfo, err := os.Stat(filepath.Join(itemDirectory, "data"))
+	if err != nil {
+		return domain.FileEntry{}, err
+	}
+	if err := validateManagedEntry(normalizedPath, dataInfo); err != nil {
 		return domain.FileEntry{}, err
 	}
 	if err := rejectSymlinks(s.root, filepath.Dir(destination)); err != nil {
@@ -705,6 +775,30 @@ func IsSupportedVaultFile(relativePath string) bool {
 	default:
 		return false
 	}
+}
+
+func validateVisiblePath(relativePath string) error {
+	if IsIgnored(relativePath) {
+		return ErrUnsupportedPath
+	}
+	return nil
+}
+
+func validateMarkdownNotePath(relativePath string) error {
+	if err := validateVisiblePath(relativePath); err != nil {
+		return err
+	}
+	if strings.ToLower(filepath.Ext(relativePath)) != ".md" {
+		return ErrUnsupportedPath
+	}
+	return nil
+}
+
+func validateManagedEntry(relativePath string, info os.FileInfo) error {
+	if info.IsDir() {
+		return validateVisiblePath(relativePath)
+	}
+	return validateMarkdownNotePath(relativePath)
 }
 
 func fileEntry(relativePath string, info os.FileInfo) domain.FileEntry {

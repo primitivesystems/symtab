@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Flux onboarding preview</title></head>
+<body><div id="root"></div>
+<script type="module">
+// Isolated visual check: does not create folders or change app settings.
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import { OnboardingPage } from '../../../packages/shared-ui/src/components/design-system/workbench/chrome/onboarding/onboarding-page.tsx';
+import { ThemeProvider } from '../../../packages/shared-ui/src/components/theme-provider.tsx';
+import '../../../packages/shared-ui/src/styles/globals.css';
+function Preview() {
+  const [theme, setTheme] = React.useState('light');
+  const [complete, setComplete] = React.useState(false);
+  return React.createElement(ThemeProvider, {theme}, complete
+    ? React.createElement('p', {role:'status'}, 'Setup complete — preview only; no files created.')
+    : React.createElement(OnboardingPage, {
+        theme, onThemeChange: setTheme, ready: true,
+        onSelectLocation: async () => '/Preview',
+        onCreateWorkspace: async () => setComplete(true),
+        onOpenVault: async () => setComplete(true),
+      }));
+}
+createRoot(document.getElementById('root')).render(React.createElement(Preview));
+</script></body>
+</html>

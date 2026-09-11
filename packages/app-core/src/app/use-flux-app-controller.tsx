@@ -1271,10 +1271,10 @@ export function useFluxAppController({ runtime }: Pick<FluxAppProps, "runtime">)
   const rebuildIndex = async () => {
     if (!runtime.client || !vault) return;
     try {
-      await runtime.client.rebuildIndex(vault.id);
       setLifecycle("indexing", { phase: "scanning", processed: 0, total: 0, failed: 0 });
-      toast.success("Index rebuild started");
+      await runtime.client.rebuildIndex(vault.id);
     } catch (error) {
+      setLifecycle("degraded");
       toast.error(error instanceof Error ? error.message : "Could not rebuild index");
     }
   };

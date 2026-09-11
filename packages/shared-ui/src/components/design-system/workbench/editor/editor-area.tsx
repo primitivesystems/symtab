@@ -14,11 +14,13 @@ import {
 } from "./editor-dnd";
 import { EditorHeader } from "./editor-header";
 import {
-  createEditorModel,
   editorReducer,
   getGroup,
+  persistedEditorModel,
+  restoreEditorModel,
   type EditorGroupId,
   type EditorLayoutNode,
+  type EditorModel,
   type EditorTab,
   type SplitPlacement,
 } from "./editor-model";
@@ -29,8 +31,10 @@ export type { EditorTab } from "./editor-model";
 
 export type EditorAreaProps = {
   initialTabs?: readonly EditorTab[];
+  initialModel?: unknown;
   className?: string;
   onTabsChange?: (tabs: readonly EditorTab[]) => void;
+  onModelChange?: (model: EditorModel) => void;
   onSplit?: (tab: EditorTab) => void;
   onMoveToNewWindow?: (tab: EditorTab) => void;
   onDocumentChange?: (tab: EditorTab, content: string, onSaved: () => void) => void;
@@ -55,8 +59,10 @@ const DEFAULT_TABS: readonly EditorTab[] = [{ id: "agents", title: "AGENTS.md" }
 export const EditorArea = React.forwardRef<EditorAreaHandle, EditorAreaProps>(function EditorArea(
   {
     initialTabs = DEFAULT_TABS,
+    initialModel,
     className,
     onTabsChange,
+    onModelChange,
     onSplit,
     onMoveToNewWindow,
     onDocumentChange,
@@ -68,7 +74,11 @@ export const EditorArea = React.forwardRef<EditorAreaHandle, EditorAreaProps>(fu
   },
   ref
 ) {
-  const [model, dispatch] = React.useReducer(editorReducer, initialTabs, createEditorModel);
+  const [model, dispatch] = React.useReducer(
+    editorReducer,
+    { initialModel, initialTabs },
+    (value) => restoreEditorModel(value.initialModel, value.initialTabs)
+  );
   const [pendingClose, setPendingClose] = React.useState<{
     groupId: EditorGroupId;
     tabId?: string;
@@ -89,11 +99,41 @@ export const EditorArea = React.forwardRef<EditorAreaHandle, EditorAreaProps>(fu
   }));
 
   const notifyTabsChange = React.useEffectEvent((tabs: EditorTab[]) => onTabsChange?.(tabs));
+  const notifyModelChange = React.useEffectEvent((next: EditorModel) =>
+    onModelChange?.(persistedEditorModel(next))
+  );
   const notifyActiveTabChange = React.useEffectEvent((tab?: EditorTab) => onActiveTabChange?.(tab));
   React.useEffect(() => {
     const openIds = [...new Set(model.groups.flatMap((group) => group.tabIds))];
     notifyTabsChange(openIds.flatMap((id) => (model.documents[id] ? [model.documents[id]] : [])));
   }, [model.documents, model.groups]);
+
+  React.useEffect(() => notifyModelChange(model), [model]);
+
+  const resolvingTabs = React.useRef(new Set<string>());
+  React.useEffect(() => {
+    if (!onResolveTab) return;
+    let active = true;
+    for (const tab of Object.values(model.documents)) {
+      if (
+        !tab.id.startsWith("file:") ||
+        tab.content !== undefined ||
+        resolvingTabs.current.has(tab.id)
+      )
+        continue;
+      resolvingTabs.current.add(tab.id);
+      void onResolveTab(tab)
+        .then((resolved) => {
+          if (!active || !resolved) return;
+          const { id: _id, ...changes } = resolved;
+          dispatch({ type: "update-document", tabId: tab.id, changes });
+        })
+        .finally(() => resolvingTabs.current.delete(tab.id));
+    }
+    return () => {
+      active = false;
+    };
+  }, [model.documents, onResolveTab]);
 
   React.useEffect(() => {
     const group = getGroup(model, model.activeGroupId);
@@ -386,27 +426,29 @@ function EditorGroup({
         onValueChange={(value) => onActivate(String(value))}
         className="h-full min-h-0 flex-col gap-0"
       >
-        {tabs.length ? <EditorHeader
-          group={group}
-          tabs={tabs}
-          activeTabId={activeTabId}
-          active={active}
-          onActivate={onActivate}
-          onClose={onClose}
-          onCloseAfter={onCloseAfter}
-          onCloseAll={onCloseAll}
-          onCloseOthers={onCloseOthers}
-          onCloseSaved={onCloseSaved}
-          onSplit={onSplit}
-          onTogglePin={onTogglePin}
-          onMoveToNewWindow={onMoveToNewWindow}
-          onExportPdf={onExportPdf}
-          onFind={onFind}
-          onDropTab={(dataTransfer, targetIndex, copy) =>
-            onDropTab("center", dataTransfer, targetIndex, copy)
-          }
-          onDragEnd={clearDragState}
-        /> : null}
+        {tabs.length ? (
+          <EditorHeader
+            group={group}
+            tabs={tabs}
+            activeTabId={activeTabId}
+            active={active}
+            onActivate={onActivate}
+            onClose={onClose}
+            onCloseAfter={onCloseAfter}
+            onCloseAll={onCloseAll}
+            onCloseOthers={onCloseOthers}
+            onCloseSaved={onCloseSaved}
+            onSplit={onSplit}
+            onTogglePin={onTogglePin}
+            onMoveToNewWindow={onMoveToNewWindow}
+            onExportPdf={onExportPdf}
+            onFind={onFind}
+            onDropTab={(dataTransfer, targetIndex, copy) =>
+              onDropTab("center", dataTransfer, targetIndex, copy)
+            }
+            onDragEnd={clearDragState}
+          />
+        ) : null}
 
         {tabs.length ? (
           <div className="relative min-h-0 flex-1 overflow-hidden">
@@ -446,7 +488,13 @@ function EditorGroup({
   );
 }
 
-function DropPreview({ placement, withHeader }: { placement: DropPlacement | null; withHeader: boolean }) {
+function DropPreview({
+  placement,
+  withHeader,
+}: {
+  placement: DropPlacement | null;
+  withHeader: boolean;
+}) {
   if (!placement) return null;
   return (
     <div

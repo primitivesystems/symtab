@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Vault UI regression</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <output id="result">Running…</output>
+    <script type="module">
+      // Run at /test/workbench-vault.html with desktop Vite. All files are in-memory fixtures.
+      import React from "react";
+      import { createRoot } from "react-dom/client";
+      import { useWorkbenchVault } from "../../../packages/app-core/src/workbench/use-workbench-vault.ts";
+      import { VSCodeWorkbench } from "../../../packages/shared-ui/src/components/design-system/workbench.tsx";
+      import { Toaster, toast } from "../../../packages/shared-ui/src/components/sonner.tsx";
+      import { ThemeProvider } from "../../../packages/shared-ui/src/components/theme-provider.tsx";
+      import "../../../packages/shared-ui/src/styles/globals.css";
+
+      let info = {
+        id: "fixture",
+        name: "Test vault",
+        state: "indexing",
+        indexing: { phase: "indexing", processed: 50, total: 100, failed: 0 },
+      };
+      let files = [{ path: "archive/Note.md", name: "Note.md", kind: "markdown" }];
+      let trash = [{ id: "deleted", originalPath: "Deleted.md", deletedAt: "2026-09-05" }];
+      let watcher, vault;
+      const client = {
+        getBootstrap: async () => ({ workspace: { vaultId: "fixture" } }),
+        listRecentVaults: async () => [{ vaultId: "fixture", path: "/fixture" }],
+        listAvailableVaults: async () => [],
+        openVault: async () => info,
+        getVaultInfo: async () => info,
+        listFiles: async () => files,
+        watchVaultChanges: (_id, callback) => {
+          watcher = callback;
+          return () => {
+            watcher = undefined;
+          };
+        },
+        createDirectory: async () => {},
+        moveFile: async ({ sourcePath, destinationPath }) => {
+          if (files.some((file) => file.path === destinationPath))
+            throw Error("Destination exists");
+          files = files.map((file) =>
+            file.path === sourcePath ? { ...file, path: destinationPath } : file
+          );
+        },
+        listTrash: async () => trash,
+        restoreFile: async (_id, id) => {
+          const item = trash.find((item) => item.id === id);
+          if (!item) throw Error("Not in Trash");
+          files = [
+            ...files,
+            { path: item.originalPath, name: item.originalPath, kind: "markdown" },
+          ];
+          trash = trash.filter((item) => item.id !== id);
+        },
+      };
+      const runtime = { client };
+      const persistence = {};
+      function Harness() {
+        vault = useWorkbenchVault({ runtime, persistence, windowId: "test" });
+        return React.createElement(
+          React.Fragment,
+          null,
+          React.createElement(VSCodeWorkbench, {
+            theme: "light",
+            onThemeChange() {},
+            files: vault.files,
+            workspaceName: vault.vault?.name,
+            workspaceOpen: Boolean(vault.vault),
+            onArchiveFile: vault.archiveFile,
+            onRestoreArchive: vault.restoreArchive,
+            onListTrash: vault.listTrash,
+            onRestoreTrash: vault.restoreTrash,
+          }),
+          React.createElement(Toaster)
+        );
+      }
+      const settle = () => new Promise((resolve) => setTimeout(resolve, 100));
+      const assert = (ok, message) => {
+        if (!ok) throw Error(message);
+      };
+      const button = async (label) => {
+        const target = document.querySelector(`[aria-label="${label}"]`);
+        assert(target, `Missing ${label}`);
+        target.click();
+        await settle();
+      };
+      const menu = async (label) => {
+        const target = [...document.querySelectorAll('[role="menuitem"]')].find(
+          (e) => e.textContent.trim() === label
+        );
+        assert(target, `Missing menu item ${label}`);
+        target.click();
+        await settle();
+      };
+      createRoot(document.getElementById("root")).render(
+        React.createElement(ThemeProvider, { theme: "light" }, React.createElement(Harness))
+      );
+      try {
+        for (let i = 0; i < 30 && !watcher; i++) await settle();
+        await settle();
+        assert(document.body.textContent.includes("50 / 100 files"), "Indexing progress visible");
+        const indexingToast = () => toast.getToasts().find((item) => item.id === "vault-indexing:fixture");
+        assert(indexingToast()?.type === "loading", "Async indexing remains loading");
+        info = { id: "fixture", name: "Test vault", state: "active" };
+        watcher({ vault: info, revision: 2 });
+        await settle();
+        assert(
+          document.body.textContent.includes("Test vault indexed"),
+          "Index completion visible"
+        );
+        assert(indexingToast()?.duration !== Infinity, "Completed indexing toast must expire");
+        assert(!String(indexingToast()?.description).includes("files ·"), "Completion replaces stale scanning progress");
+        assert(
+          !document.querySelector('[role="tree"]').textContent.includes("archive"),
+          "Archive hidden by default"
+        );
+        assert(!document.querySelector('[aria-label="Vault menu"]'), "Vault name is not a dropdown");
+        assert(!document.querySelector('[aria-label="New file"]'), "No duplicate root action toolbar");
+        await button("More Explorer actions");
+        await menu("Archive");
+        assert(
+          document.querySelector('[role="tree"]').textContent.includes("archive"),
+          "Archive view visible"
+        );
+        await vault.restoreArchive("archive/Note.md");
+        await settle();
+        assert(
+          files.some((file) => file.path === "Note.md"),
+          "Archive restored to original location"
+        );
+        await button("More Explorer actions");
+        await menu("Trash");
+        assert(document.body.textContent.includes("Deleted.md"), "Trash contents visible");
+        const restore = [...document.querySelectorAll("button")].find(
+          (e) => e.textContent.trim() === "Restore"
+        );
+        assert(restore, "Trash restore action present");
+        restore.click();
+        await settle();
+        assert(
+          !trash.length && files.some((file) => file.path === "Deleted.md"),
+          "Trash restored to vault"
+        );
+        assert(
+          document.body.textContent.includes("Trash is empty."),
+          "Trash refreshes after restore"
+        );
+        document.getElementById("result").textContent =
+          "PASS: indexing progress/completion, archive filtering/restoration, Trash browsing/restoration";
+      } catch (error) {
+        document.getElementById("result").textContent = `FAIL: ${error.message}`;
+        console.error(error);
+      }
+    </script>
+  </body>
+</html>

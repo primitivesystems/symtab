@@ -24,9 +24,7 @@ import {
 import { Input } from "../../../ui/input";
 import { Label } from "../../../ui/label";
 
-export type ResourceRequest =
-  | { kind: "file" | "folder"; parent?: string }
-  | { kind: "rename"; path: string; initialName: string };
+export type ResourceRequest = { kind: "file" | "folder"; parent?: string };
 
 export function ResourceDialog({
   request,
@@ -37,17 +35,10 @@ export function ResourceDialog({
   onOpenChange: (open: boolean) => void;
   onSubmit: (name: string) => Promise<void>;
 }) {
-  const [name, setName] = useState(
-    request?.kind === "rename"
-      ? request.initialName
-      : request?.kind === "file"
-        ? "Untitled.md"
-        : "New folder"
-  );
+  const [name, setName] = useState(request?.kind === "file" ? "Untitled.md" : "New folder");
   const [error, setError] = useState<string>();
   const [busy, setBusy] = useState(false);
-  const title =
-    request?.kind === "rename" ? "Rename" : request?.kind === "file" ? "New file" : "New folder";
+  const title = request?.kind === "file" ? "New file" : "New folder";
   const valid =
     Boolean(name.trim()) &&
     !name.includes("/") &&
@@ -75,13 +66,11 @@ export function ResourceDialog({
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
-            {request?.kind === "rename"
-              ? `Choose a new name for ${request.initialName}.`
-              : `Create it in ${request?.parent || "the vault root"}.`}
+            {`Create it in ${request?.parent || "the vault root"}.`}
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-2">
-          <Label htmlFor="resource-name">Name</Label>
+          <Label htmlFor="resource-name">{request?.kind === "file" ? "Note name" : "Name"}</Label>
           <Input
             id="resource-name"
             value={name}
@@ -92,6 +81,11 @@ export function ResourceDialog({
             aria-invalid={Boolean(error) || !valid}
             autoFocus
           />
+          {request?.kind === "file" ? (
+            <p className="text-xs text-muted-foreground">
+              Flux v1 creates Markdown notes only. A missing <code>.md</code> extension will be added for you.
+            </p>
+          ) : null}
           {error ? (
             <p role="alert" className="text-xs text-destructive">
               {error}

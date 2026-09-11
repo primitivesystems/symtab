@@ -10,11 +10,14 @@ export interface WorkbenchHeaderProps {
   leftInset?: number;
   leftPaneOpen: boolean;
   rightPaneOpen: boolean;
+  aiPaneOpen?: boolean;
+  showAI?: boolean;
   onCommand: () => void;
   onBack?: () => void;
   onForward?: () => void;
   onToggleLeftPane: () => void;
   onToggleRightPane: () => void;
+  onToggleAI?: () => void;
   updateStatus?: UpdateDownloadStatus;
   updateProgress?: number;
   /** Called to download the update — only passed when an update is available */
@@ -29,11 +32,14 @@ export function WorkbenchHeader({
   leftInset = 0,
   leftPaneOpen,
   rightPaneOpen,
+  aiPaneOpen = false,
+  showAI = false,
   onCommand,
   onBack,
   onForward,
   onToggleLeftPane,
   onToggleRightPane,
+  onToggleAI,
   updateStatus = "available",
   updateProgress,
   onDownloadUpdate,
@@ -117,6 +123,17 @@ export function WorkbenchHeader({
           onClick={onToggleRightPane}
           selected={rightPaneOpen}
         />
+        {showAI ? (
+          <WorkbenchIconButton
+            icon="copilot"
+            density="chrome"
+            aria-label="Toggle AI chat"
+            title="Toggle AI chat"
+            aria-pressed={aiPaneOpen}
+            onClick={onToggleAI}
+            selected={aiPaneOpen}
+          />
+        ) : null}
 
         {/* Update available dropdown — shown when an update is ready */}
         {onDownloadUpdate && onOpenReleaseNotes && (

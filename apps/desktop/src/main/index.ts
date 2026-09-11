@@ -16,7 +16,12 @@ import { readFile, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import * as path from "path";
 import { formatReleaseNotes } from "./update-notes";
-import { downloadMacUpdate, getPlatformInstaller, openMacInstaller } from "./installer";
+import {
+  cleanupDownloadedMacInstallers,
+  downloadMacUpdate,
+  getPlatformInstaller,
+  openMacInstaller,
+} from "./installer";
 import { fetchMacRelease, isNewerVersion, type MacRelease } from "./github-release";
 
 autoUpdater.autoDownload = false;
@@ -95,12 +100,13 @@ autoUpdater.on("update-downloaded", (info) => {
   latestUpdateInfo = info;
   sendUpdateStatus({ state: "downloaded", update: updateDetails(info) });
 });
-autoUpdater.on("error", (error) =>
-  sendUpdateStatus({ state: "error", message: error.message })
-);
+autoUpdater.on("error", (error) => sendUpdateStatus({ state: "error", message: error.message }));
 
 function fluxAppDataDirectory() {
-  return process.env.FLUX_APP_DATA_DIR ?? path.join(app.getPath("appData"), app.isPackaged ? "Flux" : "Flux Development");
+  return (
+    process.env.FLUX_APP_DATA_DIR ??
+    path.join(app.getPath("appData"), app.isPackaged ? "Flux" : "Flux Development")
+  );
 }
 
 interface RuntimeDescriptor {
@@ -350,7 +356,6 @@ async function ensureBackend() {
   throw new Error("FLUX backend did not become ready");
 }
 
-
 async function performUpdateInstallation() {
   try {
     const platform = getPlatformInstaller();
@@ -403,7 +408,11 @@ function requestWindowFlush(window: BrowserWindow, windowId: number) {
   closePendingWindows.add(windowId);
   window.webContents.send("flux-before-close");
   const timeout = setTimeout(() => {
-    if (closePendingWindows.has(windowId)) cancelWindowFlush(windowId, "Saving is taking too long. Your window was kept open; try again after saving completes.");
+    if (closePendingWindows.has(windowId))
+      cancelWindowFlush(
+        windowId,
+        "Saving is taking too long. Your window was kept open; try again after saving completes."
+      );
   }, 30_000);
   timeout.unref();
 }
@@ -426,7 +435,6 @@ function createWindow(targetUrl?: string) {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
-      webviewTag: true,
     },
     titleBarStyle: "hiddenInset",
     backgroundColor: nativeTheme.shouldUseDarkColors ? "#1a1a1a" : "#e8e8e8",
@@ -565,7 +573,6 @@ function setMenuBarIconEnabled(enabled: boolean) {
   menuBarTray.setContextMenu(
     Menu.buildFromTemplate([
       { label: "Quick Capture", accelerator: "Control+Option+Space", click: showQuickCapture },
-      { label: "Open Today’s Note", click: () => dispatchCommand("daily-today") },
       { label: "Search Notes…", click: () => dispatchCommand("search") },
       { type: "separator" },
       { label: "Open FLUX", click: () => showMainWindow() },
@@ -576,49 +583,49 @@ function setMenuBarIconEnabled(enabled: boolean) {
   );
 }
 
-async function menuBarIconEnabled() {
-  try {
-    const response = await fetch(`${backendOrigin}/api/v1/app-settings`, {
-      headers: backendHeaders(),
-    });
-    if (!response.ok) return true;
-    const settings = (await response.json()) as Record<string, unknown>;
-    const fluxSettings = settings.fluxSettings as Record<string, unknown> | undefined;
-    const general = fluxSettings?.general as Record<string, unknown> | undefined;
-    return general?.showMenuBarIcon !== false;
-  } catch {
-    return true;
-  }
-}
 
 function installApplicationMenu() {
   Menu.setApplicationMenu(
     Menu.buildFromTemplate([
       ...(process.platform === "darwin"
-        ? [{
-            label: app.name,
-            submenu: [
-              { role: "about" as const },
-              { label: "Check for Updates…", click: () => dispatchCommand("updates") },
-              { type: "separator" as const },
-              { label: "Settings…", accelerator: "CmdOrCtrl+,", click: () => dispatchCommand("settings") },
-              { label: "Quick Capture", accelerator: "Control+Option+Space", click: showQuickCapture },
-              { type: "separator" as const },
-              { role: "services" as const },
-              { type: "separator" as const },
-              { role: "hide" as const },
-              { role: "hideOthers" as const },
-              { role: "unhide" as const },
-              { type: "separator" as const },
-              { role: "quit" as const },
-            ],
-          }]
+        ? [
+            {
+              label: app.name,
+              submenu: [
+                { role: "about" as const },
+                { label: "Check for Updates…", click: () => dispatchCommand("updates") },
+                { type: "separator" as const },
+                {
+                  label: "Settings…",
+                  accelerator: "CmdOrCtrl+,",
+                  click: () => dispatchCommand("settings"),
+                },
+                {
+                  label: "Quick Capture",
+                  accelerator: "Control+Option+Space",
+                  click: showQuickCapture,
+                },
+                { type: "separator" as const },
+                { role: "services" as const },
+                { type: "separator" as const },
+                { role: "hide" as const },
+                { role: "hideOthers" as const },
+                { role: "unhide" as const },
+                { type: "separator" as const },
+                { role: "quit" as const },
+              ],
+            },
+          ]
         : []),
       {
         label: "File",
         submenu: [
           { label: "New Window", accelerator: "CmdOrCtrl+Shift+N", click: () => createWindow() },
-          { label: "Open or Create Vault…", accelerator: "CmdOrCtrl+O", click: () => dispatchCommand("vaults") },
+          {
+            label: "Open or Create Vault…",
+            accelerator: "CmdOrCtrl+O",
+            click: () => dispatchCommand("vaults"),
+          },
           { label: "Quick Capture", accelerator: "Control+Alt+Space", click: showQuickCapture },
           { type: "separator" },
           { role: "close" },
@@ -632,13 +639,11 @@ function installApplicationMenu() {
             accelerator: "CmdOrCtrl+Shift+F",
             click: () => dispatchCommand("search"),
           },
-          { label: "Today's Note", click: () => dispatchCommand("daily-today") },
         ],
       },
       {
         label: "Workspace",
         submenu: [
-          { label: "Calendar", click: () => dispatchCommand("calendar") },
           {
             label: "Settings",
             accelerator: "CmdOrCtrl+,",
@@ -654,6 +659,9 @@ function installApplicationMenu() {
 }
 
 app.whenReady().then(async () => {
+  void cleanupDownloadedMacInstallers().catch((error) =>
+    console.warn("Could not move the previous FLUX updater to Trash", error)
+  );
   const openedAtLogin =
     process.platform === "darwin" && app.isPackaged && app.getLoginItemSettings().wasOpenedAtLogin;
   backendStartup = ensureBackend();
@@ -661,7 +669,8 @@ app.whenReady().then(async () => {
   else createWindow();
   await backendStartup;
   installApplicationMenu();
-  setMenuBarIconEnabled(await menuBarIconEnabled());
+  // V1 keeps launch-at-login and the menu bar utility hidden until the settings surface ships.
+  setMenuBarIconEnabled(false);
   globalShortcut.register("Control+Option+Space", showQuickCapture);
   backendHeartbeat = setInterval(() => void backendReady(), 30_000);
   backendHeartbeat.unref();
@@ -710,7 +719,10 @@ ipcMain.handle("get-window-id", (event) => {
 });
 
 ipcMain.handle("hide-window", (event) => {
-  BrowserWindow.fromWebContents(event.sender)?.hide();
+  const window = BrowserWindow.fromWebContents(event.sender);
+  if (!window) return;
+  if (window === quickCaptureWindow) window.destroy();
+  else window.hide();
 });
 
 ipcMain.handle("show-quick-capture", () => showQuickCapture());
@@ -747,13 +759,22 @@ ipcMain.on("flux-close-ready", (event) => {
 
 ipcMain.on("flux-close-failed", (event, message: unknown) => {
   if (!closePendingWindows.has(event.sender.id)) return;
-  cancelWindowFlush(event.sender.id, typeof message === "string" ? message : "Could not save changes");
+  cancelWindowFlush(
+    event.sender.id,
+    typeof message === "string" ? message : "Could not save changes"
+  );
 });
 
 ipcMain.handle("select-vault-directory", async (_event, mode: unknown) => {
-  if (mode !== "open" && mode !== "create" && mode !== "location") throw new TypeError("Invalid vault selection mode");
+  if (mode !== "open" && mode !== "create" && mode !== "location")
+    throw new TypeError("Invalid vault selection mode");
   const options = {
-    title: mode === "location" ? "Choose workspace location" : mode === "create" ? "Create or choose an empty vault folder" : "Open vault folder",
+    title:
+      mode === "location"
+        ? "Choose workspace location"
+        : mode === "create"
+          ? "Create or choose an empty vault folder"
+          : "Open vault folder",
     buttonLabel: mode === "location" ? "Choose location" : "Open",
     properties: ["openDirectory", "createDirectory"] as Array<"openDirectory" | "createDirectory">,
   };
@@ -906,8 +927,11 @@ ipcMain.handle("check-for-updates", async () => {
     if (process.platform === "darwin") {
       sendUpdateStatus({ state: "checking" });
       const release = await fetchMacRelease(process.arch);
-      latestUpdateInfo = release && isNewerVersion(release.version, currentVersion) ? release : null;
-      const update = release ? updateDetails(release) : { currentVersion, latestVersion: currentVersion, codename: undefined, releaseNotes: "" };
+      latestUpdateInfo =
+        release && isNewerVersion(release.version, currentVersion) ? release : null;
+      const update = release
+        ? updateDetails(release)
+        : { currentVersion, latestVersion: currentVersion, codename: undefined, releaseNotes: "" };
       sendUpdateStatus({ state: latestUpdateInfo ? "available" : "not-available", update });
       return update;
     }
@@ -915,7 +939,10 @@ ipcMain.handle("check-for-updates", async () => {
     return result?.updateInfo ? updateDetails(result.updateInfo) : { currentVersion };
   } catch (error) {
     console.error("Failed to check for updates (maybe no GitHub releases yet):", error);
-    sendUpdateStatus({ state: "error", message: error instanceof Error ? error.message : "Update check failed" });
+    sendUpdateStatus({
+      state: "error",
+      message: error instanceof Error ? error.message : "Update check failed",
+    });
     throw error;
   }
 });
@@ -923,12 +950,19 @@ ipcMain.handle("check-for-updates", async () => {
 async function downloadUpdate() {
   if (!latestUpdateInfo) throw new Error("Check for updates before downloading");
   const update = updateDetails(latestUpdateInfo);
-  sendUpdateStatus({ state: "downloading", percent: 0, transferred: 0, total: "asset" in latestUpdateInfo ? latestUpdateInfo.asset.size : 0 });
+  sendUpdateStatus({
+    state: "downloading",
+    percent: 0,
+    transferred: 0,
+    total: "asset" in latestUpdateInfo ? latestUpdateInfo.asset.size : 0,
+  });
   try {
     if (process.platform === "darwin") {
       if (!("asset" in latestUpdateInfo)) throw new Error("Check for a DMG update first");
-      downloadedMacInstaller = await downloadMacUpdate(latestUpdateInfo, (percent, transferred, total) =>
-        sendUpdateStatus({ state: "downloading", percent, transferred, total })
+      downloadedMacInstaller = await downloadMacUpdate(
+        latestUpdateInfo,
+        (percent, transferred, total) =>
+          sendUpdateStatus({ state: "downloading", percent, transferred, total })
       );
     } else {
       await autoUpdater.downloadUpdate();
@@ -936,13 +970,18 @@ async function downloadUpdate() {
     sendUpdateStatus({ state: "verifying", update });
     sendUpdateStatus({ state: "ready", update });
   } catch (error) {
-    sendUpdateStatus({ state: "error", message: error instanceof Error ? error.message : "Update download failed" });
+    sendUpdateStatus({
+      state: "error",
+      message: error instanceof Error ? error.message : "Update download failed",
+    });
     throw error;
   }
 }
 
 ipcMain.handle("download-update", () => {
-  updateDownload ??= downloadUpdate().finally(() => { updateDownload = null; });
+  updateDownload ??= downloadUpdate().finally(() => {
+    updateDownload = null;
+  });
   return updateDownload;
 });
 

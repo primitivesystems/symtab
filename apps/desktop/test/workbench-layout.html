@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Workbench layout regression</title>
+  </head>
+  <body>
+    <div id="root" style="width: 1280px; height: 720px"></div>
+    <output id="result">Running…</output>
+    <script type="module">
+      // Run with desktop Vite at /test/workbench-layout.html. No vault or backend involved.
+      import React from "react";
+      import { createRoot } from "react-dom/client";
+      import { VSCodeWorkbench } from "../../../packages/shared-ui/src/components/design-system/workbench.tsx";
+      import "../../../packages/shared-ui/src/styles/globals.css";
+
+      const nativeFrame = window.requestAnimationFrame.bind(window);
+      if (new URLSearchParams(location.search).has("background")) {
+        // Electron can suspend animation frames while a window is hidden/occluded.
+        window.requestAnimationFrame = () => 0;
+      }
+      const settle = async () => {
+        await new Promise((resolve) => setTimeout(resolve, 30));
+        for (let frame = 0; frame < 5; frame++) await new Promise(nativeFrame);
+      };
+      const width = (id) => document.getElementById(id).getBoundingClientRect().width;
+      const click = async (label) => {
+        const button = document.querySelector(`[aria-label="${label}"]`);
+        if (!button) throw Error(`Missing ${label}`);
+        button.click();
+        await settle();
+      };
+      const assert = (condition, message) => {
+        if (!condition) throw Error(message);
+      };
+      createRoot(document.getElementById("root")).render(
+        React.createElement(
+          React.StrictMode,
+          null,
+          React.createElement(VSCodeWorkbench, {
+            theme: "light",
+            onThemeChange() {},
+            initialState: {
+              version: 1,
+              shell: { leftOpen: true, rightOpen: true },
+              panelLayouts: {},
+            },
+          })
+        )
+      );
+      try {
+        await settle();
+        const primary = width("primary-sidebar");
+        assert(primary >= 190, "Explorer starts visible");
+        for (let i = 0; i < 3; i++) {
+          await click("Toggle primary pane");
+          assert(width("primary-sidebar") < 1, "Explorer closes");
+          await click("Toggle primary pane");
+          assert(
+            Math.abs(width("primary-sidebar") - primary) < 2,
+            `Explorer restores width (${primary} → ${width("primary-sidebar")})`
+          );
+          await click("Toggle secondary pane");
+          assert(width("secondary-sidebar") < 1, "Reference sidebar closes");
+          assert(Math.abs(width("primary-sidebar") - primary) < 2, "Closing right preserves left");
+          await click("Toggle secondary pane");
+          assert(width("editor") >= 280, "Editor remains visible");
+        }
+        await click("Toggle AI chat");
+        await click("Maximize AI chat");
+        assert(width("editor") < 1, "Chat maximizes");
+        await click("Restore AI chat");
+        assert(width("editor") >= 280, "Editor returns after maximize");
+        assert(Math.abs(width("primary-sidebar") - primary) < 2, "Explorer returns after maximize");
+        for (const [label, key] of [
+          ["Resize primary side bar", "End"],
+          ["Resize secondary side bar", "Home"],
+        ]) {
+          const handle = document.querySelector(`[aria-label="${label}"]`);
+          handle.focus();
+          handle.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true }));
+          await settle();
+          assert(width("editor") >= 278, "Resizing cannot collapse editor");
+        }
+        const resizedPrimary = width("primary-sidebar");
+        await click("Toggle primary pane");
+        await click("Toggle primary pane");
+        assert(
+          Math.abs(width("primary-sidebar") - resizedPrimary) < 2,
+          "Resized width survives toggle"
+        );
+        await click("Maximize AI chat");
+        await click("Toggle primary pane");
+        assert(
+          width("primary-sidebar") >= 190 && width("editor") >= 278,
+          "Explorer toggle exits maximized chat"
+        );
+        document.getElementById("result").textContent =
+          "PASS: repeated toggles, resized width restoration, chat maximize/restore, editor minimum width";
+      } catch (error) {
+        document.getElementById("result").textContent = `FAIL: ${error.message}`;
+        console.error(error);
+      }
+    </script>
+  </body>
+</html>

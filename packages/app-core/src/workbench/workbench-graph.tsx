@@ -20,7 +20,7 @@ export function WorkbenchGraph({ client, vaultId, onOpenDocument, onSplit, onSea
     const load = async () => {
       const request = ++revision;
       try {
-        const next = await client.getGraph(vaultId);
+        const next = filterGraphForV1(await client.getGraph(vaultId));
         if (!cancelled && request === revision) { setGraph(next); setError(undefined); }
       } catch (cause) {
         if (!cancelled) setError(cause instanceof Error ? cause.message : "Could not load graph");
@@ -38,4 +38,13 @@ export function WorkbenchGraph({ client, vaultId, onOpenDocument, onSplit, onSea
       onSearchTag={onSearchTag}
       onSplitRight={() => onSplit("right")} onSplitDown={() => onSplit("bottom")} />
   </Suspense>;
+}
+
+function filterGraphForV1(graph: VaultGraph): VaultGraph {
+  const nodes = graph.nodes.filter((node) => node.kind === "markdown" || node.kind === "missing");
+  const visible = new Set(nodes.map((node) => node.id));
+  return {
+    nodes,
+    edges: graph.edges.filter((edge) => visible.has(edge.source) && visible.has(edge.target)),
+  };
 }

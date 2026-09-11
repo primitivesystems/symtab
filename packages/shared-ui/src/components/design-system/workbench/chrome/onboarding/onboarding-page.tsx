@@ -1,13 +1,21 @@
 import { useState } from "react";
 import { ArrowRightIcon } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
-import { Button } from "../../../ui/button";
-import { Field, FieldDescription, FieldGroup } from "../../../ui/field";
-import type { WorkbenchTheme } from "../types";
+import { Button } from "@flux/shared-ui/components/ui/button";
+import { Field, FieldDescription, FieldGroup } from "@flux/shared-ui/components/ui/field";
+import type { WorkbenchTheme } from "#workbench/types";
 import { OnboardingWorkspaceForm, type WorkspaceSetup } from "./onboarding-workspace-form";
 import { OnboardingAppearance } from "./onboarding-appearance";
 
-export function OnboardingPage({ theme, onThemeChange, onOpenVault, onCreateWorkspace, onSelectLocation, managed = false, ready }: {
+export function OnboardingPage({
+  theme,
+  onThemeChange,
+  onOpenVault,
+  onCreateWorkspace,
+  onSelectLocation,
+  managed = false,
+  ready,
+}: {
   theme: WorkbenchTheme;
   onThemeChange: (theme: WorkbenchTheme) => void;
   onOpenVault: () => Promise<void>;

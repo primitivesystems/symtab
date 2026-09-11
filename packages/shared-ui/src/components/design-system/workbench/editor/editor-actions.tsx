@@ -103,9 +103,9 @@ export function EditorActions({
           <WorkbenchMenuItem disabled={!activeTab} onClick={onTogglePin}>
             {activeTab?.pinned ? "Unpin Editor" : "Pin Editor"}
           </WorkbenchMenuItem>
-          <WorkbenchMenuItem disabled={!onMoveToNewWindow} onClick={onMoveToNewWindow}>
-            Move into New Window
-          </WorkbenchMenuItem>
+          {onMoveToNewWindow ? (
+            <WorkbenchMenuItem onClick={onMoveToNewWindow}>Move into New Window</WorkbenchMenuItem>
+          ) : null}
           <WorkbenchMenuSeparator />
           <WorkbenchMenuItem disabled={!onFind} onClick={onFind}>
             Find in Document

@@ -1,13 +1,20 @@
 import { expect, test } from "bun:test";
 import { renderToStaticMarkup } from "react-dom/server";
-import { OnboardingPage } from "../src/components/design-system/workbench/chrome/onboarding-page";
-import { OnboardingWorkspaceForm } from "../src/components/design-system/workbench/chrome/onboarding-workspace-form";
-import { OnboardingAppearance } from "../src/components/design-system/workbench/chrome/onboarding-appearance";
+import { OnboardingPage } from "@flux/shared-ui/components/design-system/workbench/chrome/onboarding/onboarding-page";
+import { OnboardingWorkspaceForm } from "@flux/shared-ui/components/design-system/workbench/chrome/onboarding/onboarding-workspace-form";
+import { OnboardingAppearance } from "@flux/shared-ui/components/design-system/workbench/chrome/onboarding/onboarding-appearance";
 
 test("welcome has one Get started action and no vault or theme shortcuts", () => {
-  const render = (ready: boolean) => renderToStaticMarkup(
-    <OnboardingPage theme="dark" ready={ready} onThemeChange={() => {}} onOpenVault={async () => {}} onCreateWorkspace={async () => {}} />
-  );
+  const render = (ready: boolean) =>
+    renderToStaticMarkup(
+      <OnboardingPage
+        theme="dark"
+        ready={ready}
+        onThemeChange={() => {}}
+        onCreateWorkspace={async () => {}}
+        onOpenVault={async () => {}}
+      />
+    );
   const html = render(true);
   expect(html).toContain("Get started");
   expect(html).not.toContain("Open existing vault");
@@ -23,7 +30,14 @@ test("welcome has one Get started action and no vault or theme shortcuts", () =>
 
 test("appearance is a setup step with an explicit selection and Continue action", () => {
   for (const theme of ["light", "dark"] as const) {
-    const html = renderToStaticMarkup(<OnboardingAppearance theme={theme} onThemeChange={() => {}} onContinue={() => {}} onBack={() => {}} />);
+    const html = renderToStaticMarkup(
+      <OnboardingAppearance
+        theme={theme}
+        onThemeChange={() => {}}
+        onContinue={() => {}}
+        onBack={() => {}}
+      />
+    );
     expect(html).toContain("Step 1 of 2");
     expect(html).toContain("Continue");
     expect(html.match(/aria-pressed="true"/g)).toHaveLength(1);
@@ -31,8 +45,18 @@ test("appearance is a setup step with an explicit selection and Continue action"
   }
 });
 
-test("workspace step owns creation and the existing-vault alternative", () => {
-  const render = (managed: boolean) => renderToStaticMarkup(<OnboardingWorkspaceForm ready managed={managed} onSelectLocation={async () => null} onCreate={async () => {}} onOpenVault={async () => {}} onBack={() => {}} />);
+test("workspace step only owns first-run workspace creation", () => {
+  const render = (managed: boolean) =>
+    renderToStaticMarkup(
+      <OnboardingWorkspaceForm
+        ready
+        managed={managed}
+        onSelectLocation={async () => null}
+        onCreate={async () => {}}
+        onOpenVault={async () => {}}
+        onBack={() => {}}
+      />
+    );
   expect(render(false)).toContain("Workspace name");
   expect(render(false)).toContain("Save location");
   expect(render(false)).toContain("Create workspace");

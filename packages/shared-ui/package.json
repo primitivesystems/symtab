@@ -5,6 +5,7 @@
   "type": "module",
   "imports": {
     "#components/*": "./src/components/*.tsx",
+    "#workbench/*": "./src/components/design-system/workbench/*.ts",
     "#hooks/*": "./src/hooks/*.ts",
     "#lib/*": "./src/lib/*.ts"
   },

@@ -15,6 +15,7 @@ import {
 } from "../shared/workbench-menu";
 import { WorkbenchPanel } from "../shared/workbench-panel";
 import { DeleteResourceDialog, ResourceDialog, type ResourceRequest } from "./resource-dialog";
+import { TrashList } from "./trash-list";
 
 export type WorkbenchTreeItem =
   | { name: string; path: string; type: "file" }
@@ -25,33 +26,6 @@ export type WorkbenchTreeItem =
       open?: boolean;
       children?: WorkbenchTreeItem[];
     };
-
-const FILES: WorkbenchTreeItem[] = [
-  { name: ".capacity", path: ".capacity", type: "folder" },
-  { name: "public", path: "public", type: "folder" },
-  {
-    name: "src",
-    path: "src",
-    type: "folder",
-    open: true,
-    children: [
-      { name: "app", path: "src/app", type: "folder" },
-      { name: "components", path: "src/components", type: "folder" },
-      { name: "lib", path: "src/lib", type: "folder" },
-    ],
-  },
-  { name: ".gitignore", path: ".gitignore", type: "file" },
-  { name: "AGENTS.md", path: "AGENTS.md", type: "file" },
-  { name: "CLAUDE.md", path: "CLAUDE.md", type: "file" },
-  { name: "components.json", path: "components.json", type: "file" },
-  { name: "eslint.config.mjs", path: "eslint.config.mjs", type: "file" },
-  { name: "next.config.ts", path: "next.config.ts", type: "file" },
-  { name: "package.json", path: "package.json", type: "file" },
-  { name: "pnpm-lock.yaml", path: "pnpm-lock.yaml", type: "file" },
-  { name: "postcss.config.mjs", path: "postcss.config.mjs", type: "file" },
-  { name: "README.md", path: "README.md", type: "file" },
-  { name: "tsconfig.json", path: "tsconfig.json", type: "file" },
-];
 
 export type PrimarySidebarProps = {
   files?: readonly {
@@ -69,13 +43,16 @@ export type PrimarySidebarProps = {
   onCollapseAll?: () => void;
   onRenameFile?: (path: string, name: string) => Promise<void>;
   onDeleteFile?: (path: string) => Promise<void>;
+  onArchiveFile?: (path: string) => Promise<void>;
   onManageVaults?: () => void;
+  onListTrash?: () => Promise<{ id: string; originalPath: string; deletedAt: string }[]>;
+  onRestoreTrash?: (id: string) => Promise<void>;
 };
 
 export function PrimarySidebar({
   files,
   selectedPath = "package.json",
-  workspaceName = "flux-landing [GitHub]",
+  workspaceName = "No vault open",
   canMutate = true,
   onSelectFile,
   onCreateFile,
@@ -84,14 +61,27 @@ export function PrimarySidebar({
   onCollapseAll,
   onRenameFile,
   onDeleteFile,
+  onArchiveFile,
   onManageVaults,
+  onListTrash,
+  onRestoreTrash,
 }: PrimarySidebarProps) {
   const [collapseVersion, setCollapseVersion] = React.useState(0);
   const [request, setRequest] = React.useState<ResourceRequest>();
   const [deletePath, setDeletePath] = React.useState<string>();
-  const tree = React.useMemo(() => (files ? fileTree(files) : FILES), [files]);
-  const startRename = (path: string) =>
-    setRequest({ kind: "rename", path, initialName: path.split("/").pop() ?? path });
+  const [renamePath, setRenamePath] = React.useState<string>();
+  const [view, setView] = React.useState<"files" | "archive" | "trash">("files");
+  const [showArchive, setShowArchive] = React.useState(false);
+  const tree = React.useMemo(
+    () =>
+      fileTree(
+        (files ?? []).filter((file) => {
+          const archived = file.path === "archive" || file.path.startsWith("archive/");
+          return view === "archive" ? archived : showArchive || !archived;
+        })
+      ),
+    [files, showArchive, view]
+  );
 
   return (
     <TooltipProvider delay={500}>
@@ -128,6 +118,22 @@ export function PrimarySidebar({
                 Collapse Folders
               </WorkbenchMenuItem>
               <WorkbenchMenuSeparator />
+              <WorkbenchMenuItem disabled={!canMutate} onClick={() => setView("files")}>
+                Vault files
+              </WorkbenchMenuItem>
+              <WorkbenchMenuItem disabled={!canMutate} onClick={() => setView("archive")}>
+                Archive
+              </WorkbenchMenuItem>
+              <WorkbenchMenuItem disabled={!canMutate} onClick={() => setView("trash")}>
+                Trash
+              </WorkbenchMenuItem>
+              <WorkbenchMenuItem
+                disabled={!canMutate}
+                onClick={() => setShowArchive((value) => !value)}
+              >
+                {showArchive ? "Hide archive in explorer" : "Show archive in explorer"}
+              </WorkbenchMenuItem>
+              <WorkbenchMenuSeparator />
               <WorkbenchMenuItem disabled={!onManageVaults} onClick={onManageVaults}>
                 Manage Vaults…
               </WorkbenchMenuItem>
@@ -135,40 +141,10 @@ export function PrimarySidebar({
           </DropdownMenu>
         </header>
 
-        <div className="group flex h-[22px] shrink-0 items-center ps-2 pe-1">
-          <WorkbenchIcon name="chevron-down" className="me-0.5" />
-          <span className="min-w-0 flex-1 truncate text-[11px] font-semibold" title={workspaceName}>
-            {workspaceName}
-          </span>
-          <div className="flex items-center opacity-0 group-hover:opacity-100 group-focus-within:opacity-100">
-            <WorkbenchIconButton
-              icon="new-file"
-              aria-label="New file"
-              disabled={!canMutate || !onCreateFile}
-              onClick={() => setRequest({ kind: "file" })}
-            />
-            <WorkbenchIconButton
-              icon="new-folder"
-              aria-label="New folder"
-              disabled={!canMutate || !onCreateFolder}
-              onClick={() => setRequest({ kind: "folder" })}
-            />
-            <WorkbenchIconButton
-              icon="refresh"
-              aria-label="Refresh explorer"
-              disabled={!onRefresh}
-              onClick={onRefresh}
-            />
-            <WorkbenchIconButton
-              icon="collapse-all"
-              aria-label="Collapse folders in Explorer"
-              onClick={() => {
-                setCollapseVersion((version) => version + 1);
-                onCollapseAll?.();
-              }}
-            />
-          </div>
-        </div>
+        <p className="h-[22px] shrink-0 truncate px-2 text-[13px] font-medium" title={workspaceName}>
+          {workspaceName}
+          {view !== "files" ? ` · ${view === "trash" ? "Trash" : "Archive"}` : ""}
+        </p>
 
         <ScrollArea
           className="min-h-0 flex-1 overflow-x-hidden py-0.5"
@@ -184,6 +160,8 @@ export function PrimarySidebar({
                 Manage vaults
               </Button>
             </div>
+          ) : view === "trash" ? (
+            <TrashList load={onListTrash} restore={onRestoreTrash} />
           ) : (
             tree.map((item) => (
               <TreeRow
@@ -195,24 +173,25 @@ export function PrimarySidebar({
                 collapseVersion={collapseVersion}
                 onNewFileInFolder={(parent) => setRequest({ kind: "file", parent })}
                 onNewFolderInFolder={(parent) => setRequest({ kind: "folder", parent })}
-                onRenameFile={startRename}
+                renamePath={renamePath}
+                onRenameFile={setRenamePath}
+                onCommitRename={async (path, name) => {
+                  await onRenameFile?.(path, name);
+                  setRenamePath(undefined);
+                }}
+                onArchiveFile={onArchiveFile}
                 onDeleteFile={setDeletePath}
               />
             ))
           )}
         </ScrollArea>
         <ResourceDialog
-          key={
-            request
-              ? `${request.kind}:${"path" in request ? request.path : (request.parent ?? "root")}`
-              : "resource:closed"
-          }
+          key={request ? `${request.kind}:${request.parent ?? "root"}` : "resource:closed"}
           request={request}
           onOpenChange={(open) => !open && setRequest(undefined)}
           onSubmit={async (name) => {
             if (request?.kind === "file") await onCreateFile?.(request.parent, name);
             if (request?.kind === "folder") await onCreateFolder?.(request.parent, name);
-            if (request?.kind === "rename") await onRenameFile?.(request.path, name);
           }}
         />
         <DeleteResourceDialog
@@ -236,7 +215,10 @@ function TreeRow({
   collapseVersion,
   onNewFileInFolder,
   onNewFolderInFolder,
+  renamePath,
   onRenameFile,
+  onCommitRename,
+  onArchiveFile,
   onDeleteFile,
 }: {
   item: WorkbenchTreeItem;
@@ -246,7 +228,10 @@ function TreeRow({
   collapseVersion: number;
   onNewFileInFolder?: (folderPath: string) => void;
   onNewFolderInFolder?: (folderPath: string) => void;
+  renamePath?: string;
   onRenameFile?: (path: string) => void;
+  onCommitRename?: (path: string, name: string) => Promise<void>;
+  onArchiveFile?: (path: string) => Promise<void>;
   onDeleteFile?: (path: string) => void;
 }) {
   if (item.type === "file") {
@@ -257,30 +242,40 @@ function TreeRow({
         role="none"
         className={`group/row relative flex h-[22px] min-w-0 items-center hover:bg-[var(--workbench-hover)] focus-within:bg-[var(--workbench-hover)] ${selected ? "bg-[var(--workbench-selected)]" : ""}`}
       >
-        <button
-          type="button"
-          role="treeitem"
-          aria-selected={selected}
-          draggable
-          onClick={() => onSelectFile?.(item.path)}
-          onDragStart={(event) => {
-            event.dataTransfer.effectAllowed = "copyMove";
-            event.dataTransfer.setData("application/x-flux-path", item.path);
-            event.dataTransfer.setData("application/x-flux-file", item.path);
-            event.dataTransfer.setData("text/plain", item.path);
-          }}
-          className="flex h-[22px] w-full min-w-0 select-none items-center pe-2 text-start text-[13px] outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--workbench-fg)]"
-          style={{ paddingInlineStart: 8 + depth * 8 }}
-          title={item.path}
-        >
-          <span aria-hidden="true" className="me-0.5 inline-block size-4 shrink-0" />
-          <WorkbenchIcon name="file" className="me-1.5 text-[var(--workbench-muted)]" />
-          <span className="truncate">{item.name}</span>
-        </button>
+        {renamePath === item.path ? (
+          <InlineRename
+            item={item}
+            depth={depth}
+            onCancel={() => onRenameFile?.("")}
+            onCommit={(name) => onCommitRename?.(item.path, name) ?? Promise.resolve()}
+          />
+        ) : (
+          <button
+            type="button"
+            role="treeitem"
+            aria-selected={selected}
+            draggable
+            onClick={() => onSelectFile?.(item.path)}
+            onDragStart={(event) => {
+              event.dataTransfer.effectAllowed = "copyMove";
+              event.dataTransfer.setData("application/x-flux-path", item.path);
+              event.dataTransfer.setData("application/x-flux-file", item.path);
+              event.dataTransfer.setData("text/plain", item.path);
+            }}
+            className="flex h-[22px] w-full min-w-0 select-none items-center pe-2 text-start text-[13px] outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--workbench-fg)]"
+            style={{ paddingInlineStart: 8 + depth * 8 }}
+            title={item.path}
+          >
+            <span aria-hidden="true" className="me-0.5 inline-block size-4 shrink-0" />
+            <WorkbenchIcon name="file" className="me-1.5 text-[var(--workbench-muted)]" />
+            <span className="truncate">{item.name}</span>
+          </button>
+        )}
         <FileRowActions
           path={item.path}
           onOpen={() => onSelectFile?.(item.path)}
           onRename={onRenameFile}
+          onArchive={onArchiveFile}
           onDelete={onDeleteFile}
         />
       </div>
@@ -296,7 +291,10 @@ function TreeRow({
       collapseVersion={collapseVersion}
       onNewFileInFolder={onNewFileInFolder}
       onNewFolderInFolder={onNewFolderInFolder}
+      renamePath={renamePath}
       onRenameFile={onRenameFile}
+      onCommitRename={onCommitRename}
+      onArchiveFile={onArchiveFile}
       onDeleteFile={onDeleteFile}
     />
   );
@@ -310,7 +308,10 @@ function TreeFolderRow({
   collapseVersion,
   onNewFileInFolder,
   onNewFolderInFolder,
+  renamePath,
   onRenameFile,
+  onCommitRename,
+  onArchiveFile,
   onDeleteFile,
 }: {
   item: Extract<WorkbenchTreeItem, { type: "folder" }>;
@@ -320,7 +321,10 @@ function TreeFolderRow({
   collapseVersion: number;
   onNewFileInFolder?: (folderPath: string) => void;
   onNewFolderInFolder?: (folderPath: string) => void;
+  renamePath?: string;
   onRenameFile?: (path: string) => void;
+  onCommitRename?: (path: string, name: string) => Promise<void>;
+  onArchiveFile?: (path: string) => Promise<void>;
   onDeleteFile?: (path: string) => void;
 }) {
   const [open, setOpen] = React.useState(item.open ?? false);
@@ -335,22 +339,31 @@ function TreeFolderRow({
   return (
     <div role="none">
       <div className="group/row relative flex h-[22px] min-w-0 items-center hover:bg-[var(--workbench-hover)] focus-within:bg-[var(--workbench-hover)]">
-        <button
-          type="button"
-          role="treeitem"
-          aria-expanded={open}
-          onClick={() => setOpen((value) => !value)}
-          className="flex h-[22px] w-full min-w-0 select-none items-center pe-2 text-start text-[13px] outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--workbench-fg)]"
-          style={{ paddingInlineStart: 8 + depth * 8 }}
-          title={item.path}
-        >
-          <WorkbenchIcon name={open ? "chevron-down" : "chevron-right"} className="me-0.5" />
-          <WorkbenchIcon
-            name={open ? "folder-opened" : "folder"}
-            className="me-1.5 text-[var(--workbench-muted)]"
+        {renamePath === item.path ? (
+          <InlineRename
+            item={item}
+            depth={depth}
+            onCancel={() => onRenameFile?.("")}
+            onCommit={(name) => onCommitRename?.(item.path, name) ?? Promise.resolve()}
           />
-          <span className="truncate">{item.name}</span>
-        </button>
+        ) : (
+          <button
+            type="button"
+            role="treeitem"
+            aria-expanded={open}
+            onClick={() => setOpen((value) => !value)}
+            className="flex h-[22px] w-full min-w-0 select-none items-center pe-2 text-start text-[13px] outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--workbench-fg)]"
+            style={{ paddingInlineStart: 8 + depth * 8 }}
+            title={item.path}
+          >
+            <WorkbenchIcon name={open ? "chevron-down" : "chevron-right"} className="me-0.5" />
+            <WorkbenchIcon
+              name={open ? "folder-opened" : "folder"}
+              className="me-1.5 text-[var(--workbench-muted)]"
+            />
+            <span className="truncate">{item.name}</span>
+          </button>
+        )}
         <div className="pointer-events-none absolute inset-y-0 end-1 flex items-center bg-[var(--workbench-hover)] opacity-0 group-hover/row:pointer-events-auto group-hover/row:opacity-100 group-focus-within/row:pointer-events-auto group-focus-within/row:opacity-100">
           {onNewFileInFolder ? (
             <RowActionButton
@@ -372,6 +385,7 @@ function TreeFolderRow({
               onNewFile={onNewFileInFolder}
               onNewFolder={onNewFolderInFolder}
               onRename={onRenameFile}
+              onArchive={onArchiveFile}
               onDelete={onDeleteFile}
             />
           ) : null}
@@ -389,7 +403,10 @@ function TreeFolderRow({
               collapseVersion={collapseVersion}
               onNewFileInFolder={onNewFileInFolder}
               onNewFolderInFolder={onNewFolderInFolder}
+              renamePath={renamePath}
               onRenameFile={onRenameFile}
+              onCommitRename={onCommitRename}
+              onArchiveFile={onArchiveFile}
               onDeleteFile={onDeleteFile}
             />
           ))}
@@ -404,12 +421,14 @@ function FolderRowActions({
   onNewFile,
   onNewFolder,
   onRename,
+  onArchive,
   onDelete,
 }: {
   item: Extract<WorkbenchTreeItem, { type: "folder" }>;
   onNewFile?: (path: string) => void;
   onNewFolder?: (path: string) => void;
   onRename?: (path: string) => void;
+  onArchive?: (path: string) => Promise<void>;
   onDelete?: (path: string) => void;
 }) {
   return (
@@ -438,9 +457,16 @@ function FolderRowActions({
           <WorkbenchIcon name="rename" />
           Rename
         </WorkbenchMenuItem>
+        <WorkbenchMenuItem
+          disabled={!onArchive || item.path === "archive"}
+          onClick={() => void onArchive?.(item.path)}
+        >
+          <WorkbenchIcon name="archive" />
+          {item.path.startsWith("archive/") ? "Restore to vault" : "Move to archive"}
+        </WorkbenchMenuItem>
         <WorkbenchMenuItem disabled={!onDelete} onClick={() => onDelete?.(item.path)}>
           <WorkbenchIcon name="trash" />
-          Delete
+          Move to trash
         </WorkbenchMenuItem>
       </WorkbenchMenuContent>
     </DropdownMenu>
@@ -470,15 +496,87 @@ function RowActionButton({
   );
 }
 
+function InlineRename({
+  item,
+  depth,
+  onCommit,
+  onCancel,
+}: {
+  item: WorkbenchTreeItem;
+  depth: number;
+  onCommit: (name: string) => Promise<void>;
+  onCancel: () => void;
+}) {
+  const [name, setName] = React.useState(item.name);
+  const [error, setError] = React.useState("");
+  const busy = React.useRef(false);
+  const cancelled = React.useRef(false);
+  const input = React.useRef<HTMLInputElement>(null);
+
+  const submit = async () => {
+    const next = name.trim();
+    if (busy.current || cancelled.current) return;
+    if (!next || next === "." || next === ".." || /[/\\\0]/.test(next)) {
+      setError("Use a name without slashes.");
+      queueMicrotask(() => input.current?.focus());
+      return;
+    }
+    busy.current = true;
+    try {
+      await onCommit(next);
+    } catch (cause) {
+      busy.current = false;
+      setError(cause instanceof Error ? cause.message : "Rename failed.");
+      queueMicrotask(() => input.current?.focus());
+    }
+  };
+
+  return (
+    <div
+      className="flex h-[22px] min-w-0 flex-1 items-center pe-1"
+      style={{ paddingInlineStart: 8 + depth * 8 }}
+    >
+      <WorkbenchIcon
+        name={item.type === "folder" ? "folder" : "file"}
+        className="me-1.5 shrink-0 text-[var(--workbench-muted)]"
+      />
+      <input
+        ref={input}
+        autoFocus
+        value={name}
+        aria-label={`Rename ${item.name}`}
+        aria-invalid={Boolean(error)}
+        title={error || `Rename ${item.name}`}
+        onFocus={(event) => event.currentTarget.select()}
+        onChange={(event) => {
+          setName(event.target.value);
+          setError("");
+        }}
+        onBlur={() => void submit()}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") void submit();
+          if (event.key === "Escape") {
+            cancelled.current = true;
+            onCancel();
+          }
+        }}
+        className="h-[20px] min-w-0 flex-1 rounded-[2px] border border-[var(--workbench-focus)] bg-[var(--workbench-input)] px-1 text-[13px] text-[var(--workbench-fg)] outline-none"
+      />
+    </div>
+  );
+}
+
 function FileRowActions({
   path,
   onOpen,
   onRename,
+  onArchive,
   onDelete,
 }: {
   path: string;
   onOpen?: () => void;
   onRename?: (path: string) => void;
+  onArchive?: (path: string) => Promise<void>;
   onDelete?: (path: string) => void;
 }) {
   const name = path.split("/").pop() ?? path;
@@ -506,9 +604,13 @@ function FileRowActions({
             <WorkbenchIcon name="rename" />
             Rename
           </WorkbenchMenuItem>
+          <WorkbenchMenuItem disabled={!onArchive} onClick={() => void onArchive?.(path)}>
+            <WorkbenchIcon name="archive" />
+            {path.startsWith("archive/") ? "Restore to vault" : "Move to archive"}
+          </WorkbenchMenuItem>
           <WorkbenchMenuItem disabled={!onDelete} onClick={() => onDelete?.(path)}>
             <WorkbenchIcon name="trash" />
-            Delete
+            Move to trash
           </WorkbenchMenuItem>
         </WorkbenchMenuContent>
       </DropdownMenu>

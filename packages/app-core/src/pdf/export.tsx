@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import { createPortal } from "react-dom";
 import {
   Dialog,
@@ -7,10 +7,11 @@ import {
   DialogContent,
   DialogTitle,
 } from "@flux/shared-ui/components/ui/dialog";
-import ReadingView from "../editor/reading-view";
 import { splitFrontmatter } from "../editor/frontmatter";
 import type { DemoDocument } from "../editor/markdown-editor";
 import type { PdfExportOptions } from "../App";
+
+const ReadingView = lazy(() => import("../editor/reading-view"));
 
 type PageSize = "A4" | "Letter";
 type MarginSize = "compact" | "default" | "wide";
@@ -92,7 +93,9 @@ export function PdfExportDialog({
         aria-hidden="true"
       >
         {includeTitle ? <h1 className="flux-print-title">{document.title}</h1> : null}
-        <ReadingView value={body} documents={documents} />
+        <Suspense fallback={<div>Loading...</div>}>
+          <ReadingView value={body} documents={documents} />
+        </Suspense>
       </div>
     </>
   );

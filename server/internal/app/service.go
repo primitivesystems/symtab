@@ -432,6 +432,14 @@ func (s *Service) ReadFile(vaultID, path string) (domain.FileDocument, error) {
 	return context.Files.Read(path)
 }
 
+func (s *Service) ReadRawFile(vaultID, path string) ([]byte, error) {
+	context, err := s.vaults.Get(vaultID)
+	if err != nil {
+		return nil, err
+	}
+	return context.Files.ReadRaw(path)
+}
+
 func (s *Service) CreateDirectory(vaultID, path string) (domain.FileEntry, error) {
 	context, err := s.vaults.Get(vaultID)
 	if err != nil {

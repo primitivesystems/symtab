@@ -5,17 +5,41 @@ import {
   editorReducer,
   getGroup,
   documentStatistics,
+  persistedEditorModel,
+  restoreEditorModel,
   type EditorLayoutNode,
 } from "../src/components/design-system/workbench/editor/editor-model";
 
+test("editor state restores tabs and splits without duplicating document content", () => {
+  const tab = { id: "file:notes.md", title: "notes.md", content: "large body", dirty: true };
+  const split = editorReducer(createEditorModel([tab]), {
+    type: "split",
+    groupId: "primary",
+    placement: "right",
+  });
+  const persisted = persistedEditorModel(split);
+  expect(persisted.documents[tab.id]?.content).toBeUndefined();
+  expect(persisted.documents[tab.id]?.dirty).toBeUndefined();
+  expect(restoreEditorModel(persisted, []).groups).toEqual(split.groups);
+  expect(restoreEditorModel({ broken: true }, []).groups).toEqual(createEditorModel([]).groups);
+});
+
 test("only editable file tabs expose document statistics", () => {
   for (const id of ["workbench:journal", "workbench:graph"]) {
-    expect(documentStatistics({ id, title: id }, { words: 30, characters: 200, backlinks: 2 })).toEqual({});
+    expect(
+      documentStatistics({ id, title: id }, { words: 30, characters: 200, backlinks: 2 })
+    ).toEqual({});
   }
   expect(documentStatistics()).toEqual({});
-  expect(documentStatistics({ id: "file:image.png", title: "image.png", readOnly: true })).toEqual({});
-  expect(documentStatistics({ id: "file:note.md", title: "note.md", content: "one two" }, { backlinks: 2 }))
-    .toEqual({ words: 2, characters: 7, backlinks: 2 });
+  expect(documentStatistics({ id: "file:image.png", title: "image.png", readOnly: true })).toEqual(
+    {}
+  );
+  expect(
+    documentStatistics(
+      { id: "file:note.md", title: "note.md", content: "one two" },
+      { backlinks: 2 }
+    )
+  ).toEqual({ words: 2, characters: 7, backlinks: 2 });
 });
 
 test("split duplicates view state while documents stay shared", () => {

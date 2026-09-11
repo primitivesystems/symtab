@@ -10,7 +10,6 @@ import footnote from "markdown-it-footnote";
 import mark from "markdown-it-mark";
 // @ts-expect-error package ships no declarations
 import taskLists from "markdown-it-task-lists";
-import mermaid from "mermaid";
 import "katex/dist/katex.min.css";
 
 import { useTheme } from "@flux/shared-ui/components/theme-provider";
@@ -191,15 +190,15 @@ function ReadingView({
 }) {
   const { theme } = useTheme();
   const resolvedTheme = document.documentElement.classList.contains("dark") ? "dark" : "light";
-  const sourceHtml = useMemo(() => cachedMarkdownHtml(value, documents), [documents, value]);
-  const [html, setHtml] = useState(() =>
-    hydratedCache?.source === sourceHtml && hydratedCache.theme === resolvedTheme
-      ? hydratedCache.html
-      : sourceHtml
-  );
+  const sourceHtml = useMemo(() => cachedMarkdownHtml(value, documents), [value, documents]);
+  const [hydrated, setHydrated] = useState(hydratedCache);
+  const html =
+    hydrated?.source === sourceHtml && hydrated.theme === resolvedTheme
+      ? hydrated.html
+      : sourceHtml;
 
   useEffect(() => {
-    if (hydratedCache?.source === sourceHtml && hydratedCache.theme === resolvedTheme) {
+    if (!sourceHtml) {
       return;
     }
 
@@ -209,12 +208,11 @@ function ReadingView({
       const parsed = new DOMParser().parseFromString(sourceHtml, "text/html");
       const diagrams = parsed.querySelectorAll<HTMLElement>(".flux-mermaid");
       if (!diagrams.length) {
-        hydratedCache = { source: sourceHtml, theme: resolvedTheme, html: sourceHtml };
-        if (!cancelled) setHtml(sourceHtml);
         return;
       }
 
-      mermaid.initialize({
+      const mermaid = await import("mermaid");
+      mermaid.default.initialize({
         startOnLoad: false,
         securityLevel: "strict",
         theme: resolvedTheme === "dark" ? "dark" : "neutral",
@@ -229,7 +227,10 @@ function ReadingView({
       for (const [index, diagram] of [...diagrams].entries()) {
         try {
           const source = decodeURIComponent(diagram.dataset.source ?? "");
-          const { svg } = await mermaid.render(`flux-mermaid-${Date.now()}-${index}`, source);
+          const { svg } = await mermaid.default.render(
+            `flux-mermaid-${Date.now()}-${index}`,
+            source
+          );
           diagram.innerHTML = svg;
         } catch (error) {
           failures.push(error);
@@ -238,12 +239,14 @@ function ReadingView({
       }
 
       const nextHtml = parsed.body.innerHTML;
-      hydratedCache = { source: sourceHtml, theme: resolvedTheme, html: nextHtml };
       if (!cancelled) {
-        setHtml(nextHtml);
+        hydratedCache = { source: sourceHtml, theme: resolvedTheme, html: nextHtml };
+        setHydrated(hydratedCache);
         if (failures[0]) showRenderError("Mermaid diagram", failures[0]);
       }
-    })();
+    })().catch((error) => {
+      if (!cancelled) showRenderError("Mermaid diagram", error);
+    });
 
     return () => {
       cancelled = true;

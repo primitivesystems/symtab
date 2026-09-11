@@ -1,10 +1,13 @@
 import type { ChatProps } from "../../ai/chat";
 import type { ReactNode } from "react";
 import type { EditorRenderer } from "./editor/editor-surface";
-import type { EditorTab } from "./editor/editor-model";
+import type { EditorModel, EditorTab } from "./editor/editor-model";
 
 export type WorkbenchTheme = "dark" | "light";
-export type WorkbenchNativeCommand = "search" | "daily-today" | "calendar" | "settings" | "vaults" | "updates";
+export type WorkbenchRightView =
+  "chat" | "backlinks" | "outgoing" | "tags" | "properties" | "outline";
+export type WorkbenchNativeCommand =
+  "search" | "daily-today" | "calendar" | "settings" | "vaults" | "updates";
 
 export interface WorkbenchUpdate {
   currentVersion: string;
@@ -14,7 +17,15 @@ export interface WorkbenchUpdate {
   bannerUrl?: string;
 }
 
-export type WorkbenchUpdateStatus = "checking" | "available" | "downloading" | "downloaded" | "verifying" | "ready" | "installing" | "error";
+export type WorkbenchUpdateStatus =
+  | "checking"
+  | "available"
+  | "downloading"
+  | "downloaded"
+  | "verifying"
+  | "ready"
+  | "installing"
+  | "error";
 
 export interface WorkbenchNotificationAction {
   id: string;
@@ -38,9 +49,11 @@ export interface WorkbenchSnapshot {
     leftOpen: boolean;
     rightOpen: boolean;
     rightMaximized: boolean;
+    rightActivity?: WorkbenchRightView;
     dismissedNotifications?: string[];
   };
   panelLayouts: Record<string, Record<string, number>>;
+  editor?: EditorModel;
 }
 
 export interface WorkbenchFile {
@@ -70,6 +83,7 @@ export interface WorkbenchJournal {
 }
 
 export interface VSCodeWorkbenchProps {
+  accountSettings?: ReactNode;
   runtimeLabel?: string;
   theme: WorkbenchTheme;
   titleBarInset?: number;
@@ -102,6 +116,10 @@ export interface VSCodeWorkbenchProps {
   onRefreshFiles?: () => Promise<void>;
   onRenameFile?: (path: string, name: string) => Promise<void>;
   onDeleteFile?: (path: string) => Promise<void>;
+  onArchiveFile?: (path: string) => Promise<void>;
+  onRestoreArchive?: (path: string) => Promise<void>;
+  onListTrash?: () => Promise<{ id: string; originalPath: string; deletedAt: string }[]>;
+  onRestoreTrash?: (id: string) => Promise<void>;
   onManageVaults?: () => void;
   onEditorChange?: (tab: EditorTab, content: string, onSaved: () => void) => void;
   onActiveEditorChange?: (tab?: EditorTab) => void;
@@ -110,8 +128,17 @@ export interface VSCodeWorkbenchProps {
   chat?: ChatProps;
   journal?: WorkbenchJournal;
   renderEditor?: EditorRenderer;
-  renderGraph?: (onOpenFile: (path: string) => void, onSplit: (placement: "right" | "bottom") => void, showSearch: () => void) => ReactNode;
+  renderGraph?: (
+    onOpenFile: (path: string) => void,
+    onSplit: (placement: "right" | "bottom") => void,
+    showSearch: () => void
+  ) => ReactNode;
   renderBacklinks?: (onOpenFile: (path: string) => void) => ReactNode;
   renderTags?: (showSearch: () => void) => ReactNode;
+  renderRightSidebar?: (
+    pane: Exclude<WorkbenchRightView, "chat">,
+    onOpenFile: (path: string) => void,
+    showSearch: () => void
+  ) => ReactNode;
   onMoveEditorToNewWindow?: (tab: EditorTab) => void;
 }

@@ -18,8 +18,8 @@ describe("workbench visual contract", () => {
     const source = readFileSync(new URL("../src/components/design-system/workbench.tsx", import.meta.url), "utf8");
     expect(source).not.toContain("key={panelLayoutKey}");
     expect(source).toContain('id="workbench-panes"');
-    expect(source).toContain("panelRef={editorPanel}");
-    expect(source).toContain("panelRef={secondaryPanel}");
+    expect(source).toContain("ref={editorRef}");
+    expect(source).toContain("editorRef.current");
   });
   test("footer constrains popover triggers as well as regular buttons to the bar height", () => {
     const source = readFileSync(new URL("../src/components/design-system/workbench/chrome/workbench-footer.tsx", import.meta.url), "utf8");

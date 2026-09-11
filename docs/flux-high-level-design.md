@@ -46,35 +46,37 @@ The same vault can be opened in Flux, Obsidian, a text editor, Git, or another M
 
 ## 3. Scope
 
+This section describes the **v1 shipping scope** for the productionized app path on this branch. The repository still contains deferred systems, but they are intentionally not part of the live v1 experience.
+
 ### 3.1 In Scope
 
 - Electron desktop application.
 - Shared React/Vite frontend.
 - Go backend.
 - Web and self-hosted deployment.
+- Onboarding.
+- Workspace / vault selection and creation.
 - Multiple vaults and windows.
-- Markdown editing.
-- Generic text-file viewing and search.
-- File watching and external-change reconciliation.
+- Markdown note creation, rename, delete, restore, and editing.
+- Markdown-first file explorer with folder CRUD.
 - SQLite FTS5 search.
-- Tags, links, backlinks, headings, aliases, tasks, and attachments.
-- Plugin marketplace and capability-based SDK.
-- Official Kanban plugin.
-- Official AI Chat plugin.
-- BYOM runtime abstraction.
-- Tutor Mode workflow.
-- Source ingestion, provenance, flashcards, quizzes, roadmaps, and mind maps.
-- First-party Flux MCP server and unified tool registry.
-- Optional system-Git integration.
-- Crash recovery.
+- Tags, links, backlinks, and graph-based note navigation.
+- File watching, index rebuilds, and raw asset reads needed to support the core note workflow.
 - Basic single-admin web authentication.
-- Quartz integration boundary.
+- Crash recovery.
 - Optional telemetry.
-- Official AI Chat plugin with Tutor Mode and other workflows.
-- BYOM runtimes for direct model APIs and external agent harnesses.
-- First-party Flux MCP server for internal and external AI agents.
 
-### 3.2 Out of Scope for Initial Release
+### 3.2 Deferred From v1
+
+- Plugin marketplace and capability-based SDK in the live app path.
+- Official plugins, including Kanban.
+- AI chat, agent mode, Tutor Mode, and BYOM runtime management.
+- Flux MCP server and MCP connection management.
+- Source ingestion, provenance, flashcards, quizzes, roadmaps, and mind maps.
+- System-Git / source-control workflows.
+- Quartz publishing workflows.
+
+### 3.3 Out of Scope for Initial Release
 
 - Nested vaults.
 - Microservices.

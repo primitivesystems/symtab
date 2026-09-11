@@ -12,7 +12,8 @@ node_modules
 
 # Build outputs (we build inside Docker)
 **/dist
-apps/desktop
+apps/desktop/**
+!apps/desktop/package.json
 
 # Go server (not needed for the web build)
 server
@@ -28,6 +29,11 @@ server
 .env
 .env.local
 .env.*.local
+.env.*
+**/.env
+**/.env.*
+secrets
+**/*.htpasswd
 
 # Docker artefacts
 docker-compose.override.yml

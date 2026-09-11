@@ -1,5 +1,9 @@
 # FLUX
 
+Self-hosting on a VM: follow [the comprehensive deployment guide](SELF-HOSTING.md) or
+[the deployment and security checklist](docs/self-hosting.md).
+The current deployment is single-owner, not a multi-tenant service.
+
 A cross-platform Personal Knowledge Management (PKM) tool designed to compete with Obsidian, Logseq, Notion, Tolaria, and Zennotes.
 
 ## Tech Stack
@@ -246,6 +250,15 @@ The Go backend follows a clean architecture:
 - **Database**: Database connection and setup
 
 ## Deployment
+
+### Self-Hosted Deployment
+
+For complete self-hosting setup, see [SELF-HOSTING.md](SELF-HOSTING.md) for:
+- Quick start guide
+- Security configuration
+- Backup and restore procedures
+- HTTPS reverse proxy setup
+- Monitoring and troubleshooting
 
 ### Backend (Docker)
 

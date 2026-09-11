@@ -1,12 +1,20 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeftIcon, ArrowRightIcon, FolderOpenIcon, LoaderCircleIcon } from "lucide-react";
-import { Button } from "../../../ui/button";
-import { Input } from "../../../ui/input";
-import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "../../../ui/field";
+import { Button } from "@flux/shared-ui/components/ui/button";
+import { Input } from "@flux/shared-ui/components/ui/input";
+import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@flux/shared-ui/components/ui/field";
 
 export type WorkspaceSetup = { name: string; location: string };
 
-export function OnboardingWorkspaceForm({ ready, managed, onSelectLocation, onCreate, onOpenVault, onBack, hidden = false }: {
+export function OnboardingWorkspaceForm({
+  ready,
+  managed,
+  onSelectLocation,
+  onCreate,
+  onOpenVault,
+  onBack,
+  hidden = false,
+}: {
   hidden?: boolean;
   ready: boolean;
   managed: boolean;
@@ -30,7 +38,7 @@ export function OnboardingWorkspaceForm({ ready, managed, onSelectLocation, onCr
     setOpening(true);
     setError(undefined);
     try { await onOpenVault(); }
-    catch (cause) { setError(cause instanceof Error ? cause.message : "Could not open the vault. Try again."); }
+    catch (cause) { setError(cause instanceof Error ? cause.message : managed ? "Could not open your workspace. Try again." : "Could not open the vault. Try again."); }
     finally { setOpening(false); }
   }
 
@@ -71,7 +79,7 @@ export function OnboardingWorkspaceForm({ ready, managed, onSelectLocation, onCr
           {onSelectLocation ? <Button id="workspace-location" type="button" variant="outline" disabled={disabled} onClick={() => void selectLocation()} className="h-auto min-h-11 justify-start whitespace-normal py-2 text-start">
             <FolderOpenIcon className="shrink-0" /><span className="min-w-0 break-all">{location || "Choose a location"}</span>
           </Button> : <Input id="workspace-location" value={location} onChange={(event) => setLocation(event.target.value)} placeholder="Absolute path on your Flux server" required disabled={disabled} className="h-11" />}
-          <FieldDescription className="break-words">{name.trim() ? `A new “${name.trim()}” folder will be created here.` : "Choose the parent folder. Flux will create a separate folder for this workspace."}</FieldDescription>
+          <FieldDescription className="break-words">{name.trim() ? `A new "${name.trim()}" folder will be created here.` : "Choose the parent folder. Flux will create a separate folder for this workspace."}</FieldDescription>
         </Field>}
         {error ? <FieldError role="alert">{error}</FieldError> : null}
         {!ready ? <FieldDescription role="status">Connecting to your workspace…</FieldDescription> : null}
@@ -83,7 +91,13 @@ export function OnboardingWorkspaceForm({ ready, managed, onSelectLocation, onCr
           </Button>
           <Button type="button" variant="ghost" disabled={!ready || disabled} onClick={() => void openExisting()}>
             {opening ? <LoaderCircleIcon className="animate-spin motion-reduce:animate-none" /> : <FolderOpenIcon />}
-            {opening ? "Opening vault…" : "Open existing vault"}
+            {opening
+              ? managed
+                ? "Opening workspace…"
+                : "Opening vault…"
+              : managed
+                ? "Choose existing workspace"
+                : "Open existing vault"}
           </Button>
         </Field>
       </FieldGroup>

@@ -350,12 +350,15 @@ func (m *Manager) Create(requestedPath string) (*Context, error) {
 		return nil, ErrPathRequired
 	}
 	if m.storageRoot != "" {
+		if err := os.MkdirAll(m.storageRoot, 0o755); err != nil {
+			return nil, err
+		}
 		root, err := canonicalDirectory(m.storageRoot)
 		if err != nil {
 			return nil, err
 		}
 		name := filepath.Clean(requestedPath)
-		if filepath.IsAbs(requestedPath) || name == "." || name != filepath.Base(name) {
+		if filepath.IsAbs(requestedPath) || name == "." || name == ".." || name != filepath.Base(name) {
 			return nil, ErrVaultMismatch
 		}
 		requestedPath = filepath.Join(root, name)

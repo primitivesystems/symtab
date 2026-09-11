@@ -17,7 +17,6 @@ import {
 import { javascriptLanguage, typescriptLanguage } from "@codemirror/lang-javascript";
 import { classHighlighter, highlightTree } from "@lezer/highlight";
 import "katex/dist/katex.min.css";
-import DOMPurify from "dompurify";
 import { splitFrontmatter } from "./frontmatter";
 import { calloutSymbols, wikiLabel } from "./obsidian-markdown";
 import type { DemoDocument } from "./markdown-editor";
@@ -44,9 +43,9 @@ function reveal(view: EditorView, anchor: number, head?: number) {
 
 async function renderMath(source: string, element: HTMLElement, displayMode = false) {
   try {
-    const { default: katex } = await import("katex");
+    const katex = await import("katex");
     if (element.isConnected) {
-      katex.render(source, element, { displayMode, throwOnError: false, strict: false });
+      katex.default.render(source, element, { displayMode, throwOnError: false, strict: false });
     }
   } catch {
     element.textContent = source;
@@ -303,9 +302,9 @@ class EmbedWidget extends WidgetType {
     const content = window.document.createElement("div");
     content.className = "flux-reading-view cm-live-embed-content";
     embed.append(content);
-    void import("./reading-view").then(({ renderMarkdownHtml }) => {
+    void import("./reading-view").then(async ({ renderMarkdownHtml }) => {
       if (content.isConnected) {
-        content.innerHTML = renderMarkdownHtml(
+        content.innerHTML = await renderMarkdownHtml(
           splitFrontmatter(referencedDocument.content).body,
           this.documents
         );
@@ -370,7 +369,12 @@ class BlockWidget extends WidgetType {
       });
     } else if (this.kind === "html") {
       element.classList.add("flux-reading-view");
-      element.innerHTML = DOMPurify.sanitize(this.source);
+      (async () => {
+        const dompurify = await import("dompurify");
+        if (element.isConnected) {
+          element.innerHTML = dompurify.default.sanitize(this.source);
+        }
+      })();
     } else {
       const pre = document.createElement("pre");
       const code = document.createElement("code");
@@ -385,14 +389,14 @@ class BlockWidget extends WidgetType {
   private async renderMermaid(element: HTMLElement) {
     element.textContent = "Rendering diagram…";
     try {
-      const { default: mermaid } = await import("mermaid");
-      mermaid.initialize({
+      const mermaid = await import("mermaid");
+      mermaid.default.initialize({
         startOnLoad: false,
         securityLevel: "strict",
         theme: document.documentElement.classList.contains("dark") ? "dark" : "neutral",
         flowchart: { curve: "linear", htmlLabels: false, useMaxWidth: true },
       });
-      const { svg } = await mermaid.render(`flux-live-mermaid-${++mermaidId}`, this.source);
+      const { svg } = await mermaid.default.render(`flux-live-mermaid-${++mermaidId}`, this.source);
       if (element.isConnected) element.innerHTML = svg;
     } catch {
       if (element.isConnected) element.textContent = "Unable to render this diagram.";

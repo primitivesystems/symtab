@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 
 import { formatReleaseNotes } from "../src/main/update-notes";
+import { isDownloadedMacInstaller } from "../src/main/downloaded-installer";
 
 describe("formatReleaseNotes", () => {
   test("normalizes updater strings and versioned note lists", () => {
@@ -16,11 +17,21 @@ describe("formatReleaseNotes", () => {
   });
 });
 
+test("only FLUX updater DMGs qualify for post-install cleanup", () => {
+  expect(isDownloadedMacInstaller("FLUX-0.0.2-arm64.dmg")).toBe(true);
+  expect(isDownloadedMacInstaller("FLUX-1.2.3-beta.1-x64.dmg")).toBe(true);
+  expect(isDownloadedMacInstaller("family-photos.dmg")).toBe(false);
+  expect(isDownloadedMacInstaller("FLUX-0.0.2-arm64.dmg.part")).toBe(false);
+});
+
 test("desktop releases ship DMGs and expose a verified install path", () => {
   const packageJson = JSON.parse(
     readFileSync(new URL("../package.json", import.meta.url), "utf8")
   ) as {
-    build: { publish: { provider: string; owner: string; repo: string }; mac: { target: string[]; identity: null } };
+    build: {
+      publish: { provider: string; owner: string; repo: string };
+      mac: { target: string[]; identity: null };
+    };
   };
   const main = readFileSync(new URL("../src/main/index.ts", import.meta.url), "utf8");
   const installer = readFileSync(new URL("../src/main/installer.ts", import.meta.url), "utf8");

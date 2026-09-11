@@ -26,9 +26,11 @@ import (
 )
 
 type Handler struct {
+	authentication gin.HandlerFunc
 	app            *application.Service
 	appData        *appdata.Store
 	desktopToken   string
+	mcpEnabled     bool
 	plugins        *plugins.Manager
 	modelProviders *modelproviders.Service
 	agent          *agent.Service
@@ -38,12 +40,20 @@ const maxRequestBodyBytes = 50 << 20
 
 type RouteOption func(*Handler)
 
+func WithAuthentication(middleware gin.HandlerFunc) RouteOption {
+	return func(handler *Handler) { handler.authentication = middleware }
+}
+
 func WithAppData(store *appdata.Store) RouteOption {
 	return func(handler *Handler) { handler.appData = store }
 }
 
 func WithDesktopToken(token string) RouteOption {
 	return func(handler *Handler) { handler.desktopToken = token }
+}
+
+func WithMCPConnections() RouteOption {
+	return func(handler *Handler) { handler.mcpEnabled = true }
 }
 
 func WithPlugins(manager *plugins.Manager) RouteOption {
@@ -64,6 +74,9 @@ func RegisterRoutes(router *gin.Engine, app *application.Service, options ...Rou
 		option(handler)
 	}
 	v1 := router.Group("/api/v1")
+	if handler.authentication != nil {
+		v1.Use(handler.authentication)
+	}
 	v1.Use(handler.requireDesktopToken, limitRequestBody)
 	v1.GET("/status", handler.status)
 	v1.GET("/bootstrap", handler.bootstrap)
@@ -74,17 +87,21 @@ func RegisterRoutes(router *gin.Engine, app *application.Service, options ...Rou
 	v1.PUT("/workspace-sessions/:windowId", handler.saveWorkspace)
 	v1.GET("/app-settings", handler.appSettings)
 	v1.PUT("/app-settings/:key", handler.putAppSetting)
-	v1.GET("/mcp-connections", handler.mcpConnections)
-	v1.POST("/mcp-connections", handler.createMCPConnection)
-	v1.DELETE("/mcp-connections/:connectionId", handler.revokeMCPConnection)
-	v1.GET("/plugins", handler.listPlugins)
-	v1.GET("/marketplace", handler.marketplace)
-	v1.POST("/plugins/install", handler.installPlugin)
-	v1.POST("/plugins/marketplace/:pluginId/install", handler.installMarketplacePlugin)
-	v1.POST("/plugins/:pluginId/:version/activate", handler.activatePlugin)
-	v1.POST("/vaults/:vaultId/plugins/:pluginId/:version/approve", handler.approvePluginUpdate)
-	v1.POST("/plugins/:pluginId/rollback", handler.rollbackPlugin)
-	v1.DELETE("/plugins/:pluginId/:version", handler.uninstallPlugin)
+	if handler.mcpEnabled {
+		v1.GET("/mcp-connections", handler.mcpConnections)
+		v1.POST("/mcp-connections", handler.createMCPConnection)
+		v1.DELETE("/mcp-connections/:connectionId", handler.revokeMCPConnection)
+	}
+	if handler.plugins != nil {
+		v1.GET("/plugins", handler.listPlugins)
+		v1.GET("/marketplace", handler.marketplace)
+		v1.POST("/plugins/install", handler.installPlugin)
+		v1.POST("/plugins/marketplace/:pluginId/install", handler.installMarketplacePlugin)
+		v1.POST("/plugins/:pluginId/:version/activate", handler.activatePlugin)
+		v1.POST("/vaults/:vaultId/plugins/:pluginId/:version/approve", handler.approvePluginUpdate)
+		v1.POST("/plugins/:pluginId/rollback", handler.rollbackPlugin)
+		v1.DELETE("/plugins/:pluginId/:version", handler.uninstallPlugin)
+	}
 	v1.POST("/vaults/open", handler.openVault)
 	v1.GET("/vaults/available", handler.availableVaults)
 	v1.POST("/vaults/create", handler.createVault)
@@ -94,14 +111,16 @@ func RegisterRoutes(router *gin.Engine, app *application.Service, options ...Rou
 	v1.GET("/vaults/:vaultId/revision", handler.vaultRevision)
 	v1.GET("/vaults/:vaultId/events", handler.vaultEvents)
 	v1.POST("/vaults/:vaultId/index/rebuild", handler.rebuildIndex)
-	v1.GET("/vaults/:vaultId/plugins", handler.listVaultPlugins)
-	v1.GET("/vaults/:vaultId/plugin-bundles", handler.pluginBundles)
-	v1.POST("/vaults/:vaultId/plugins/:pluginId/capabilities/:capability", handler.invokePluginCapability)
-	v1.GET("/vaults/:vaultId/plugins/:pluginId/views/:viewId", handler.pluginView)
-	v1.GET("/vaults/:vaultId/plugins/:pluginId/settings", handler.pluginSettings)
-	v1.PUT("/vaults/:vaultId/plugins/:pluginId/settings", handler.putPluginSettings)
-	v1.PUT("/vaults/:vaultId/plugins/:pluginId", handler.enableVaultPlugin)
-	v1.DELETE("/vaults/:vaultId/plugins/:pluginId", handler.disableVaultPlugin)
+	if handler.plugins != nil {
+		v1.GET("/vaults/:vaultId/plugins", handler.listVaultPlugins)
+		v1.GET("/vaults/:vaultId/plugin-bundles", handler.pluginBundles)
+		v1.POST("/vaults/:vaultId/plugins/:pluginId/capabilities/:capability", handler.invokePluginCapability)
+		v1.GET("/vaults/:vaultId/plugins/:pluginId/views/:viewId", handler.pluginView)
+		v1.GET("/vaults/:vaultId/plugins/:pluginId/settings", handler.pluginSettings)
+		v1.PUT("/vaults/:vaultId/plugins/:pluginId/settings", handler.putPluginSettings)
+		v1.PUT("/vaults/:vaultId/plugins/:pluginId", handler.enableVaultPlugin)
+		v1.DELETE("/vaults/:vaultId/plugins/:pluginId", handler.disableVaultPlugin)
+	}
 	v1.GET("/vaults/:vaultId/files", handler.listFiles)
 	v1.GET("/vaults/:vaultId/files/children", handler.listFileChildren)
 	v1.GET("/vaults/:vaultId/graph", handler.graph)
@@ -122,11 +141,13 @@ func RegisterRoutes(router *gin.Engine, app *application.Service, options ...Rou
 	v1.GET("/vaults/:vaultId/trash", handler.listTrash)
 	v1.DELETE("/vaults/:vaultId/trash", handler.purgeTrash)
 	v1.DELETE("/vaults/:vaultId/trash/:trashId", handler.permanentlyDelete)
-	v1.GET("/model-providers", handler.listModelProviders)
-	v1.GET("/model-providers/:providerId", handler.getModelProvider)
-	v1.PUT("/model-providers/:providerId", handler.updateModelProvider)
-	v1.GET("/ai-runtimes", handler.listAIRuntimes)
-	v1.GET("/ai-runtimes/:runtimeId", handler.getAIRuntime)
+	if handler.modelProviders != nil {
+		v1.GET("/model-providers", handler.listModelProviders)
+		v1.GET("/model-providers/:providerId", handler.getModelProvider)
+		v1.PUT("/model-providers/:providerId", handler.updateModelProvider)
+		v1.GET("/ai-runtimes", handler.listAIRuntimes)
+		v1.GET("/ai-runtimes/:runtimeId", handler.getAIRuntime)
+	}
 	if handler.agent != nil {
 		handler.registerAgentRoutes(v1)
 	}
@@ -1180,12 +1201,11 @@ func (h *Handler) readFile(c *gin.Context) {
 }
 
 func (h *Handler) readRawFile(c *gin.Context) {
-	document, err := h.app.ReadFile(c.Param("vaultId"), c.Query("path"))
+	content, err := h.app.ReadRawFile(c.Param("vaultId"), c.Query("path"))
 	if err != nil {
 		writeError(c, err)
 		return
 	}
-	content := []byte(document.Content)
 	c.Data(http.StatusOK, http.DetectContentType(content), content)
 }
 
@@ -1419,6 +1439,8 @@ func writeError(c *gin.Context, err error) {
 		c.JSON(http.StatusNotFound, gin.H{"code": "vault_not_open", "error": err.Error()})
 	case errors.Is(err, vault.ErrVaultMismatch), errors.Is(err, vault.ErrNestedVault), errors.Is(err, files.ErrInvalidPath):
 		c.JSON(http.StatusBadRequest, gin.H{"code": "invalid_path", "error": err.Error()})
+	case errors.Is(err, files.ErrUnsupportedPath):
+		c.JSON(http.StatusBadRequest, gin.H{"code": "unsupported_file", "error": err.Error()})
 	case errors.Is(err, files.ErrConflict):
 		c.JSON(http.StatusConflict, gin.H{"code": "file_conflict", "error": err.Error()})
 	case errors.Is(err, files.ErrInvalidEdit):

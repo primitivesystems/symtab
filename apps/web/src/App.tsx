@@ -1,13 +1,23 @@
 import { createClientStatePersistence, FluxApp, type FluxRuntime } from "@flux/app-core";
 import { WebFluxClient } from "@flux/client-web";
+import { AuthGate } from "./auth/auth-gate";
+import { AccountSettings } from "./auth/account-settings";
+import { authenticatedFetch } from "./auth/client";
 
-const client = new WebFluxClient();
+const client = new WebFluxClient("/api/v1", authenticatedFetch);
+let flushBeforeSignOut: (() => Promise<void>) | undefined;
 const statePersistence = createClientStatePersistence(client);
 const webRuntime: FluxRuntime = {
   label: "Web",
   client,
   vaultAccess: "registry",
   statePersistence,
+  onBeforeShutdown: (handler) => {
+    flushBeforeSignOut = handler;
+    return () => {
+      if (flushBeforeSignOut === handler) flushBeforeSignOut = undefined;
+    };
+  },
   getWindowId: async () => {
     const key = "flux-window-id";
     const existing = sessionStorage.getItem(key);
@@ -37,5 +47,25 @@ const webRuntime: FluxRuntime = {
 };
 
 export default function App() {
-  return <FluxApp runtime={webRuntime} windowControlsInset={0} />;
+  return (
+    <AuthGate>
+      {(status, signOut) => (
+        <FluxApp
+          runtime={webRuntime}
+          windowControlsInset={0}
+          accountSettings={
+            status.enabled ? (
+              <AccountSettings
+                status={status}
+                onSignOut={signOut}
+                beforeSignOut={async () => {
+                  await flushBeforeSignOut?.();
+                }}
+              />
+            ) : undefined
+          }
+        />
+      )}
+    </AuthGate>
+  );
 }

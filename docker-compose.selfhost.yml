@@ -2,16 +2,14 @@
 #
 # Usage:
 #   cp .env.selfhost .env
-#   # Edit PUBLIC_URL (and WEB_PORT if needed) in .env
+#   # Follow docs/self-hosting.md for credentials and HTTPS.
 #   docker compose -f docker-compose.selfhost.yml up -d
 #
 # Update:
 #   docker compose -f docker-compose.selfhost.yml pull
 #   docker compose -f docker-compose.selfhost.yml up -d --build
 #
-# Backup vault data:
-#   docker run --rm -v flux-vaults:/data -v $(pwd):/backup \
-#     alpine tar czf /backup/flux-vaults-backup.tar.gz /data
+# Back up both volumes with the server stopped; see docs/self-hosting.md.
 
 name: flux-selfhost
 
@@ -23,12 +21,17 @@ services:
       dockerfile: Dockerfile
     container_name: flux-server
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     environment:
       ENVIRONMENT: production
       HOST: 0.0.0.0
       PORT: 8080
       FLUX_VAULT_ROOT: /data/vaults
       FLUX_APP_DATA_DIR: /data/appdata
+      FLUX_SETUP_KEY: ${FLUX_SETUP_KEY:-}
       # Set CORS to the public URL so the Nginx container can call the API
       CORS_ALLOWED_ORIGIN: ${PUBLIC_URL:-http://localhost:3000}
       # Plugin registry (optional — leave blank to disable marketplace)
@@ -56,14 +59,14 @@ services:
     container_name: flux-web
     restart: unless-stopped
     ports:
-      - "${WEB_PORT:-3000}:80"
+      - "127.0.0.1:${WEB_PORT:-3000}:80"
     networks:
       - flux-internal
     depends_on:
       flux-server:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:80/"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:80/healthz"]
       interval: 15s
       timeout: 5s
       start_period: 15s

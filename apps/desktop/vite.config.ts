@@ -31,6 +31,24 @@ export default defineConfig({
       }
     })
   ],
+  build: {
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: (id) => {
+          if (id.includes('mermaid')) return 'mermaid';
+          if (id.includes('katex')) return 'katex';
+          if (id.includes('pdfjs-dist')) return 'pdfjs';
+          if (id.includes('@codemirror')) return 'codemirror';
+          if (id.includes('markdown-it')) return 'markdown';
+          if (id.includes('d3')) return 'd3';
+          if (id.includes('pixi.js')) return 'pixi';
+          if (id.includes('prismjs')) return 'prism';
+          if (id.includes('dompurify')) return 'dompurify';
+        }
+      }
+    }
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src')

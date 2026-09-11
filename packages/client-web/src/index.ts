@@ -412,17 +412,32 @@ export class WebFluxClient implements FluxClient {
     onChange: (change: VaultChange) => void,
     onError?: (error: Error) => void
   ) {
-    const source = new EventSource(`${this.baseURL}/vaults/${encodeURIComponent(vaultId)}/events`);
-    source.addEventListener("revision", (event) => {
+    let stopped = false;
+    let checking = false;
+    let source: EventSource;
+    const connect = () => {
+      source = new EventSource(`${this.baseURL}/vaults/${encodeURIComponent(vaultId)}/events`);
+      source.addEventListener("revision", (event) => {
       try {
         const payload = JSON.parse((event as MessageEvent<string>).data) as VaultChange;
         if (typeof payload.revision === "number") onChange(payload);
       } catch (error) {
         onError?.(error instanceof Error ? error : new Error(String(error)));
       }
-    });
-    source.onerror = () => onError?.(new Error("Vault event stream disconnected"));
-    return () => source.close();
+      });
+      source.onerror = () => {
+        if (stopped || checking) return;
+        checking = true;
+        // The web fetcher pauses on 401 until login; EventSource cannot do that itself.
+        void this.getStatus().then(() => {
+          if (!stopped) { source.close(); connect(); }
+        }).catch((error) => {
+          if (!stopped) onError?.(error instanceof Error ? error : new Error(String(error)));
+        }).finally(() => { checking = false; });
+      };
+    };
+    connect();
+    return () => { stopped = true; source.close(); };
   }
 
   listFiles(vaultId: string) {

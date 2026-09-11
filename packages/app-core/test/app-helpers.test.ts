@@ -2,7 +2,7 @@ import { expect, test } from "bun:test";
 import { movedDocumentPath, singleTextEdit } from "../src/app/helpers";
 import { calendarGrid, noteFileName } from "../src/daily-notes/config";
 import { calendarEntry } from "../src/daily-notes/use-daily-notes";
-import { resourcePath } from "../src/workbench/use-workbench-vault";
+import { markdownFileName, markdownFilePath, resourcePath } from "../src/workbench/use-workbench-vault";
 
 test("extracted app helpers preserve path, UTF-8 edit, and calendar behavior", () => {
   expect(movedDocumentPath("Notes/Child/file.md", "Notes", "Archive")).toBe(
@@ -16,6 +16,9 @@ test("extracted app helpers preserve path, UTF-8 edit, and calendar behavior", (
   expect(noteFileName("2026-08-23", "YYYY-MM-DD")).toBe("2026-08-23.md");
   expect(calendarGrid("2026-08-23")).toHaveLength(42);
   expect(resourcePath("Notes", "Plan.md")).toBe("Notes/Plan.md");
+  expect(markdownFileName("Plan")).toBe("Plan.md");
+  expect(markdownFilePath("Notes", "Plan")).toBe("Notes/Plan.md");
+  expect(() => markdownFileName("Plan.txt")).toThrow("Markdown notes only");
   expect(() => resourcePath("Notes", "../Plan.md")).toThrow("without slashes");
   expect([
     ...calendarEntry(

@@ -12,11 +12,14 @@ export type EditorTab = {
 
 export type EditorGroupId = string;
 
-export function documentStatistics(tab?: EditorTab, overrides: { words?: number; characters?: number; backlinks?: number } = {}) {
+export function documentStatistics(
+  tab?: EditorTab,
+  overrides: { words?: number; characters?: number; backlinks?: number } = {}
+) {
   if (!tab?.id.startsWith("file:") || tab.readOnly) return {};
   return {
-    words: overrides.words ?? (tab.content?.trim().split(/\s+/).filter(Boolean).length ?? 0),
-    characters: overrides.characters ?? (tab.content?.length ?? 0),
+    words: overrides.words ?? tab.content?.trim().split(/\s+/).filter(Boolean).length ?? 0,
+    characters: overrides.characters ?? tab.content?.length ?? 0,
     backlinks: overrides.backlinks,
   };
 }
@@ -85,6 +88,89 @@ export function createEditorModel(initialTabs: readonly EditorTab[]): EditorMode
     activeGroupId: "primary",
     layout: { type: "group", groupId: "primary" },
     nextGroupNumber: 1,
+  };
+}
+
+export function persistedEditorModel(model: EditorModel): EditorModel {
+  return {
+    ...model,
+    documents: Object.fromEntries(
+      Object.entries(model.documents).map(([id, { content: _content, dirty: _dirty, ...tab }]) => [
+        id,
+        tab,
+      ])
+    ),
+  };
+}
+
+export function restoreEditorModel(
+  value: unknown,
+  fallbackTabs: readonly EditorTab[]
+): EditorModel {
+  if (!value || typeof value !== "object") return createEditorModel(fallbackTabs);
+  const candidate = value as Partial<EditorModel>;
+  if (
+    !candidate.documents ||
+    typeof candidate.documents !== "object" ||
+    !Array.isArray(candidate.groups)
+  )
+    return createEditorModel(fallbackTabs);
+  const documents = Object.fromEntries(
+    Object.entries(candidate.documents).filter(
+      (entry): entry is [string, EditorTab] =>
+        Boolean(entry[1]) &&
+        typeof entry[1] === "object" &&
+        typeof (entry[1] as EditorTab).id === "string" &&
+        typeof (entry[1] as EditorTab).title === "string" &&
+        (entry[1] as EditorTab).id === entry[0]
+    )
+  );
+  const groups = candidate.groups.filter(
+    (group): group is EditorGroupState =>
+      Boolean(group) &&
+      typeof group.id === "string" &&
+      Array.isArray(group.tabIds) &&
+      group.tabIds.every((id) => typeof id === "string" && Boolean(documents[id])) &&
+      (group.activeTabId === undefined || group.tabIds.includes(group.activeTabId))
+  );
+  const groupIds = new Set(groups.map((group) => group.id));
+  const layoutGroups = new Set<string>();
+  const validLayout = (node: unknown): node is EditorLayoutNode => {
+    if (!node || typeof node !== "object") return false;
+    const layout = node as Partial<EditorLayoutNode>;
+    if (layout.type === "group" && typeof layout.groupId === "string") {
+      layoutGroups.add(layout.groupId);
+      return groupIds.has(layout.groupId);
+    }
+    return (
+      layout.type === "split" &&
+      typeof layout.id === "string" &&
+      (layout.orientation === "horizontal" || layout.orientation === "vertical") &&
+      Array.isArray(layout.sizes) &&
+      layout.sizes.length === 2 &&
+      layout.sizes.every((size) => typeof size === "number" && Number.isFinite(size)) &&
+      validLayout(layout.first) &&
+      validLayout(layout.second)
+    );
+  };
+  if (
+    !groups.length ||
+    new Set(groups.map((group) => group.id)).size !== groups.length ||
+    typeof candidate.activeGroupId !== "string" ||
+    !groupIds.has(candidate.activeGroupId) ||
+    !validLayout(candidate.layout) ||
+    layoutGroups.size !== groupIds.size ||
+    typeof candidate.nextGroupNumber !== "number" ||
+    !Number.isInteger(candidate.nextGroupNumber) ||
+    candidate.nextGroupNumber < 1
+  )
+    return createEditorModel(fallbackTabs);
+  return {
+    documents,
+    groups,
+    activeGroupId: candidate.activeGroupId,
+    layout: candidate.layout,
+    nextGroupNumber: candidate.nextGroupNumber,
   };
 }
 

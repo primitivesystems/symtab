@@ -1,7 +1,7 @@
 import { ArrowLeftIcon, ArrowRightIcon, MoonIcon, SunIcon } from "lucide-react";
-import { Button } from "../../../ui/button";
-import { Field, FieldDescription, FieldGroup, FieldLegend, FieldSet } from "../../../ui/field";
-import type { WorkbenchTheme } from "../types";
+import { Button } from "@flux/shared-ui/components/ui/button";
+import { Field, FieldDescription, FieldGroup, FieldLegend, FieldSet } from "@flux/shared-ui/components/ui/field";
+import type { WorkbenchTheme } from "#workbench/types";
 
 export function OnboardingAppearance({ theme, onThemeChange, onContinue, onBack }: {
   theme: WorkbenchTheme;

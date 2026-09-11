@@ -214,6 +214,40 @@ func TestDesktopTokenProtectsAPIRoutes(t *testing.T) {
 	}
 }
 
+func TestDeferredRoutesDisabledByDefault(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	manager := vault.NewManager("", true)
+	t.Cleanup(func() { _ = manager.Close() })
+	store, err := appdata.Open(filepath.Join(t.TempDir(), "app.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = store.Close() })
+	router := gin.New()
+	RegisterRoutes(router, application.NewService(manager), WithAppData(store))
+
+	for _, path := range []string{
+		"/api/v1/mcp-connections",
+		"/api/v1/plugins",
+		"/api/v1/model-providers",
+		"/api/v1/agent/providers",
+	} {
+		request := httptest.NewRequest(http.MethodGet, path, nil)
+		response := httptest.NewRecorder()
+		router.ServeHTTP(response, request)
+		if response.Code != http.StatusNotFound {
+			t.Fatalf("expected %s to be absent by default, got %d", path, response.Code)
+		}
+	}
+
+	request := httptest.NewRequest(http.MethodGet, "/api/v1/status", nil)
+	response := httptest.NewRecorder()
+	router.ServeHTTP(response, request)
+	if response.Code != http.StatusOK {
+		t.Fatalf("expected core status route to remain available, got %d", response.Code)
+	}
+}
+
 func TestPluginLifecycleRoutes(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	appDirectory := t.TempDir()

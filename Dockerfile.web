@@ -3,20 +3,11 @@ FROM oven/bun:1.2-alpine AS builder
 
 WORKDIR /workspace
 
-# Copy package manifests first for layer caching
-COPY package.json bun.lock ./
-COPY apps/web/package.json ./apps/web/
-COPY packages/app-core/package.json ./packages/app-core/
-COPY packages/bridge-contract/package.json ./packages/bridge-contract/
-COPY packages/client-web/package.json ./packages/client-web/
-COPY packages/shared-domain/package.json ./packages/shared-domain/
-COPY packages/shared-ui/package.json ./packages/shared-ui/
+# Include every workspace manifest; app-core also depends on plugin packages.
+COPY . .
 
 # Install all workspace dependencies
 RUN bun install --frozen-lockfile
-
-# Copy full source (excluding what's in .dockerignore)
-COPY . .
 
 # Build the web app — output lands in apps/web/dist
 RUN bun run build --filter=@flux/web
@@ -36,6 +27,6 @@ COPY --from=builder /workspace/apps/web/dist /usr/share/nginx/html
 EXPOSE 80
 
 HEALTHCHECK --interval=15s --timeout=5s --start-period=10s --retries=3 \
-    CMD wget -qO- http://localhost:80/ || exit 1
+    CMD wget -qO- http://localhost:80/healthz || exit 1
 
 CMD ["nginx", "-g", "daemon off;"]
