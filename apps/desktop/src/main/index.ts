@@ -634,6 +634,8 @@ function installApplicationMenu() {
       {
         label: "Navigate",
         submenu: [
+          { label: "Calendar", click: () => dispatchCommand("calendar") },
+          { label: "Today's Note", click: () => dispatchCommand("daily-today") },
           {
             label: "Search",
             accelerator: "CmdOrCtrl+Shift+F",

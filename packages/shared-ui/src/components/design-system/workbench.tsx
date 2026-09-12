@@ -56,6 +56,7 @@ const activityItems: readonly ActivityBarItem[] = [
   { id: "explorer", label: "Explorer", icon: "files" },
   { id: "search", label: "Search", icon: "search" },
   { id: "graph", label: "Graph", icon: "type-hierarchy" },
+  { id: "journal", label: "Journal", icon: "calendar" },
 ];
 
 const activityCopy: Record<string, { title: string; description: string }> = {
@@ -812,6 +813,8 @@ export function VSCodeWorkbench({
             run: toggleRightPane,
           },
           ...(update ? [{ label: "Help: Show Release Notes", run: openReleaseNotes }] : []),
+          ...(supportsChat ? [{ label: "View: Toggle AI Chat", run: toggleAI }] : []),
+          ...(journal ? [{ label: "Journal: Open Calendar", run: () => selectActivity("journal") }] : []),
         ]}
       />
     </div>

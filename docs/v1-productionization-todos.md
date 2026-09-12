@@ -1,5 +1,14 @@
 # Flux v1 productionization TODOs
 
+## UI restoration — 2026-09-12
+
+The dedicated AI header toggle and Journal/calendar wiring are restored alongside
+the separate reference sidebar. Local desktop/development agent and model-provider
+routes are connected again. Hosted agent execution remains disabled; the older
+scope-cut checklist below records the prior decision, not this restored UI scope.
+Plugins, publishing, and placeholder source-control/debug panels are not restored
+by this change. Existing onboarding, archive/trash, and split-state fixes remain.
+
 This checklist reflects the current **v1 shipping scope** in the live app path:
 
 - onboarding

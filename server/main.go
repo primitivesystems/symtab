@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"log"
 	"net"
 	"net/http"
@@ -15,11 +16,13 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/flux-pkm/server/internal/agent"
 	"github.com/flux-pkm/server/internal/api"
 	application "github.com/flux-pkm/server/internal/app"
 	"github.com/flux-pkm/server/internal/appdata"
 	"github.com/flux-pkm/server/internal/auth"
 	"github.com/flux-pkm/server/internal/config"
+	"github.com/flux-pkm/server/internal/modelproviders"
 	"github.com/flux-pkm/server/internal/runtimecoord"
 	"github.com/flux-pkm/server/internal/vault"
 	"github.com/gin-gonic/gin"
@@ -75,10 +78,44 @@ func main() {
 			log.Printf("Failed to close app data: %v", err)
 		}
 	}()
-	// V1 ships the core vault/workspace experience only. Plugins, MCP, model
-	// providers, and agent execution remain in the repo but stay off the live
-	// server path until they are reintroduced behind explicit launch gates.
-	// TODO(v1): Re-enable each deferred subsystem behind deliberate feature flags.
+	// Initialize model providers service
+	modelProviderService, err := modelproviders.NewService(cfg.AppDataDir)
+	if err != nil {
+		log.Printf("Failed to initialize model providers service: %v", err)
+		// Continue without model providers service - it's not critical for basic functionality
+		modelProviderService = nil
+	}
+	var agentService *agent.Service
+	// Preserve the local-provider boundary; hosted execution is not enabled by UI restoration.
+	if cfg.Environment != "production" {
+		agentService, err = agent.NewService(appData.Database(), func(vaultID string) (string, error) {
+			if path, pathErr := appService.VaultPath(vaultID); pathErr == nil {
+				return path, nil
+			}
+			recent, recentErr := appData.RecentVaults()
+			if recentErr != nil {
+				return "", recentErr
+			}
+			for _, item := range recent {
+				if item.VaultID != vaultID {
+					continue
+				}
+				info, openErr := appService.OpenVault(item.Path)
+				if openErr != nil {
+					return "", openErr
+				}
+				if info.ID != vaultID {
+					return "", fmt.Errorf("vault identity changed for %s", vaultID)
+				}
+				return appService.VaultPath(vaultID)
+			}
+			return "", fmt.Errorf("vault %s is not registered", vaultID)
+		})
+		if err != nil {
+			log.Fatalf("Failed to initialize agent service: %v", err)
+		}
+		defer agentService.Close()
+	}
 
 	// Set Gin mode
 	if cfg.Environment == "production" || cfg.Environment == "desktop" {
@@ -128,6 +165,12 @@ func main() {
 		})
 	}
 	routeOptions = append(routeOptions, api.WithAppData(appData), api.WithDesktopToken(cfg.DesktopToken))
+	if agentService != nil {
+		routeOptions = append(routeOptions, api.WithAgent(agentService))
+		if modelProviderService != nil {
+			routeOptions = append(routeOptions, api.WithModelProviders(modelProviderService))
+		}
+	}
 	api.RegisterRoutes(router, appService, routeOptions...)
 
 	// Health check endpoint

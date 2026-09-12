@@ -26,7 +26,7 @@ test("v1 workbench trims non-core activity entries", () => {
   expect(source).not.toContain('label: "Source Control"');
   expect(source).not.toContain('label: "Run and Debug"');
   expect(source).not.toContain('label: "Extensions"');
-  expect(source).not.toContain('label: "Journal"');
+  expect(source).toContain('label: "Journal"');
 });
 
 test("right sidebar keeps chat optional and reference views separate", () => {

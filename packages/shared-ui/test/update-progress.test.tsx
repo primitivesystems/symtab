@@ -3,6 +3,19 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { readFileSync } from "node:fs";
 import { WorkbenchHeader } from "../src/components/design-system/workbench/chrome/workbench-header";
 
+test("AI and reference sidebar toggles remain separate header controls", () => {
+  const html = renderToStaticMarkup(<WorkbenchHeader
+    title="Flux" leftPaneOpen rightPaneOpen showAI aiPaneOpen
+    onCommand={() => {}} onToggleLeftPane={() => {}} onToggleRightPane={() => {}}
+    onToggleAI={() => {}}
+  />);
+  expect(html).toContain('aria-label="Toggle AI chat"');
+  expect(html).toContain('aria-label="Toggle secondary pane"');
+  const app = readFileSync(new URL("../../app-core/src/App.tsx", import.meta.url), "utf8");
+  expect(app).toContain("const chat = useAgentChat(");
+  expect(app).toContain("chat={runtime.client");
+});
+
 test("header retains download state and percentage on every progress event", () => {
   for (const progress of [0, 24, 75, 100]) {
     const html = renderToStaticMarkup(<WorkbenchHeader

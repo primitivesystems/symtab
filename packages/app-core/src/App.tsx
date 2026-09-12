@@ -9,6 +9,9 @@ import type {
 } from "@flux/shared-ui/components/design-system/workbench";
 import type { FluxClient } from "@flux/bridge-contract";
 import { browserStatePersistence, type FluxStatePersistence } from "./app/state";
+import { useAgentChat } from "./agent/use-agent-chat";
+import { dateFromKey, localDateKey } from "./daily-notes/config";
+import { useDailyNotes } from "./daily-notes/use-daily-notes";
 import { MarkdownEditor, type DemoDocument } from "./editor/markdown-editor";
 import { PdfExportDialog } from "./pdf/export";
 import { VaultManager } from "./workspace/dialogs";
@@ -142,6 +145,16 @@ export function FluxApp({ runtime, windowControlsInset = 0, accountSettings }: F
     restore: restorePreviousVault,
   });
   const changeVaultDocument = vault.changeDocument;
+  const chat = useAgentChat(runtime.client, vault.vault?.id, persistence);
+  const reportJournalError = useCallback((message: string) => console.error(message), []);
+  const journal = useDailyNotes({
+    client: runtime.client,
+    vault: vault.vault,
+    files: vault.files,
+    refreshFiles: vault.refreshFiles,
+    openDocument: vault.openFile,
+    onStatus: reportJournalError,
+  });
   const flushVaultSaves = vault.flushSaves;
   const handleActiveEditorChange = useCallback((tab?: EditorTab) => {
     const path = tab?.id.startsWith("file:") ? tab.id.slice(5) : undefined;
@@ -393,6 +406,27 @@ export function FluxApp({ runtime, windowControlsInset = 0, accountSettings }: F
           onStateChange={handleStateChange}
           onQuickCapture={runtime.showQuickCapture}
           onCommand={runtime.onCommand}
+          onOpenToday={() => journal.openDaily(localDateKey())}
+          chat={runtime.client ? (chat ?? { sessions: [], messages: [], providers: [], modelAdapterFactory: () => ({
+            async *run() {
+              throw new Error("Open a vault and connect an available local AI provider first.");
+            },
+          }) }) : undefined}
+          journal={{
+            selectedDate: journal.date,
+            monthLabel: journal.monthLabel,
+            days: journal.days,
+            entries: journal.entries,
+            onSelectDate: journal.setDate,
+            onChangeMonth: (offset) => {
+              const date = dateFromKey(journal.date);
+              date.setMonth(date.getMonth() + offset, 1);
+              journal.setDate(localDateKey(date));
+            },
+            onOpenEntry: vault.openFile,
+            onCreateEntry: journal.createEntry,
+            onOpenWeekly: journal.openWeekly,
+          }}
           renderSearch={(onOpenDocument) => (
             <SearchPane
               searchVault={searchVault}

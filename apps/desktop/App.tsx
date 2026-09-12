@@ -18,6 +18,8 @@ const desktopRuntime: FluxRuntime = {
     window.electronAPI?.onCommand((command) => {
       if (
         command === "search" ||
+        command === "calendar" ||
+        command === "daily-today" ||
         command === "settings" ||
         command === "vaults" ||
         command === "updates"
