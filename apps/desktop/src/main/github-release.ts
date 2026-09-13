@@ -1,4 +1,4 @@
-const repository = "wizaye/project-flux";
+const repository = "primitivesystems/project-flux";
 
 export type MacRelease = {
   version: string;

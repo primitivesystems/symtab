@@ -4,7 +4,7 @@ import { isNewerVersion, parseMacRelease } from "../src/main/github-release";
 const asset = {
   name: "Symtab-0.0.2-arm64.dmg",
   browser_download_url:
-    "https://github.com/wizaye/project-flux/releases/download/v0.0.2/Symtab-0.0.2-arm64.dmg",
+    "https://github.com/primitivesystems/project-flux/releases/download/v0.0.2/Symtab-0.0.2-arm64.dmg",
   digest: `sha256:${"a".repeat(64)}`,
   size: 123,
 };
