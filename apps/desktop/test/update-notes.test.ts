@@ -34,7 +34,7 @@ test("desktop releases ship DMGs and expose a verified install path", () => {
 
   expect(packageJson.build.publish).toMatchObject({
     provider: "github",
-    owner: "wizaye",
+    owner: "primitivesystems",
     repo: "project-flux",
   });
   expect(packageJson.build.productName).toBe("Symtab");
