@@ -9,12 +9,12 @@ export interface WorkbenchHeaderProps {
   title: string;
   leftInset?: number;
   leftPaneOpen: boolean;
-  rightPaneOpen: boolean;
+  rightPaneOpen?: boolean;
   onCommand: () => void;
   onBack?: () => void;
   onForward?: () => void;
   onToggleLeftPane: () => void;
-  onToggleRightPane: () => void;
+  onToggleRightPane?: () => void;
   updateStatus?: UpdateDownloadStatus;
   updateProgress?: number;
   /** Called to download the update — only passed when an update is available */
@@ -108,15 +108,17 @@ export function WorkbenchHeader({
           onClick={onToggleLeftPane}
           selected={leftPaneOpen}
         />
-        <WorkbenchIconButton
-          icon={rightPaneOpen ? "layout-sidebar-right" : "layout-sidebar-right-off"}
-          density="chrome"
-          aria-label="Toggle secondary pane"
-          title="Toggle secondary pane"
-          aria-pressed={rightPaneOpen}
-          onClick={onToggleRightPane}
-          selected={rightPaneOpen}
-        />
+        {onToggleRightPane ? (
+          <WorkbenchIconButton
+            icon={rightPaneOpen ? "layout-sidebar-right" : "layout-sidebar-right-off"}
+            density="chrome"
+            aria-label="Toggle secondary pane"
+            title="Toggle secondary pane"
+            aria-pressed={rightPaneOpen}
+            onClick={onToggleRightPane}
+            selected={rightPaneOpen}
+          />
+        ) : null}
 
         {/* Update available dropdown — shown when an update is ready */}
         {onDownloadUpdate && onOpenReleaseNotes && (

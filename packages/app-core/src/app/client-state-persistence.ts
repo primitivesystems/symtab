@@ -17,7 +17,7 @@ function persistedWorkspace(value: unknown): PersistedWorkspaceSession | null {
   return session as PersistedWorkspaceSession;
 }
 
-/** Persists UI snapshots through Flux backend global app storage. */
+/** Persists UI snapshots through Symtab backend global app storage. */
 export function createClientStatePersistence(client: FluxClient): FluxStatePersistence {
   let lastVaultId: string | null = null;
   let settingWrites = Promise.resolve();

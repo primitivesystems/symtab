@@ -2,7 +2,6 @@ import {
   app,
   BrowserWindow,
   dialog,
-  globalShortcut,
   ipcMain,
   Menu,
   nativeImage,
@@ -12,6 +11,7 @@ import {
 } from "electron";
 import { autoUpdater, type ProgressInfo, type UpdateInfo } from "electron-updater";
 import { spawn, type ChildProcess } from "node:child_process";
+import { existsSync } from "node:fs";
 import { readFile, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import * as path from "path";
@@ -19,6 +19,7 @@ import { formatReleaseNotes } from "./update-notes";
 import { downloadMacUpdate, getPlatformInstaller, openMacInstaller } from "./installer";
 import { fetchMacRelease, isNewerVersion, type MacRelease } from "./github-release";
 
+app.setName("Symtab");
 autoUpdater.autoDownload = false;
 autoUpdater.autoInstallOnAppQuit = process.platform !== "darwin";
 if (!app.isPackaged) {
@@ -26,7 +27,6 @@ if (!app.isPackaged) {
 }
 
 let mainWindow: BrowserWindow | null = null;
-let quickCaptureWindow: BrowserWindow | null = null;
 let menuBarTray: Tray | null = null;
 let backendProcess: ChildProcess | null = null;
 const eventStreams = new Map<string, AbortController>();
@@ -48,6 +48,18 @@ let backendToken = "";
 let backendHeartbeat: ReturnType<typeof setInterval> | null = null;
 let backendStartup: Promise<void> | null = null;
 const backendStartupAttempts = 300;
+
+function applicationIconPath() {
+  return app.isPackaged
+    ? path.join(process.resourcesPath, "symtab.png")
+    : path.join(currentDirectory, "../assets/icon.png");
+}
+
+function dockIconPath() {
+  return app.isPackaged
+    ? path.join(process.resourcesPath, "dock-icon.png")
+    : path.join(currentDirectory, "../assets/dock-icon.png");
+}
 
 type UpdateStatus =
   | { state: "checking" }
@@ -95,12 +107,14 @@ autoUpdater.on("update-downloaded", (info) => {
   latestUpdateInfo = info;
   sendUpdateStatus({ state: "downloaded", update: updateDetails(info) });
 });
-autoUpdater.on("error", (error) =>
-  sendUpdateStatus({ state: "error", message: error.message })
-);
+autoUpdater.on("error", (error) => sendUpdateStatus({ state: "error", message: error.message }));
 
-function fluxAppDataDirectory() {
-  return process.env.FLUX_APP_DATA_DIR ?? path.join(app.getPath("appData"), app.isPackaged ? "Flux" : "Flux Development");
+function symtabAppDataDirectory() {
+  if (process.env.FLUX_APP_DATA_DIR) return process.env.FLUX_APP_DATA_DIR;
+  const parent = app.getPath("appData");
+  const current = path.join(parent, app.isPackaged ? "Symtab" : "Symtab Development");
+  const legacy = path.join(parent, app.isPackaged ? "Flux" : "Flux Development");
+  return existsSync(current) || !existsSync(legacy) ? current : legacy;
 }
 
 interface RuntimeDescriptor {
@@ -114,7 +128,7 @@ interface RuntimeDescriptor {
 async function attachPublishedBackend() {
   try {
     const descriptor = JSON.parse(
-      await readFile(path.join(fluxAppDataDirectory(), "runtime", "daemon.json"), "utf8")
+      await readFile(path.join(symtabAppDataDirectory(), "runtime", "daemon.json"), "utf8")
     ) as Partial<RuntimeDescriptor>;
     const origin = new URL(descriptor.origin ?? "");
     if (
@@ -139,7 +153,7 @@ async function attachPublishedBackend() {
 async function stopStalePublishedBackend(force = false) {
   try {
     const descriptor = JSON.parse(
-      await readFile(path.join(fluxAppDataDirectory(), "runtime", "daemon.json"), "utf8")
+      await readFile(path.join(symtabAppDataDirectory(), "runtime", "daemon.json"), "utf8")
     ) as Partial<RuntimeDescriptor>;
     if (!Number.isInteger(descriptor.pid) || descriptor.pid! <= 0 || !descriptor.token) return;
     const origin = new URL(descriptor.origin ?? "");
@@ -263,30 +277,6 @@ function consumeVaultEvents(
   );
 }
 
-function consumeAgentEvents(
-  sender: WebContents,
-  watcherId: string,
-  threadId: string,
-  afterSequence: number,
-  signal: AbortSignal
-) {
-  let sequence = afterSequence;
-  return consumeServerEvents(
-    sender,
-    () =>
-      `${backendOrigin}/api/v1/agent/threads/${encodeURIComponent(threadId)}/events?after=${sequence}`,
-    signal,
-    (eventName, data) => {
-      if (eventName !== "agent" || sender.isDestroyed()) return;
-      const payload = JSON.parse(data) as { sequence?: unknown };
-      if (typeof payload.sequence !== "number") return;
-      sequence = Math.max(sequence, payload.sequence);
-      sender.send(`agent-event:${watcherId}`, payload);
-    },
-    (message) => sender.send(`agent-event-error:${watcherId}`, message)
-  );
-}
-
 async function backendReady() {
   if (!backendOrigin) return false;
   try {
@@ -300,7 +290,7 @@ async function backendReady() {
 async function ensureBackend() {
   if (externalBackendOrigin) {
     if (await backendReady()) return;
-    throw new Error(`Configured FLUX backend is unavailable at ${externalBackendOrigin}`);
+    throw new Error(`Configured Symtab backend is unavailable at ${externalBackendOrigin}`);
   }
 
   if (isDev) {
@@ -318,7 +308,7 @@ async function ensureBackend() {
     ENVIRONMENT: "desktop",
     HOST: "127.0.0.1",
     PORT: "0",
-    FLUX_APP_DATA_DIR: fluxAppDataDirectory(),
+    FLUX_APP_DATA_DIR: symtabAppDataDirectory(),
     FLUX_DESKTOP_TOKEN: "",
     FLUX_DAEMON_IDLE_TIMEOUT: "2m",
     FLUX_VERSION: app.getVersion(),
@@ -336,7 +326,7 @@ async function ensureBackend() {
       }
     );
   } else {
-    backendProcess = spawn(path.join(process.resourcesPath, "flux-server"), [], {
+    backendProcess = spawn(path.join(process.resourcesPath, "symtab-server"), [], {
       env: backendEnvironment,
       stdio: "inherit",
       detached: true,
@@ -347,9 +337,8 @@ async function ensureBackend() {
     await new Promise((resolve) => setTimeout(resolve, 100));
     if ((await attachPublishedBackend()) && (await backendReady())) return;
   }
-  throw new Error("FLUX backend did not become ready");
+  throw new Error("Symtab backend did not become ready");
 }
-
 
 async function performUpdateInstallation() {
   try {
@@ -403,7 +392,11 @@ function requestWindowFlush(window: BrowserWindow, windowId: number) {
   closePendingWindows.add(windowId);
   window.webContents.send("flux-before-close");
   const timeout = setTimeout(() => {
-    if (closePendingWindows.has(windowId)) cancelWindowFlush(windowId, "Saving is taking too long. Your window was kept open; try again after saving completes.");
+    if (closePendingWindows.has(windowId))
+      cancelWindowFlush(
+        windowId,
+        "Saving is taking too long. Your window was kept open; try again after saving completes."
+      );
   }, 30_000);
   timeout.unref();
 }
@@ -421,6 +414,7 @@ function createWindow(targetUrl?: string) {
     height: 800,
     minWidth: 800,
     minHeight: 600,
+    icon: applicationIconPath(),
     webPreferences: {
       preload: path.join(currentDirectory, "preload/index.mjs"),
       contextIsolation: true,
@@ -489,48 +483,6 @@ function createWindow(targetUrl?: string) {
   return window;
 }
 
-function showQuickCapture() {
-  if (quickCaptureWindow && !quickCaptureWindow.isDestroyed()) {
-    quickCaptureWindow.show();
-    quickCaptureWindow.focus();
-    return;
-  }
-  const window = new BrowserWindow({
-    width: 460,
-    height: 360,
-    minWidth: 400,
-    minHeight: 320,
-    show: false,
-    alwaysOnTop: true,
-    fullscreenable: false,
-    maximizable: false,
-    title: "Quick Capture",
-    titleBarStyle: "hiddenInset",
-    backgroundColor: nativeTheme.shouldUseDarkColors ? "#1c1d1a" : "#f5f5f2",
-    webPreferences: {
-      preload: path.join(currentDirectory, "preload/index.mjs"),
-      contextIsolation: true,
-      nodeIntegration: false,
-      sandbox: true,
-    },
-  });
-  if (process.platform === "darwin") window.setWindowButtonPosition({ x: 14, y: 14 });
-  quickCaptureWindow = window;
-  if (devServerUrl) {
-    const url = new URL(devServerUrl);
-    url.searchParams.set("quickCapture", "1");
-    void window.loadURL(url.toString());
-  } else {
-    void window.loadFile(path.join(currentDirectory, "../dist/index.html"), {
-      query: { quickCapture: "1" },
-    });
-  }
-  window.once("ready-to-show", () => window.show());
-  window.on("closed", () => {
-    if (quickCaptureWindow === window) quickCaptureWindow = null;
-  });
-}
-
 function showMainWindow(command?: string) {
   if (process.platform === "darwin") app.dock?.show();
   const window = mainWindow && !mainWindow.isDestroyed() ? mainWindow : createWindow();
@@ -561,14 +513,13 @@ function setMenuBarIconEnabled(enabled: boolean) {
   );
   icon.setTemplateImage(true);
   menuBarTray = new Tray(icon);
-  menuBarTray.setToolTip("FLUX quick actions");
+  menuBarTray.setToolTip("Symtab quick actions");
   menuBarTray.setContextMenu(
     Menu.buildFromTemplate([
-      { label: "Quick Capture", accelerator: "Control+Option+Space", click: showQuickCapture },
       { label: "Open Today’s Note", click: () => dispatchCommand("daily-today") },
       { label: "Search Notes…", click: () => dispatchCommand("search") },
       { type: "separator" },
-      { label: "Open FLUX", click: () => showMainWindow() },
+      { label: "Open Symtab", click: () => showMainWindow() },
       { label: "Settings…", click: () => dispatchCommand("settings") },
       { type: "separator" },
       { role: "quit" },
@@ -595,31 +546,39 @@ function installApplicationMenu() {
   Menu.setApplicationMenu(
     Menu.buildFromTemplate([
       ...(process.platform === "darwin"
-        ? [{
-            label: app.name,
-            submenu: [
-              { role: "about" as const },
-              { label: "Check for Updates…", click: () => dispatchCommand("updates") },
-              { type: "separator" as const },
-              { label: "Settings…", accelerator: "CmdOrCtrl+,", click: () => dispatchCommand("settings") },
-              { label: "Quick Capture", accelerator: "Control+Option+Space", click: showQuickCapture },
-              { type: "separator" as const },
-              { role: "services" as const },
-              { type: "separator" as const },
-              { role: "hide" as const },
-              { role: "hideOthers" as const },
-              { role: "unhide" as const },
-              { type: "separator" as const },
-              { role: "quit" as const },
-            ],
-          }]
+        ? [
+            {
+              label: app.name,
+              submenu: [
+                { role: "about" as const },
+                { label: "Check for Updates…", click: () => dispatchCommand("updates") },
+                { type: "separator" as const },
+                {
+                  label: "Settings…",
+                  accelerator: "CmdOrCtrl+,",
+                  click: () => dispatchCommand("settings"),
+                },
+                { type: "separator" as const },
+                { role: "services" as const },
+                { type: "separator" as const },
+                { role: "hide" as const },
+                { role: "hideOthers" as const },
+                { role: "unhide" as const },
+                { type: "separator" as const },
+                { role: "quit" as const },
+              ],
+            },
+          ]
         : []),
       {
         label: "File",
         submenu: [
           { label: "New Window", accelerator: "CmdOrCtrl+Shift+N", click: () => createWindow() },
-          { label: "Open or Create Vault…", accelerator: "CmdOrCtrl+O", click: () => dispatchCommand("vaults") },
-          { label: "Quick Capture", accelerator: "Control+Alt+Space", click: showQuickCapture },
+          {
+            label: "Open or Create Vault…",
+            accelerator: "CmdOrCtrl+O",
+            click: () => dispatchCommand("vaults"),
+          },
           { type: "separator" },
           { role: "close" },
         ],
@@ -654,6 +613,9 @@ function installApplicationMenu() {
 }
 
 app.whenReady().then(async () => {
+  if (process.platform === "darwin") {
+    app.dock?.setIcon(nativeImage.createFromPath(dockIconPath()));
+  }
   const openedAtLogin =
     process.platform === "darwin" && app.isPackaged && app.getLoginItemSettings().wasOpenedAtLogin;
   backendStartup = ensureBackend();
@@ -662,7 +624,6 @@ app.whenReady().then(async () => {
   await backendStartup;
   installApplicationMenu();
   setMenuBarIconEnabled(await menuBarIconEnabled());
-  globalShortcut.register("Control+Option+Space", showQuickCapture);
   backendHeartbeat = setInterval(() => void backendReady(), 30_000);
   backendHeartbeat.unref();
 
@@ -684,18 +645,13 @@ app.on("before-quit", (event) => {
   event.preventDefault();
   quitAfterFlush = true;
   for (const window of BrowserWindow.getAllWindows()) {
-    if (window === quickCaptureWindow) {
-      window.destroy();
-      continue;
-    }
     requestWindowFlush(window, window.webContents.id);
   }
   resumeQuitIfReady();
 });
 
 app.on("will-quit", () => {
-  globalShortcut.unregisterAll();
-  // Shared runtime may still serve MCP clients after Electron closes.
+  // Detached backend may outlive Electron until its idle timeout.
   if (backendHeartbeat) clearInterval(backendHeartbeat);
   backendHeartbeat = null;
   backendProcess = null;
@@ -709,36 +665,6 @@ ipcMain.handle("get-window-id", (event) => {
   return mainWindow?.webContents.id === event.sender.id ? "main" : `window-${event.sender.id}`;
 });
 
-ipcMain.handle("hide-window", (event) => {
-  BrowserWindow.fromWebContents(event.sender)?.hide();
-});
-
-ipcMain.handle("show-quick-capture", () => showQuickCapture());
-
-ipcMain.handle("get-mcp-server-command", () => {
-  if (app.isPackaged) {
-    return {
-      command: path.join(
-        process.resourcesPath,
-        process.platform === "win32" ? "flux-server.exe" : "flux-server"
-      ),
-      args: ["mcp"],
-    };
-  }
-  return {
-    command: process.env.GO_BIN ?? "/usr/local/go/bin/go",
-    args: [
-      "-C",
-      path.resolve(currentDirectory, "../../../server"),
-      "run",
-      "-tags",
-      "sqlite_fts5",
-      ".",
-      "mcp",
-    ],
-  };
-});
-
 ipcMain.on("flux-close-ready", (event) => {
   const window = BrowserWindow.fromWebContents(event.sender);
   if (!window || window.isDestroyed() || !closePendingWindows.has(event.sender.id)) return;
@@ -747,13 +673,22 @@ ipcMain.on("flux-close-ready", (event) => {
 
 ipcMain.on("flux-close-failed", (event, message: unknown) => {
   if (!closePendingWindows.has(event.sender.id)) return;
-  cancelWindowFlush(event.sender.id, typeof message === "string" ? message : "Could not save changes");
+  cancelWindowFlush(
+    event.sender.id,
+    typeof message === "string" ? message : "Could not save changes"
+  );
 });
 
 ipcMain.handle("select-vault-directory", async (_event, mode: unknown) => {
-  if (mode !== "open" && mode !== "create" && mode !== "location") throw new TypeError("Invalid vault selection mode");
+  if (mode !== "open" && mode !== "create" && mode !== "location")
+    throw new TypeError("Invalid vault selection mode");
   const options = {
-    title: mode === "location" ? "Choose workspace location" : mode === "create" ? "Create or choose an empty vault folder" : "Open vault folder",
+    title:
+      mode === "location"
+        ? "Choose workspace location"
+        : mode === "create"
+          ? "Create or choose an empty vault folder"
+          : "Open vault folder",
     buttonLabel: mode === "location" ? "Choose location" : "Open",
     properties: ["openDirectory", "createDirectory"] as Array<"openDirectory" | "createDirectory">,
   };
@@ -765,14 +700,14 @@ ipcMain.handle("select-vault-directory", async (_event, mode: unknown) => {
 
 ipcMain.handle("flux-fetch", async (_event, request: unknown) => {
   await backendStartup;
-  if (!request || typeof request !== "object") throw new TypeError("Invalid Flux request");
+  if (!request || typeof request !== "object") throw new TypeError("Invalid Symtab request");
   const value = request as { url?: unknown; method?: unknown; body?: unknown };
   if (typeof value.url !== "string" || !value.url.startsWith("/api/v1/")) {
-    throw new TypeError("Invalid Flux API URL");
+    throw new TypeError("Invalid Symtab API URL");
   }
   const method = typeof value.method === "string" ? value.method : "GET";
   if (!["GET", "POST", "PUT", "PATCH", "DELETE"].includes(method)) {
-    throw new TypeError("Invalid Flux API method");
+    throw new TypeError("Invalid Symtab API method");
   }
   const response = await fetch(new URL(value.url, backendOrigin), {
     method,
@@ -814,42 +749,6 @@ ipcMain.on("watch-vault-revision", (event, request: unknown) => {
 });
 
 ipcMain.on("unwatch-vault-revision", (event, watcherId: unknown) => {
-  if (typeof watcherId !== "string") return;
-  const key = streamKey(event.sender, watcherId);
-  eventStreams.get(key)?.abort();
-  eventStreams.delete(key);
-});
-
-ipcMain.on("watch-agent-thread", (event, request: unknown) => {
-  if (!request || typeof request !== "object") return;
-  const value = request as { watcherId?: unknown; threadId?: unknown; afterSequence?: unknown };
-  if (
-    typeof value.watcherId !== "string" ||
-    value.watcherId.length > 100 ||
-    typeof value.threadId !== "string" ||
-    value.threadId.length > 100 ||
-    typeof value.afterSequence !== "number" ||
-    !Number.isSafeInteger(value.afterSequence) ||
-    value.afterSequence < 0
-  )
-    return;
-  const key = streamKey(event.sender, value.watcherId);
-  eventStreams.get(key)?.abort();
-  const controller = new AbortController();
-  eventStreams.set(key, controller);
-  event.sender.once("destroyed", () => controller.abort());
-  void consumeAgentEvents(
-    event.sender,
-    value.watcherId,
-    value.threadId,
-    value.afterSequence,
-    controller.signal
-  ).finally(() => {
-    if (eventStreams.get(key) === controller) eventStreams.delete(key);
-  });
-});
-
-ipcMain.on("unwatch-agent-thread", (event, watcherId: unknown) => {
   if (typeof watcherId !== "string") return;
   const key = streamKey(event.sender, watcherId);
   eventStreams.get(key)?.abort();
@@ -906,8 +805,11 @@ ipcMain.handle("check-for-updates", async () => {
     if (process.platform === "darwin") {
       sendUpdateStatus({ state: "checking" });
       const release = await fetchMacRelease(process.arch);
-      latestUpdateInfo = release && isNewerVersion(release.version, currentVersion) ? release : null;
-      const update = release ? updateDetails(release) : { currentVersion, latestVersion: currentVersion, codename: undefined, releaseNotes: "" };
+      latestUpdateInfo =
+        release && isNewerVersion(release.version, currentVersion) ? release : null;
+      const update = release
+        ? updateDetails(release)
+        : { currentVersion, latestVersion: currentVersion, codename: undefined, releaseNotes: "" };
       sendUpdateStatus({ state: latestUpdateInfo ? "available" : "not-available", update });
       return update;
     }
@@ -915,7 +817,10 @@ ipcMain.handle("check-for-updates", async () => {
     return result?.updateInfo ? updateDetails(result.updateInfo) : { currentVersion };
   } catch (error) {
     console.error("Failed to check for updates (maybe no GitHub releases yet):", error);
-    sendUpdateStatus({ state: "error", message: error instanceof Error ? error.message : "Update check failed" });
+    sendUpdateStatus({
+      state: "error",
+      message: error instanceof Error ? error.message : "Update check failed",
+    });
     throw error;
   }
 });
@@ -923,12 +828,19 @@ ipcMain.handle("check-for-updates", async () => {
 async function downloadUpdate() {
   if (!latestUpdateInfo) throw new Error("Check for updates before downloading");
   const update = updateDetails(latestUpdateInfo);
-  sendUpdateStatus({ state: "downloading", percent: 0, transferred: 0, total: "asset" in latestUpdateInfo ? latestUpdateInfo.asset.size : 0 });
+  sendUpdateStatus({
+    state: "downloading",
+    percent: 0,
+    transferred: 0,
+    total: "asset" in latestUpdateInfo ? latestUpdateInfo.asset.size : 0,
+  });
   try {
     if (process.platform === "darwin") {
       if (!("asset" in latestUpdateInfo)) throw new Error("Check for a DMG update first");
-      downloadedMacInstaller = await downloadMacUpdate(latestUpdateInfo, (percent, transferred, total) =>
-        sendUpdateStatus({ state: "downloading", percent, transferred, total })
+      downloadedMacInstaller = await downloadMacUpdate(
+        latestUpdateInfo,
+        (percent, transferred, total) =>
+          sendUpdateStatus({ state: "downloading", percent, transferred, total })
       );
     } else {
       await autoUpdater.downloadUpdate();
@@ -936,13 +848,18 @@ async function downloadUpdate() {
     sendUpdateStatus({ state: "verifying", update });
     sendUpdateStatus({ state: "ready", update });
   } catch (error) {
-    sendUpdateStatus({ state: "error", message: error instanceof Error ? error.message : "Update download failed" });
+    sendUpdateStatus({
+      state: "error",
+      message: error instanceof Error ? error.message : "Update download failed",
+    });
     throw error;
   }
 }
 
 ipcMain.handle("download-update", () => {
-  updateDownload ??= downloadUpdate().finally(() => { updateDownload = null; });
+  updateDownload ??= downloadUpdate().finally(() => {
+    updateDownload = null;
+  });
   return updateDownload;
 });
 
@@ -950,10 +867,6 @@ ipcMain.handle("install-update", () => {
   installUpdateAfterFlush = true;
   quitAfterFlush = true;
   for (const window of BrowserWindow.getAllWindows()) {
-    if (window === quickCaptureWindow) {
-      window.destroy();
-      continue;
-    }
     requestWindowFlush(window, window.webContents.id);
   }
   resumeQuitIfReady();

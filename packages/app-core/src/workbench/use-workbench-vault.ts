@@ -91,7 +91,8 @@ export function useWorkbenchVault({
         const location =
           nextAvailable.find((item) => item.vaultId === vaultId) ??
           nextRecent.find((item) => item.vaultId === vaultId);
-        if (location && restore) await loadVault(await runtime.client!.openVault({ path: location.path }));
+        if (location && restore)
+          await loadVault(await runtime.client!.openVault({ path: location.path }));
         else setManagerOpen(true);
       })
       .catch((error) => {
@@ -118,7 +119,6 @@ export function useWorkbenchVault({
     },
     []
   );
-
 
   const openFile = useCallback(
     async (path: string): Promise<EditorTab | undefined> => {
@@ -171,34 +171,46 @@ export function useWorkbenchVault({
         pendingSaves.current.delete(path);
         const targetPath = resolveMovedPath(movedPathsRef.current, path);
         const previous = saveChains.current.get(targetPath) ?? Promise.resolve();
-        const nextSave = previous.catch(() => undefined).then(async () => {
-          const latest = documentsRef.current[targetPath];
-          const base = savedDocumentsRef.current.get(targetPath);
-          if (!latest || !base || base.content === latest.content) return;
-          const targetContent = latest.content;
-          const saved = base.contentHash ? await runtime.client!.patchFile({
-            vaultId: vault.id,
-            path: targetPath,
-            expectedHash: base.contentHash,
-            edits: [singleTextEdit(base.content, targetContent)],
-          }) : await runtime.client!.saveFile({
-            vaultId: vault.id,
-            path: targetPath,
-            content: targetContent,
-            expectedHash: base.contentHash || undefined,
+        const nextSave = previous
+          .catch(() => undefined)
+          .then(async () => {
+            const latest = documentsRef.current[targetPath];
+            const base = savedDocumentsRef.current.get(targetPath);
+            if (!latest || !base || base.content === latest.content) return;
+            const targetContent = latest.content;
+            const saved = base.contentHash
+              ? await runtime.client!.patchFile({
+                  vaultId: vault.id,
+                  path: targetPath,
+                  expectedHash: base.contentHash,
+                  edits: [singleTextEdit(base.content, targetContent)],
+                })
+              : await runtime.client!.saveFile({
+                  vaultId: vault.id,
+                  path: targetPath,
+                  content: targetContent,
+                  expectedHash: base.contentHash || undefined,
+                });
+            savedDocumentsRef.current.set(targetPath, {
+              ...latest,
+              ...saved,
+              content: targetContent,
+            });
+            const visible = documentsRef.current[targetPath];
+            if (visible) {
+              documentsRef.current = {
+                ...documentsRef.current,
+                [targetPath]: {
+                  ...visible,
+                  contentHash: saved.contentHash,
+                  modifiedAt: saved.modifiedAt,
+                },
+              };
+              setDocuments(documentsRef.current);
+            }
+            setStatus(`Saved ${targetPath}`);
+            if (visible?.content === targetContent) onSaved();
           });
-          savedDocumentsRef.current.set(targetPath, { ...latest, ...saved, content: targetContent });
-          const visible = documentsRef.current[targetPath];
-          if (visible) {
-            documentsRef.current = {
-              ...documentsRef.current,
-              [targetPath]: { ...visible, contentHash: saved.contentHash, modifiedAt: saved.modifiedAt },
-            };
-            setDocuments(documentsRef.current);
-          }
-          setStatus(`Saved ${targetPath}`);
-          if (visible?.content === targetContent) onSaved();
-        });
         saveChains.current.set(targetPath, nextSave);
         return nextSave;
       };
@@ -207,8 +219,8 @@ export function useWorkbenchVault({
         path,
         window.setTimeout(() => {
           void save().catch((error) =>
-              setStatus(error instanceof Error ? error.message : `Could not save ${path}`)
-            );
+            setStatus(error instanceof Error ? error.message : `Could not save ${path}`)
+          );
         }, 500)
       );
     },
@@ -235,11 +247,14 @@ export function useWorkbenchVault({
     [loadVault, persistence, runtime]
   );
 
-  const chooseVault = useCallback(async (mode: "open" | "create") => {
-    if (!runtime.selectVaultDirectory) return;
-    const path = await runtime.selectVaultDirectory(mode);
-    if (path) return connectVault(path, mode);
-  }, [connectVault, runtime]);
+  const chooseVault = useCallback(
+    async (mode: "open" | "create") => {
+      if (!runtime.selectVaultDirectory) return;
+      const path = await runtime.selectVaultDirectory(mode);
+      if (path) return connectVault(path, mode);
+    },
+    [connectVault, runtime]
+  );
 
   const openVault = useCallback(
     async (location: { path: string }) => {
@@ -268,11 +283,9 @@ export function useWorkbenchVault({
     [refreshFiles, runtime.client, vault]
   );
 
-  const renameFile = useCallback(
-    async (path: string, name: string) => {
+  const moveFile = useCallback(
+    async (path: string, destinationPath: string) => {
       if (!runtime.client || !vault) return;
-      const parent = path.includes("/") ? path.slice(0, path.lastIndexOf("/")) : "";
-      const destinationPath = resourcePath(parent, name);
       if (destinationPath === path) return;
       await flushSaves();
       await runtime.client.moveFile({ vaultId: vault.id, sourcePath: path, destinationPath });
@@ -292,8 +305,28 @@ export function useWorkbenchVault({
       documentsRef.current = nextDocuments;
       setDocuments(nextDocuments);
       await refreshFiles();
+      return destinationPath;
     },
     [flushSaves, refreshFiles, runtime.client, vault]
+  );
+
+  const renameFile = useCallback(
+    async (path: string, name: string) => {
+      const parent = path.includes("/") ? path.slice(0, path.lastIndexOf("/")) : "";
+      await moveFile(path, resourcePath(parent, name));
+    },
+    [moveFile]
+  );
+
+  const archiveFile = useCallback(
+    async (path: string) => {
+      if (!runtime.client || !vault || path === "archive" || path.startsWith("archive/")) return;
+      const destinationPath = `archive/${path}`;
+      const parent = destinationPath.slice(0, destinationPath.lastIndexOf("/"));
+      await runtime.client.createDirectory(vault.id, parent);
+      return moveFile(path, destinationPath);
+    },
+    [moveFile, runtime.client, vault]
   );
 
   const deleteFile = useCallback(
@@ -348,6 +381,7 @@ export function useWorkbenchVault({
     managerOpen,
     setManagerOpen,
     status,
+    setStatus,
     refreshFiles,
     openFile,
     changeDocument,
@@ -357,6 +391,7 @@ export function useWorkbenchVault({
     createFile,
     createFolder,
     renameFile,
+    archiveFile,
     deleteFile,
     forgetVault,
     backlinkCount,

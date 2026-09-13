@@ -23,4 +23,22 @@ describe("fileTree", () => {
       { name: "README.md", path: "README.md", type: "file" },
     ]);
   });
+
+  test("hides the archive tree when requested", () => {
+    const files = [
+      { path: "archive", name: "archive", kind: "directory" as const },
+      { path: "archive/old.md", name: "old.md", kind: "markdown" as const },
+      { path: "notes/live.md", name: "live.md", kind: "markdown" as const },
+    ];
+
+    expect(fileTree(files, false)).toEqual([
+      {
+        name: "notes",
+        path: "notes",
+        type: "folder",
+        children: [{ name: "live.md", path: "notes/live.md", type: "file" }],
+      },
+    ]);
+    expect(fileTree(files, true)[0]?.path).toBe("archive");
+  });
 });

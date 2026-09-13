@@ -157,10 +157,7 @@ function PaneTabs<T extends string>({
   onChange: (id: T) => void;
 }) {
   return (
-    <nav
-      aria-label="Sidebar views"
-      className="flex h-8 items-center gap-1 overflow-hidden px-2"
-    >
+    <nav aria-label="Sidebar views" className="flex h-8 items-center gap-1 overflow-hidden px-2">
       {options.map(({ id, label, icon: Icon }) => (
         <IconButton key={id} label={label} active={active === id} onClick={() => onChange(id)}>
           <Icon className="size-4" strokeWidth={1.8} />
@@ -232,54 +229,51 @@ function FileRow({
       }}
     >
       <HoverCardTrigger
-        render={<button
-          type="button"
-          role="treeitem"
-          draggable
-          aria-selected={selected}
-          title={`${document.title}\n${metadata}\n⌘/Ctrl + hover to preview`}
-          onClick={onOpen}
-          onPointerEnter={(event) => setPreviewOpen(event.metaKey || event.ctrlKey)}
-          onPointerLeave={() => setPreviewOpen(false)}
-          onDragStart={(event) => {
-            event.dataTransfer.setData("application/x-flux-file", document.title);
-            event.dataTransfer.setData("text/plain", document.title);
-            event.dataTransfer.effectAllowed = "move";
-          }}
-          onDragOver={(event) => {
-            if (!event.dataTransfer.types.includes("application/x-flux-file")) return;
-            event.preventDefault();
-            event.dataTransfer.dropEffect = "move";
-          }}
-          onDrop={(event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            const source = event.dataTransfer.getData("application/x-flux-file");
-            if (source && source !== document.title) onReorder(source, document.title);
-          }}
-          className={`flex w-full items-center gap-2 rounded-md py-1.5 pr-2 text-left text-xs outline-none focus-visible:ring-2 focus-visible:ring-ring/50 ${
-            selected
-              ? "bg-sidebar-selected text-sidebar-accent-foreground font-medium"
-              : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
-          }`}
-          style={{ paddingLeft: 8 + depth * 16 }}
-        />}
+        render={
+          <button
+            type="button"
+            role="treeitem"
+            draggable
+            aria-selected={selected}
+            title={`${document.title}\n${metadata}\n⌘/Ctrl + hover to preview`}
+            onClick={onOpen}
+            onPointerEnter={(event) => setPreviewOpen(event.metaKey || event.ctrlKey)}
+            onPointerLeave={() => setPreviewOpen(false)}
+            onDragStart={(event) => {
+              event.dataTransfer.setData("application/x-flux-file", document.title);
+              event.dataTransfer.setData("text/plain", document.title);
+              event.dataTransfer.effectAllowed = "move";
+            }}
+            onDragOver={(event) => {
+              if (!event.dataTransfer.types.includes("application/x-flux-file")) return;
+              event.preventDefault();
+              event.dataTransfer.dropEffect = "move";
+            }}
+            onDrop={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              const source = event.dataTransfer.getData("application/x-flux-file");
+              if (source && source !== document.title) onReorder(source, document.title);
+            }}
+            className={`flex w-full items-center gap-2 rounded-md py-1.5 pr-2 text-left text-xs outline-none focus-visible:ring-2 focus-visible:ring-ring/50 ${
+              selected
+                ? "bg-sidebar-selected text-sidebar-accent-foreground font-medium"
+                : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
+            }`}
+            style={{ paddingLeft: 8 + depth * 16 }}
+          />
+        }
       >
         <Files className="size-3.5 shrink-0" />
         <span className="min-w-0 flex-1 truncate">{document.title}</span>
       </HoverCardTrigger>
-        <HoverCardContent
-          side="right"
-          align="start"
-          sideOffset={8}
-          className="z-[130] w-80"
-        >
-          <p className="truncate text-sm font-semibold">{document.title}</p>
-          <p className="mt-1 text-[11px] text-muted-foreground">{metadata}</p>
-          <p className="mt-3 line-clamp-6 text-xs leading-5 text-muted-foreground">
-            {summary.preview || "Empty note"}
-          </p>
-        </HoverCardContent>
+      <HoverCardContent side="right" align="start" sideOffset={8} className="z-[130] w-80">
+        <p className="truncate text-sm font-semibold">{document.title}</p>
+        <p className="mt-1 text-[11px] text-muted-foreground">{metadata}</p>
+        <p className="mt-3 line-clamp-6 text-xs leading-5 text-muted-foreground">
+          {summary.preview || "Empty note"}
+        </p>
+      </HoverCardContent>
     </HoverCard>
   );
 }
@@ -408,7 +402,7 @@ function FileExplorer({
           className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs text-muted-foreground outline-none hover:bg-accent/60 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50"
         >
           <FileText className="size-3.5" />
-          <span className="min-w-0 flex-1 truncate">Flux PDF demo</span>
+          <span className="min-w-0 flex-1 truncate">Symtab PDF demo</span>
           <span className="text-[9px] uppercase tracking-wide">PDF</span>
         </button>
         {renderFiles(null)}
@@ -463,27 +457,25 @@ function FileExplorer({
         open={Boolean(pendingMove)}
         onOpenChange={(open) => !open && setPendingMove(undefined)}
       >
-          <AlertDialogContent
-            className="w-[min(420px,calc(100vw-2rem))] rounded-xl p-5"
-          >
-            <AlertDialogTitle className="text-sm font-semibold">Move file?</AlertDialogTitle>
-            <AlertDialogDescription className="mt-2 text-sm leading-5 text-muted-foreground">
-              {pendingMove?.kind === "folder"
-                ? `Move “${pendingMove.title}” to ${pendingMove.folder ?? "vault root"}?`
-                : `Move “${pendingMove?.title ?? "file"}” before “${pendingMove?.kind === "reorder" ? pendingMove.before : "file"}”?`}
-            </AlertDialogDescription>
-            <div className="mt-5 flex justify-end gap-2">
-              <AlertDialogCancel className="rounded-md px-3 py-1.5 text-sm hover:bg-accent">
-                Cancel
-              </AlertDialogCancel>
-              <AlertDialogAction
-                onClick={confirmMove}
-                className="rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground"
-              >
-                Move
-              </AlertDialogAction>
-            </div>
-          </AlertDialogContent>
+        <AlertDialogContent className="w-[min(420px,calc(100vw-2rem))] rounded-xl p-5">
+          <AlertDialogTitle className="text-sm font-semibold">Move file?</AlertDialogTitle>
+          <AlertDialogDescription className="mt-2 text-sm leading-5 text-muted-foreground">
+            {pendingMove?.kind === "folder"
+              ? `Move “${pendingMove.title}” to ${pendingMove.folder ?? "vault root"}?`
+              : `Move “${pendingMove?.title ?? "file"}” before “${pendingMove?.kind === "reorder" ? pendingMove.before : "file"}”?`}
+          </AlertDialogDescription>
+          <div className="mt-5 flex justify-end gap-2">
+            <AlertDialogCancel className="rounded-md px-3 py-1.5 text-sm hover:bg-accent">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmMove}
+              className="rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground"
+            >
+              Move
+            </AlertDialogAction>
+          </div>
+        </AlertDialogContent>
       </AlertDialog>
     </>
   );
@@ -1853,7 +1845,9 @@ export function WorkspaceRibbon({
                   mask: `center / contain no-repeat url("${item.iconSrc}")`,
                 }}
               />
-            ) : <PluginIcon className="size-4" />}
+            ) : (
+              <PluginIcon className="size-4" />
+            )}
           </IconButton>
         );
       })}

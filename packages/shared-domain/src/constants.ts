@@ -1,4 +1,4 @@
-export const APP_NAME = "FLUX";
+export const APP_NAME = "Symtab";
 export const APP_VERSION = "0.0.1";
 
 export const DEFAULT_SETTINGS = {

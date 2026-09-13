@@ -144,16 +144,16 @@ export interface DemoDocument {
 export type MarkdownMode = "live" | "source" | "read";
 
 export const DEMO_DOCUMENT: DemoDocument = {
-  title: "Flux editor demo",
+  title: "Symtab editor demo",
   content: `---
-tags: [flux, editor, demo]
+tags: [symtab, editor, demo]
 status: draft
 priority: 2
 ---
 
 # A fast, local-first writing surface
 
-Flux keeps **plain Markdown** underneath, so your notes stay portable. Use [[Backlinks]] to connect ideas without reorganizing folders.
+Symtab keeps **plain Markdown** underneath, so your notes stay portable. Use [[Backlinks]] to connect ideas without reorganizing folders.
 
 > The editor and reading view share one document. Nothing is converted into a private block format.
 
@@ -179,7 +179,7 @@ $$
 $$
 
 \`\`\`ts
-const note = await flux.open("Flux editor demo")
+const note = await symtab.open("Symtab editor demo")
 note.link("Performance")
 \`\`\`
 
@@ -249,11 +249,11 @@ const SYNTAX_LAB = [
 export const REFERENCE_DOCUMENTS: DemoDocument[] = [
   {
     title: "Performance notes",
-    content: `---\ntags: [performance]\nstatus: active\n---\n\n# Performance notes\n\nKeep [[Flux editor demo]] responsive while rendering large notes.`,
+    content: `---\ntags: [performance]\nstatus: active\n---\n\n# Performance notes\n\nKeep [[Symtab editor demo]] responsive while rendering large notes.`,
   },
   {
     title: "Project plan",
-    content: `---\ntags: [planning]\nstatus: draft\n---\n\n# Project plan\n\nTrack editor work in [[Flux editor demo]] and [[Performance notes]].`,
+    content: `---\ntags: [planning]\nstatus: draft\n---\n\n# Project plan\n\nTrack editor work in [[Symtab editor demo]] and [[Performance notes]].`,
   },
   { title: "Syntax lab", content: SYNTAX_LAB },
   {
@@ -676,7 +676,10 @@ function MarkdownSource({
               minWidth: "28rem",
               maxHeight: "20rem !important",
             },
-            ".cm-tooltip-autocomplete > ul": { maxHeight: "20rem !important", fontFamily: "var(--font-sans)" },
+            ".cm-tooltip-autocomplete > ul": {
+              maxHeight: "20rem !important",
+              fontFamily: "var(--font-sans)",
+            },
             ".cm-tooltip-autocomplete > ul > li": {
               borderRadius: "0.35rem",
               padding: "0.85rem 0.75rem",
@@ -897,7 +900,10 @@ export function MarkdownEditor({
     const match = rawBody.match(/^([ \t]*)/);
     const leadingWhitespace = match ? match[1] : "";
     const trimmed = rawBody.slice(leadingWhitespace.length);
-    if (trimmed.startsWith(heading) && (trimmed.length === heading.length || trimmed[heading.length] === "\n")) {
+    if (
+      trimmed.startsWith(heading) &&
+      (trimmed.length === heading.length || trimmed[heading.length] === "\n")
+    ) {
       const prefixEnd = leadingWhitespace.length + heading.length;
       const afterHeading = rawBody[prefixEnd] === "\n" ? prefixEnd + 1 : prefixEnd;
       return { body: rawBody.slice(afterHeading), strippedPrefix: rawBody.slice(0, afterHeading) };
@@ -1241,10 +1247,7 @@ export function MarkdownDocumentMenu({
 
   return (
     <MenuGroup>
-      <MenuCheckboxItem
-        checked={showBacklinks}
-        onCheckedChange={onBacklinksChange}
-      >
+      <MenuCheckboxItem checked={showBacklinks} onCheckedChange={onBacklinksChange}>
         Backlinks in document
       </MenuCheckboxItem>
       <MenuItem className={menuItemClassName} onClick={() => onModeChange("read")}>
@@ -1312,18 +1315,12 @@ export function MarkdownDocumentMenu({
           className={menuItemClassName}
           onClick={() => copy(`flux://open?file=${encodeURIComponent(fileName)}`)}
         >
-          as Flux URL
+          as Symtab URL
         </MenuItem>
-        <MenuItem
-          className={menuItemClassName}
-          onClick={() => copy(`Personal vault/${fileName}`)}
-        >
+        <MenuItem className={menuItemClassName} onClick={() => copy(`Personal vault/${fileName}`)}>
           from vault folder
         </MenuItem>
-        <MenuItem
-          className={menuItemClassName}
-          onClick={() => copy(`/Personal vault/${fileName}`)}
-        >
+        <MenuItem className={menuItemClassName} onClick={() => copy(`/Personal vault/${fileName}`)}>
           from system root
         </MenuItem>
       </MenuSub>
@@ -1335,28 +1332,16 @@ export function MarkdownDocumentMenu({
         <MenuItem className={menuItemClassName} onClick={() => onOpenLinkedView("graph")}>
           Open local graph
         </MenuItem>
-        <MenuItem
-          className={menuItemClassName}
-          onClick={() => onOpenLinkedView("backlinks")}
-        >
+        <MenuItem className={menuItemClassName} onClick={() => onOpenLinkedView("backlinks")}>
           Open backlinks
         </MenuItem>
-        <MenuItem
-          className={menuItemClassName}
-          onClick={() => onOpenLinkedView("outgoing")}
-        >
+        <MenuItem className={menuItemClassName} onClick={() => onOpenLinkedView("outgoing")}>
           Open outgoing links
         </MenuItem>
-        <MenuItem
-          className={menuItemClassName}
-          onClick={() => onOpenLinkedView("properties")}
-        >
+        <MenuItem className={menuItemClassName} onClick={() => onOpenLinkedView("properties")}>
           Open file properties
         </MenuItem>
-        <MenuItem
-          className={menuItemClassName}
-          onClick={() => onOpenLinkedView("outline")}
-        >
+        <MenuItem className={menuItemClassName} onClick={() => onOpenLinkedView("outline")}>
           Open outline
         </MenuItem>
       </MenuSub>
@@ -1373,11 +1358,7 @@ export function MarkdownDocumentMenu({
         <FolderInput className="size-4" />
         Reveal file in navigation
       </MenuItem>
-      <MenuItem
-        className={menuItemClassName}
-        variant="destructive"
-        onClick={onDelete}
-      >
+      <MenuItem className={menuItemClassName} variant="destructive" onClick={onDelete}>
         <Trash2 className="size-4" />
         Delete file
       </MenuItem>

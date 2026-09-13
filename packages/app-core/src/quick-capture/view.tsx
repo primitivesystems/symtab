@@ -5,7 +5,12 @@ import { Input } from "@flux/shared-ui/components/ui/input";
 import { Textarea } from "@flux/shared-ui/components/ui/textarea";
 import { ThemeProvider, type Theme } from "@flux/shared-ui/components/theme-provider";
 import { errorMessage } from "../app/helpers";
-import { dateKeyInTimeZone, loadDailyNoteConfig, noteFileName, noteTemplate } from "../daily-notes/config";
+import {
+  dateKeyInTimeZone,
+  loadDailyNoteConfig,
+  noteFileName,
+  noteTemplate,
+} from "../daily-notes/config";
 import { quickCaptureInboxPath } from "./path";
 import type { FluxRuntime } from "../App";
 
@@ -60,12 +65,14 @@ export function QuickCapture({ runtime }: { runtime: FluxRuntime }) {
   useEffect(() => {
     if (!runtime.client || !content.trim() || saving) return;
     const timer = window.setTimeout(() => {
-      void runtime.client?.putAppSetting("quickCaptureDraft", {
-        vaultId,
-        target,
-        fileName,
-        content,
-      }).catch((cause) => setError(errorMessage(cause)));
+      void runtime.client
+        ?.putAppSetting("quickCaptureDraft", {
+          vaultId,
+          target,
+          fileName,
+          content,
+        })
+        .catch((cause) => setError(errorMessage(cause)));
     }, 400);
     return () => window.clearTimeout(timer);
   }, [runtime.client, vaultId, target, fileName, content, saving]);
@@ -73,7 +80,7 @@ export function QuickCapture({ runtime }: { runtime: FluxRuntime }) {
   const save = async () => {
     if (saving) return;
     if (!runtime.client) {
-      setError("Unable to connect to FLUX. Try again.");
+      setError("Unable to connect to Symtab. Try again.");
       return;
     }
     if (!vaultId) {
@@ -156,101 +163,101 @@ export function QuickCapture({ runtime }: { runtime: FluxRuntime }) {
 
   return (
     <ThemeProvider theme={theme}>
-    <main className="flex h-screen flex-col bg-sidebar text-foreground">
-      <header className="flex h-11 shrink-0 items-center border-b ps-[76px] pe-4 [border-color:var(--layout-separator)] [-webkit-app-region:drag]">
-        <h1 className="text-sm font-medium tracking-[-0.01em]">Quick capture</h1>
-        <span className="ms-auto text-[11px] text-foreground/70">⌘↵ to save</span>
-      </header>
-      <div className="flex min-h-0 flex-1 flex-col gap-3 p-3.5">
-        <div className="grid grid-cols-[minmax(0,1fr)_7rem] gap-2.5">
-          <label className="grid min-w-0 gap-1 text-[11px] font-medium text-foreground/70">
-            Vault
-            <select
-              ref={vaultSelectRef}
-              value={vaultId}
-              aria-invalid={Boolean(error && !vaultId)}
+      <main className="flex h-screen flex-col bg-sidebar text-foreground">
+        <header className="flex h-11 shrink-0 items-center border-b ps-[76px] pe-4 [border-color:var(--layout-separator)] [-webkit-app-region:drag]">
+          <h1 className="text-sm font-medium tracking-[-0.01em]">Quick capture</h1>
+          <span className="ms-auto text-[11px] text-foreground/70">⌘↵ to save</span>
+        </header>
+        <div className="flex min-h-0 flex-1 flex-col gap-3 p-3.5">
+          <div className="grid grid-cols-[minmax(0,1fr)_7rem] gap-2.5">
+            <label className="grid min-w-0 gap-1 text-[11px] font-medium text-foreground/70">
+              Vault
+              <select
+                ref={vaultSelectRef}
+                value={vaultId}
+                aria-invalid={Boolean(error && !vaultId)}
+                aria-describedby={error ? "quick-capture-error" : undefined}
+                onChange={(event) => {
+                  setVaultId(event.target.value);
+                  setError("");
+                }}
+                className="h-8 min-w-0 rounded-md border bg-popover px-2 text-xs text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-sidebar"
+              >
+                <option value="">Choose vault…</option>
+                {vaults.map((item) => (
+                  <option key={item.vaultId} value={item.vaultId}>
+                    {item.displayName}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="grid gap-1 text-[11px] font-medium text-foreground/70">
+              Save to
+              <select
+                value={target}
+                onChange={(event) => setTarget(event.target.value as "inbox" | "daily")}
+                className="h-8 rounded-md border bg-popover px-2 text-xs text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-sidebar"
+              >
+                <option value="inbox">Inbox</option>
+                <option value="daily">Today</option>
+              </select>
+            </label>
+          </div>
+          {target === "inbox" ? (
+            <label className="grid gap-1 text-[11px] font-medium text-foreground/70">
+              Filename
+              <Input
+                ref={fileNameRef}
+                value={fileName}
+                aria-invalid={Boolean(error && !quickCaptureInboxPath("", fileName))}
+                aria-describedby={error ? "quick-capture-error" : undefined}
+                onChange={(event) => {
+                  setFileName(event.target.value);
+                  setError("");
+                }}
+                placeholder="Quick note.md"
+                className="h-8"
+              />
+            </label>
+          ) : null}
+          <label className="flex min-h-0 flex-1 flex-col gap-1 text-[11px] font-medium text-foreground/70">
+            Note
+            <Textarea
+              ref={contentRef}
+              autoFocus
+              value={content}
+              aria-invalid={Boolean(error && !content.trim())}
               aria-describedby={error ? "quick-capture-error" : undefined}
               onChange={(event) => {
-                setVaultId(event.target.value);
+                setContent(event.target.value);
                 setError("");
               }}
-              className="h-8 min-w-0 rounded-md border bg-popover px-2 text-xs text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-sidebar"
-            >
-              <option value="">Choose vault…</option>
-              {vaults.map((item) => (
-                <option key={item.vaultId} value={item.vaultId}>
-                  {item.displayName}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="grid gap-1 text-[11px] font-medium text-foreground/70">
-            Save to
-            <select
-              value={target}
-              onChange={(event) => setTarget(event.target.value as "inbox" | "daily")}
-              className="h-8 rounded-md border bg-popover px-2 text-xs text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-sidebar"
-            >
-              <option value="inbox">Inbox</option>
-              <option value="daily">Today</option>
-            </select>
-          </label>
-        </div>
-        {target === "inbox" ? (
-          <label className="grid gap-1 text-[11px] font-medium text-foreground/70">
-            Filename
-            <Input
-              ref={fileNameRef}
-              value={fileName}
-              aria-invalid={Boolean(error && !quickCaptureInboxPath("", fileName))}
-              aria-describedby={error ? "quick-capture-error" : undefined}
-              onChange={(event) => {
-                setFileName(event.target.value);
-                setError("");
+              onKeyDown={(event) => {
+                if ((event.metaKey || event.ctrlKey) && event.key === "Enter") void save();
               }}
-              placeholder="Quick note.md"
-              className="h-8"
+              placeholder="Write a note…"
+              className="min-h-0 flex-1 resize-none field-sizing-fixed font-normal leading-6"
             />
           </label>
-        ) : null}
-        <label className="flex min-h-0 flex-1 flex-col gap-1 text-[11px] font-medium text-foreground/70">
-          Note
-          <Textarea
-            ref={contentRef}
-            autoFocus
-            value={content}
-            aria-invalid={Boolean(error && !content.trim())}
-            aria-describedby={error ? "quick-capture-error" : undefined}
-            onChange={(event) => {
-              setContent(event.target.value);
-              setError("");
-            }}
-            onKeyDown={(event) => {
-              if ((event.metaKey || event.ctrlKey) && event.key === "Enter") void save();
-            }}
-            placeholder="Write a note…"
-            className="min-h-0 flex-1 resize-none field-sizing-fixed font-normal leading-6"
-          />
-        </label>
-        <div className="flex min-h-8 items-center justify-between gap-3">
-          <p
-            id="quick-capture-error"
-            role="status"
-            className="min-w-0 text-xs leading-4 text-destructive"
-          >
-            {error}
-          </p>
-          <Button
-            size="sm"
-            disabled={saving}
-            onClick={() => void save()}
-            className="shadow-none before:shadow-none"
-          >
-            {saving ? "Saving…" : "Save note"}
-          </Button>
+          <div className="flex min-h-8 items-center justify-between gap-3">
+            <p
+              id="quick-capture-error"
+              role="status"
+              className="min-w-0 text-xs leading-4 text-destructive"
+            >
+              {error}
+            </p>
+            <Button
+              size="sm"
+              disabled={saving}
+              onClick={() => void save()}
+              className="shadow-none before:shadow-none"
+            >
+              {saving ? "Saving…" : "Save note"}
+            </Button>
+          </div>
         </div>
-      </div>
-    </main>
+      </main>
     </ThemeProvider>
   );
 }

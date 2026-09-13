@@ -132,6 +132,8 @@ export function useDailyNotes<T>({
     }
   };
 
+  const openToday = () => openDaily(dateKeyInTimeZone(new Date(), config.timeZone));
+
   const openWeekly = async (selected: string) => {
     if (!vault || !client) return;
     const week = isoWeekKey(dateFromKey(selected));
@@ -194,6 +196,7 @@ export function useDailyNotes<T>({
     monthLabel,
     entries: vault ? entries : [],
     openDaily,
+    openToday,
     openWeekly,
     createEntry,
   };

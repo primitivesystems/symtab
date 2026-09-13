@@ -1,8 +1,8 @@
 {
   "name": "@flux/desktop",
   "version": "0.0.2",
-  "description": "FLUX personal knowledge management desktop application",
-  "author": "FLUX Contributors",
+  "description": "Symtab personal knowledge management desktop application",
+  "author": "Symtab Contributors",
   "private": true,
   "type": "module",
   "main": "dist-electron/index.js",
@@ -10,11 +10,11 @@
     "dev": "vite",
     "build": "bun run clean:build && bun run build:server && tsc --noEmit && vite build && electron-builder",
     "release": "bun run build:server && tsc --noEmit && vite build && electron-builder --mac dmg --publish never",
-    "build:server": "mkdir -p resources && ${GO_BIN:-/usr/local/go/bin/go} -C ../../server build -tags sqlite_fts5 -o ../apps/desktop/resources/flux-server .",
+    "build:server": "mkdir -p resources && ${GO_BIN:-/usr/local/go/bin/go} -C ../../server build -tags sqlite_fts5 -o ../apps/desktop/resources/symtab-server .",
     "preview": "vite preview",
     "lint": "eslint . --max-warnings 0",
     "typecheck": "tsc --noEmit",
-    "clean:build": "rm -rf dist dist-electron release resources/flux-server",
+    "clean:build": "rm -rf dist dist-electron release resources/symtab-server",
     "clean": "bun run clean:build"
   },
   "dependencies": {
@@ -38,8 +38,8 @@
     "vite-plugin-electron": "^1.1.0"
   },
   "build": {
-    "appId": "com.flux.desktop",
-    "productName": "FLUX",
+    "appId": "com.symtab.desktop",
+    "productName": "Symtab",
     "directories": {
       "output": "release"
     },
@@ -53,8 +53,16 @@
     ],
     "extraResources": [
       {
-        "from": "resources/flux-server",
-        "to": "flux-server"
+        "from": "resources/symtab-server",
+        "to": "symtab-server"
+      },
+      {
+        "from": "assets/icon.png",
+        "to": "symtab.png"
+      },
+      {
+        "from": "assets/dock-icon.png",
+        "to": "dock-icon.png"
       }
     ],
     "publish": {
@@ -64,16 +72,25 @@
       "releaseType": "release"
     },
     "mac": {
+      "icon": "assets/icon.icns",
       "category": "public.app-category.productivity",
       "identity": null,
       "hardenedRuntime": false,
-      "target": ["dmg"]
+      "target": [
+        "dmg"
+      ]
     },
     "win": {
-      "target": ["nsis"]
+      "icon": "assets/icon.ico",
+      "target": [
+        "nsis"
+      ]
     },
     "linux": {
-      "target": ["AppImage"]
+      "icon": "assets/icon.png",
+      "target": [
+        "AppImage"
+      ]
     }
   }
 }

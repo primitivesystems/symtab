@@ -52,7 +52,7 @@ func defaultVaultRoot(environment, appDataDir string) string {
 
 func defaultAppDataDir() string {
 	if directory, err := os.UserConfigDir(); err == nil {
-		return filepath.Join(directory, "Flux")
+		return filepath.Join(directory, "Symtab")
 	}
 	return filepath.Join(os.TempDir(), "flux-app-data")
 }

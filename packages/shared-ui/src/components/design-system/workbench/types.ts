@@ -4,7 +4,8 @@ import type { EditorRenderer } from "./editor/editor-surface";
 import type { EditorTab } from "./editor/editor-model";
 
 export type WorkbenchTheme = "dark" | "light";
-export type WorkbenchNativeCommand = "search" | "daily-today" | "calendar" | "settings" | "vaults" | "updates";
+export type WorkbenchNativeCommand =
+  "search" | "daily-today" | "calendar" | "settings" | "vaults" | "updates";
 
 export interface WorkbenchUpdate {
   currentVersion: string;
@@ -14,7 +15,15 @@ export interface WorkbenchUpdate {
   bannerUrl?: string;
 }
 
-export type WorkbenchUpdateStatus = "checking" | "available" | "downloading" | "downloaded" | "verifying" | "ready" | "installing" | "error";
+export type WorkbenchUpdateStatus =
+  | "checking"
+  | "available"
+  | "downloading"
+  | "downloaded"
+  | "verifying"
+  | "ready"
+  | "installing"
+  | "error";
 
 export interface WorkbenchNotificationAction {
   id: string;
@@ -84,7 +93,6 @@ export interface VSCodeWorkbenchProps {
   onInstallUpdate?: () => Promise<void>;
   onThemeChange: (theme: WorkbenchTheme) => void;
   onStateChange?: (state: WorkbenchSnapshot) => void;
-  onQuickCapture?: () => Promise<void>;
   onCommand?: (handler: (command: WorkbenchNativeCommand) => void) => () => void;
   onOpenToday?: () => Promise<EditorTab | void>;
   renderSearch?: (onOpenFile: (path: string) => void) => ReactNode;
@@ -101,7 +109,9 @@ export interface VSCodeWorkbenchProps {
   onCreateFolder?: (parent: string | undefined, name: string) => Promise<void>;
   onRefreshFiles?: () => Promise<void>;
   onRenameFile?: (path: string, name: string) => Promise<void>;
+  onArchiveFile?: (path: string) => Promise<string | void>;
   onDeleteFile?: (path: string) => Promise<void>;
+  onOpenTrash?: () => void;
   onManageVaults?: () => void;
   onEditorChange?: (tab: EditorTab, content: string, onSaved: () => void) => void;
   onActiveEditorChange?: (tab?: EditorTab) => void;
@@ -110,8 +120,17 @@ export interface VSCodeWorkbenchProps {
   chat?: ChatProps;
   journal?: WorkbenchJournal;
   renderEditor?: EditorRenderer;
-  renderGraph?: (onOpenFile: (path: string) => void, onSplit: (placement: "right" | "bottom") => void, showSearch: () => void) => ReactNode;
+  renderGraph?: (
+    onOpenFile: (path: string) => void,
+    onSplit: (placement: "right" | "bottom") => void,
+    showSearch: () => void
+  ) => ReactNode;
   renderBacklinks?: (onOpenFile: (path: string) => void) => ReactNode;
   renderTags?: (showSearch: () => void) => ReactNode;
+  renderSecondary?: (
+    onOpenFile: (path: string) => void,
+    showSearch: () => void
+  ) => ReactNode;
+  onSelectSecondaryPane?: (pane: "backlinks" | "tags") => void;
   onMoveEditorToNewWindow?: (tab: EditorTab) => void;
 }

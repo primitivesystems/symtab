@@ -11,19 +11,19 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["flux.svg"],
+      includeAssets: ["symtab.png"],
       manifest: {
-        name: "FLUX",
-        short_name: "FLUX",
+        name: "Symtab",
+        short_name: "Symtab",
         description: "Personal Knowledge Management",
         theme_color: "#1a1a1a",
         background_color: "#1a1a1a",
         display: "standalone",
         icons: [
           {
-            src: "/flux.svg",
-            sizes: "any",
-            type: "image/svg+xml",
+            src: "/symtab.png",
+            sizes: "512x512",
+            type: "image/png",
             purpose: "any maskable",
           },
         ],

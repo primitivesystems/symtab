@@ -516,7 +516,7 @@ export class WebFluxClient implements FluxClient {
         code?: string;
       } | null;
       throw new FluxClientError(
-        body?.error ?? `Flux request failed with status ${response.status}`,
+        body?.error ?? `Symtab request failed with status ${response.status}`,
         response.status,
         body?.code
       );
@@ -601,7 +601,7 @@ export class WebFluxClient implements FluxClient {
         code?: string;
       } | null;
       throw new FluxClientError(
-        body?.error ?? `Flux request failed with status ${response.status}`,
+        body?.error ?? `Symtab request failed with status ${response.status}`,
         response.status,
         body?.code
       );

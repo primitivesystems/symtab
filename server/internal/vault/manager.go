@@ -29,7 +29,7 @@ var (
 	ErrNotOpen       = errors.New("vault is not open")
 	ErrVaultMismatch = errors.New("requested vault is outside the configured vault")
 	ErrNestedVault   = errors.New("nested vaults are not supported")
-	ErrVaultInUse    = errors.New("vault is already open in another Flux runtime")
+	ErrVaultInUse    = errors.New("vault is already open in another Symtab runtime")
 	ErrDuplicateID   = errors.New("vault identity is already open from another path")
 )
 

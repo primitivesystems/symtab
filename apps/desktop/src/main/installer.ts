@@ -10,7 +10,8 @@ import { pipeline } from "node:stream/promises";
 export type InstallerPlatform = "darwin" | "win32" | "linux";
 
 export function getPlatformInstaller(): InstallerPlatform {
-  if (process.platform === "darwin" || process.platform === "win32" || process.platform === "linux") return process.platform;
+  if (process.platform === "darwin" || process.platform === "win32" || process.platform === "linux")
+    return process.platform;
   throw new Error(`Unsupported platform: ${process.platform}`);
 }
 
@@ -23,7 +24,7 @@ export async function downloadMacUpdate(
   const response = await fetch(asset.url, { signal: AbortSignal.timeout(30 * 60_000) });
   if (!response.ok || !response.body) throw new Error(`DMG download failed (${response.status})`);
 
-  const directory = path.join(app.getPath("temp"), "flux-updates");
+  const directory = path.join(app.getPath("temp"), "symtab-updates");
   const destination = path.join(directory, name);
   const partial = `${destination}.part`;
   const total = asset.size;

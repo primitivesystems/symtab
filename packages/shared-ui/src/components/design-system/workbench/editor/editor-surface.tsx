@@ -15,7 +15,7 @@ import { WorkbenchIcon } from "../shared/workbench-icon";
 export type EditorRenderer = (
   tab: EditorTab,
   update: (changes: Partial<Omit<EditorTab, "id">>) => void,
-  onOpenDocument?: (path: string) => void,
+  onOpenDocument?: (path: string) => void
 ) => ReactNode;
 
 type EditorSurfaceProps = {
@@ -26,9 +26,16 @@ type EditorSurfaceProps = {
   renderEditor?: EditorRenderer;
 };
 
-export function EditorSurface({ tab, active = true, onChange, onUpdate, renderEditor }: EditorSurfaceProps) {
+export function EditorSurface({
+  tab,
+  active = true,
+  onChange,
+  onUpdate,
+  renderEditor,
+}: EditorSurfaceProps) {
   if (!tab) return <EmptyEditor />;
-  if (tab.id.startsWith("workbench:")) return renderEditor?.(tab, onUpdate ?? (() => undefined)) ?? null;
+  if (tab.id.startsWith("workbench:"))
+    return renderEditor?.(tab, onUpdate ?? (() => undefined)) ?? null;
 
   const segments = tab.id.startsWith("file:")
     ? tab.id.slice(5).split("/").filter(Boolean)
@@ -120,9 +127,11 @@ function CodeEditor({
     });
     viewRef.current = view;
     const fileName = initialTitleRef.current;
-    const extension = fileName.includes(".") ? fileName.slice(fileName.lastIndexOf(".") + 1).toLowerCase() : "";
-    const description = languages.find((candidate) =>
-      candidate.filename?.test(fileName) || candidate.extensions.includes(extension)
+    const extension = fileName.includes(".")
+      ? fileName.slice(fileName.lastIndexOf(".") + 1).toLowerCase()
+      : "";
+    const description = languages.find(
+      (candidate) => candidate.filename?.test(fileName) || candidate.extensions.includes(extension)
     );
     if (description) {
       void description.load().then((support) => {
@@ -161,12 +170,7 @@ function EmptyEditor() {
   return (
     <div className="grid min-h-0 flex-1 place-items-center overflow-auto">
       <div className="flex select-none flex-col items-center gap-7 px-8 text-[var(--workbench-muted)]">
-        <div
-          aria-hidden="true"
-          className="text-5xl font-semibold tracking-[-0.08em] opacity-[0.08]"
-        >
-          Flux
-        </div>
+        <img src="./logo.png" alt="" className="size-20 object-contain opacity-20 grayscale" />
         <dl className="grid grid-cols-[auto_auto] gap-x-5 gap-y-2 whitespace-nowrap text-[13px] opacity-70">
           <dt>Show All Commands</dt>
           <dd className="text-right font-mono">⇧⌘P</dd>
@@ -174,10 +178,6 @@ function EmptyEditor() {
           <dd className="text-right font-mono">⌘P</dd>
           <dt>Find in Files</dt>
           <dd className="text-right font-mono">⇧⌘F</dd>
-          <dt>Start Debugging</dt>
-          <dd className="text-right font-mono">F5</dd>
-          <dt>Toggle Terminal</dt>
-          <dd className="text-right font-mono">⌃`</dd>
         </dl>
       </div>
     </div>

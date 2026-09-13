@@ -1,4 +1,4 @@
-# FLUX
+# Symtab
 
 A cross-platform Personal Knowledge Management (PKM) tool designed to compete with Obsidian, Logseq, Notion, Tolaria, and Zennotes.
 
@@ -23,7 +23,7 @@ A cross-platform Personal Knowledge Management (PKM) tool designed to compete wi
 
 ## Monorepo Architecture
 
-FLUX uses a single monorepo with one shared product UI and multiple thin runtime shells:
+Symtab uses a single monorepo with one shared product UI and multiple thin runtime shells:
 
 ```
 flux/
@@ -55,7 +55,7 @@ flux/
 
 ### Deployment Modes
 
-FLUX ships as:
+Symtab ships as:
 
 - **Desktop**: `apps/desktop` - Electron application with auto-updater
 - **Self-hosted**: `apps/web` + `server` - Docker-based deployment
@@ -161,7 +161,7 @@ Vite dependency optimization caches are stored under `.cache/vite` at the reposi
 
 Developer guides:
 
-- [Flux MCP with VS Code](docs/mcp-development.md)
+- [Symtab MCP with VS Code](docs/mcp-development.md)
 - [External plugin development](docs/plugin-development.md)
 
 ### Package Structure

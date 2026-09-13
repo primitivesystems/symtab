@@ -2,8 +2,9 @@ import { describe, expect, test } from "bun:test";
 import { isNewerVersion, parseMacRelease } from "../src/main/github-release";
 
 const asset = {
-  name: "FLUX-0.0.2-arm64.dmg",
-  browser_download_url: "https://github.com/wizaye/project-flux/releases/download/v0.0.2/FLUX-0.0.2-arm64.dmg",
+  name: "Symtab-0.0.2-arm64.dmg",
+  browser_download_url:
+    "https://github.com/wizaye/project-flux/releases/download/v0.0.2/Symtab-0.0.2-arm64.dmg",
   digest: `sha256:${"a".repeat(64)}`,
   size: 123,
 };
@@ -17,8 +18,14 @@ describe("DMG-only updates", () => {
     expect(() => parseMacRelease({ tag_name: "v0.0.2", assets: [asset] }, "x64")).toThrow();
   });
   test("fails closed without a checksum or with a foreign download URL", () => {
-    for (const patch of [{ digest: null }, { size: 0 }, { browser_download_url: "https://evil.invalid/update.dmg" }]) {
-      expect(() => parseMacRelease({ tag_name: "v0.0.2", assets: [{ ...asset, ...patch }] }, "arm64")).toThrow();
+    for (const patch of [
+      { digest: null },
+      { size: 0 },
+      { browser_download_url: "https://evil.invalid/update.dmg" },
+    ]) {
+      expect(() =>
+        parseMacRelease({ tag_name: "v0.0.2", assets: [{ ...asset, ...patch }] }, "arm64")
+      ).toThrow();
     }
   });
 });

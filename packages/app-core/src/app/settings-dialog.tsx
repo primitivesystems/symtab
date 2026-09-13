@@ -253,7 +253,7 @@ function GeneralPage({ vaultName, onMenuBarIconChange }: GeneralPageProps) {
       <div>
         <SettingRow label="Vault name" description="The name of your currently active vault.">
           <span className="rounded-md border bg-background/60 px-2.5 py-1 text-xs text-foreground [border-color:var(--layout-separator)]">
-            {vaultName || "FLUX Vault"}
+            {vaultName || "Symtab Vault"}
           </span>
         </SettingRow>
         {onMenuBarIconChange ? (
@@ -261,7 +261,7 @@ function GeneralPage({ vaultName, onMenuBarIconChange }: GeneralPageProps) {
             <SettingDivider />
             <SettingRow
               label="Show in menu bar"
-              description="Launch FLUX in background at login and keep quick actions available with no window open."
+              description="Launch Symtab in background at login and keep quick actions available with no window open."
             >
               <Toggle
                 checked={gen.showMenuBarIcon}
@@ -269,14 +269,14 @@ function GeneralPage({ vaultName, onMenuBarIconChange }: GeneralPageProps) {
                   updateGeneral("showMenuBarIcon", enabled);
                   onMenuBarIconChange(enabled);
                 }}
-                label="Show FLUX in menu bar"
+                label="Show Symtab in menu bar"
               />
             </SettingRow>
           </>
         ) : null}
         <SettingDivider />
 
-        <SettingRow label="Launch behaviour" description="Choose what FLUX opens when launching.">
+        <SettingRow label="Launch behaviour" description="Choose what Symtab opens when launching.">
           <SelectControl
             value={gen.launchBehaviour}
             onChange={(val) => updateGeneral("launchBehaviour", val)}
@@ -503,7 +503,7 @@ function AppearancePage() {
   return (
     <div>
       <div>
-        <SettingRow label="Base colour scheme" description="Choose FLUX's default colour scheme.">
+        <SettingRow label="Base colour scheme" description="Choose Symtab's default colour scheme.">
           <SelectControl
             value={theme}
             onChange={(val) => {
@@ -572,7 +572,7 @@ function AppearancePage() {
         <SettingDivider />
         <SettingRow
           label="Font scaling"
-          description="Scale text size across the entire FLUX user interface."
+          description="Scale text size across the entire Symtab user interface."
         >
           <SelectControl
             value={String(app.fontScaling)}
@@ -1039,9 +1039,7 @@ function DailyNotesPage({
                 setMessage("Saved");
                 onSaved?.();
               })
-              .catch((cause) =>
-                setMessage(cause instanceof Error ? cause.message : String(cause))
-              );
+              .catch((cause) => setMessage(cause instanceof Error ? cause.message : String(cause)));
           }}
           className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-40"
         >
@@ -1148,7 +1146,9 @@ function MCPConnectionsPage({
             </label>
           ))}
           {vaults.length === 0 ? (
-            <p className="text-xs text-muted-foreground">Open a vault before creating a connection.</p>
+            <p className="text-xs text-muted-foreground">
+              Open a vault before creating a connection.
+            </p>
           ) : null}
         </fieldset>
         <select
@@ -1173,7 +1173,9 @@ function MCPConnectionsPage({
       {credential ? (
         <div className="mt-4 rounded-lg border p-4 [border-color:var(--layout-separator)]">
           <div className="text-sm font-medium">Copy this configuration now</div>
-          <pre className="mt-2 max-h-48 overflow-auto rounded-md bg-muted p-3 text-[11px]">{config}</pre>
+          <pre className="mt-2 max-h-48 overflow-auto rounded-md bg-muted p-3 text-[11px]">
+            {config}
+          </pre>
           <button
             type="button"
             onClick={() => void navigator.clipboard.writeText(config)}
@@ -1202,7 +1204,9 @@ function MCPConnectionsPage({
                 className="text-xs text-destructive"
                 onClick={() =>
                   void client?.revokeMCPConnection(connection.id).then(async () => {
-                    setConnections((await client.listMCPConnections()).filter((item) => !item.revokedAt));
+                    setConnections(
+                      (await client.listMCPConnections()).filter((item) => !item.revokedAt)
+                    );
                   })
                 }
               >
@@ -1233,55 +1237,48 @@ export function SettingsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent
-          showCloseButton={false}
-          className="h-[min(680px,calc(100vh-4rem))] w-[min(900px,calc(100vw-4rem))] max-w-none flex-row overflow-hidden rounded-xl"
-          aria-describedby={undefined}
-        >
-          <DialogTitle className="sr-only">Settings</DialogTitle>
-          <DialogClose className="absolute right-2 top-2 z-10 grid size-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
-            <X className="size-4" />
-          </DialogClose>
+      <DialogContent
+        showCloseButton={false}
+        className="h-[min(680px,calc(100vh-4rem))] w-[min(900px,calc(100vw-4rem))] max-w-none flex-row overflow-hidden rounded-xl"
+        aria-describedby={undefined}
+      >
+        <DialogTitle className="sr-only">Settings</DialogTitle>
+        <DialogClose className="absolute right-2 top-2 z-10 grid size-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
+          <X className="size-4" />
+        </DialogClose>
 
-          {/* Left navigation */}
-          <div className="flex w-52 shrink-0 flex-col border-r bg-sidebar p-3 [border-color:var(--layout-separator)]">
-            <div className="mb-4 flex items-center px-2">
-              <span className="text-sm font-semibold text-foreground">Settings</span>
-            </div>
-
-            <SettingsNav activePage={activePage} onSelect={setActivePage} />
-
-            <div className="mt-auto px-2 pt-4 text-[10px] text-muted-foreground/50">
-              FLUX v0.0.1
-            </div>
+        {/* Left navigation */}
+        <div className="flex w-52 shrink-0 flex-col border-r bg-sidebar p-3 [border-color:var(--layout-separator)]">
+          <div className="mb-4 flex items-center px-2">
+            <span className="text-sm font-semibold text-foreground">Settings</span>
           </div>
 
-          {/* Right content panel */}
-          <div className="flux-editor-scroll flex-1 overflow-y-auto p-8">
-            {activePage === "community-plugins" ? (
-              <CommunityPluginsPage onOpenPlugins={onOpenPlugins} />
-            ) : activePage === "mcp" ? (
-              <MCPConnectionsPage
-                client={client}
-                vaults={vaults}
-                getMCPServerCommand={getMCPServerCommand}
-              />
-            ) : activePage === "daily-notes" ? (
-              <DailyNotesPage
-                client={client}
-                vaultId={vaultId}
-                onSaved={onVaultConfigChange}
-              />
-            ) : activePage === "general" ? (
-              <GeneralPage
-                vaultName={vaultName}
-                onMenuBarIconChange={onMenuBarIconChange}
-              />
-            ) : (
-              <ActivePageComponent vaultName={vaultName} />
-            )}
+          <SettingsNav activePage={activePage} onSelect={setActivePage} />
+
+          <div className="mt-auto px-2 pt-4 text-[10px] text-muted-foreground/50">
+            Symtab v0.0.1
           </div>
-        </DialogContent>
+        </div>
+
+        {/* Right content panel */}
+        <div className="flux-editor-scroll flex-1 overflow-y-auto p-8">
+          {activePage === "community-plugins" ? (
+            <CommunityPluginsPage onOpenPlugins={onOpenPlugins} />
+          ) : activePage === "mcp" ? (
+            <MCPConnectionsPage
+              client={client}
+              vaults={vaults}
+              getMCPServerCommand={getMCPServerCommand}
+            />
+          ) : activePage === "daily-notes" ? (
+            <DailyNotesPage client={client} vaultId={vaultId} onSaved={onVaultConfigChange} />
+          ) : activePage === "general" ? (
+            <GeneralPage vaultName={vaultName} onMenuBarIconChange={onMenuBarIconChange} />
+          ) : (
+            <ActivePageComponent vaultName={vaultName} />
+          )}
+        </div>
+      </DialogContent>
     </Dialog>
   );
 }

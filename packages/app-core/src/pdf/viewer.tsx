@@ -16,7 +16,7 @@ function demoPdf() {
     "<< /Type /Catalog /Pages 2 0 R >>",
     "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
     "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 5 0 R >> >> /Contents 4 0 R >>",
-    "<< /Length 144 >>\nstream\nBT\n/F1 25 Tf\n72 700 Td\n(Flux PDF viewer) Tj\n0 -44 Td\n/F1 12 Tf\n(PDF.js renders this document in the same workspace leaf.) Tj\n0 -24 Td\n(Zoom, page navigation, thumbnails, and split panes stay local.) Tj\nET\nendstream",
+    "<< /Length 144 >>\nstream\nBT\n/F1 25 Tf\n72 700 Td\n(Symtab PDF viewer) Tj\n0 -44 Td\n/F1 12 Tf\n(PDF.js renders this document in the same workspace leaf.) Tj\n0 -24 Td\n(Zoom, page navigation, thumbnails, and split panes stay local.) Tj\nET\nendstream",
     "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
   ];
   const encoder = new TextEncoder();
@@ -96,7 +96,7 @@ function PdfThumbnail({
 }
 
 export function PdfViewer({
-  title = "Flux PDF demo",
+  title = "Symtab PDF demo",
   data,
 }: {
   title?: string;

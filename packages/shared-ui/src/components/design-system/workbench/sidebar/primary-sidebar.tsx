@@ -68,7 +68,9 @@ export type PrimarySidebarProps = {
   onRefresh?: () => void;
   onCollapseAll?: () => void;
   onRenameFile?: (path: string, name: string) => Promise<void>;
+  onArchiveFile?: (path: string) => Promise<void>;
   onDeleteFile?: (path: string) => Promise<void>;
+  onOpenTrash?: () => void;
   onManageVaults?: () => void;
 };
 
@@ -83,13 +85,19 @@ export function PrimarySidebar({
   onRefresh,
   onCollapseAll,
   onRenameFile,
+  onArchiveFile,
   onDeleteFile,
+  onOpenTrash,
   onManageVaults,
 }: PrimarySidebarProps) {
   const [collapseVersion, setCollapseVersion] = React.useState(0);
+  const [showArchived, setShowArchived] = React.useState(false);
   const [request, setRequest] = React.useState<ResourceRequest>();
   const [deletePath, setDeletePath] = React.useState<string>();
-  const tree = React.useMemo(() => (files ? fileTree(files) : FILES), [files]);
+  const tree = React.useMemo(
+    () => (files ? fileTree(files, showArchived) : FILES),
+    [files, showArchived]
+  );
   const startRename = (path: string) =>
     setRequest({ kind: "rename", path, initialName: path.split("/").pop() ?? path });
 
@@ -128,8 +136,15 @@ export function PrimarySidebar({
                 Collapse Folders
               </WorkbenchMenuItem>
               <WorkbenchMenuSeparator />
+              <WorkbenchMenuItem onClick={() => setShowArchived((visible) => !visible)}>
+                <WorkbenchIcon name="archive" />
+                {showArchived ? "Hide Archive" : "Show Archive"}
+              </WorkbenchMenuItem>
               <WorkbenchMenuItem disabled={!onManageVaults} onClick={onManageVaults}>
                 Manage Vaults…
+              </WorkbenchMenuItem>
+              <WorkbenchMenuItem disabled={!onOpenTrash} onClick={onOpenTrash}>
+                Open Trash…
               </WorkbenchMenuItem>
             </WorkbenchMenuContent>
           </DropdownMenu>
@@ -196,6 +211,7 @@ export function PrimarySidebar({
                 onNewFileInFolder={(parent) => setRequest({ kind: "file", parent })}
                 onNewFolderInFolder={(parent) => setRequest({ kind: "folder", parent })}
                 onRenameFile={startRename}
+                onArchiveFile={onArchiveFile}
                 onDeleteFile={setDeletePath}
               />
             ))
@@ -237,6 +253,7 @@ function TreeRow({
   onNewFileInFolder,
   onNewFolderInFolder,
   onRenameFile,
+  onArchiveFile,
   onDeleteFile,
 }: {
   item: WorkbenchTreeItem;
@@ -247,6 +264,7 @@ function TreeRow({
   onNewFileInFolder?: (folderPath: string) => void;
   onNewFolderInFolder?: (folderPath: string) => void;
   onRenameFile?: (path: string) => void;
+  onArchiveFile?: (path: string) => void;
   onDeleteFile?: (path: string) => void;
 }) {
   if (item.type === "file") {
@@ -281,6 +299,7 @@ function TreeRow({
           path={item.path}
           onOpen={() => onSelectFile?.(item.path)}
           onRename={onRenameFile}
+          onArchive={onArchiveFile}
           onDelete={onDeleteFile}
         />
       </div>
@@ -297,6 +316,7 @@ function TreeRow({
       onNewFileInFolder={onNewFileInFolder}
       onNewFolderInFolder={onNewFolderInFolder}
       onRenameFile={onRenameFile}
+      onArchiveFile={onArchiveFile}
       onDeleteFile={onDeleteFile}
     />
   );
@@ -311,6 +331,7 @@ function TreeFolderRow({
   onNewFileInFolder,
   onNewFolderInFolder,
   onRenameFile,
+  onArchiveFile,
   onDeleteFile,
 }: {
   item: Extract<WorkbenchTreeItem, { type: "folder" }>;
@@ -321,6 +342,7 @@ function TreeFolderRow({
   onNewFileInFolder?: (folderPath: string) => void;
   onNewFolderInFolder?: (folderPath: string) => void;
   onRenameFile?: (path: string) => void;
+  onArchiveFile?: (path: string) => void;
   onDeleteFile?: (path: string) => void;
 }) {
   const [open, setOpen] = React.useState(item.open ?? false);
@@ -366,12 +388,17 @@ function TreeFolderRow({
               onClick={() => onNewFolderInFolder(item.path)}
             />
           ) : null}
-          {onNewFileInFolder || onNewFolderInFolder || onRenameFile || onDeleteFile ? (
+          {onNewFileInFolder ||
+          onNewFolderInFolder ||
+          onRenameFile ||
+          onArchiveFile ||
+          onDeleteFile ? (
             <FolderRowActions
               item={item}
               onNewFile={onNewFileInFolder}
               onNewFolder={onNewFolderInFolder}
               onRename={onRenameFile}
+              onArchive={onArchiveFile}
               onDelete={onDeleteFile}
             />
           ) : null}
@@ -390,6 +417,7 @@ function TreeFolderRow({
               onNewFileInFolder={onNewFileInFolder}
               onNewFolderInFolder={onNewFolderInFolder}
               onRenameFile={onRenameFile}
+              onArchiveFile={onArchiveFile}
               onDeleteFile={onDeleteFile}
             />
           ))}
@@ -404,12 +432,14 @@ function FolderRowActions({
   onNewFile,
   onNewFolder,
   onRename,
+  onArchive,
   onDelete,
 }: {
   item: Extract<WorkbenchTreeItem, { type: "folder" }>;
   onNewFile?: (path: string) => void;
   onNewFolder?: (path: string) => void;
   onRename?: (path: string) => void;
+  onArchive?: (path: string) => void;
   onDelete?: (path: string) => void;
 }) {
   return (
@@ -437,6 +467,13 @@ function FolderRowActions({
         <WorkbenchMenuItem disabled={!onRename} onClick={() => onRename?.(item.path)}>
           <WorkbenchIcon name="rename" />
           Rename
+        </WorkbenchMenuItem>
+        <WorkbenchMenuItem
+          disabled={!onArchive || item.path === "archive" || item.path.startsWith("archive/")}
+          onClick={() => onArchive?.(item.path)}
+        >
+          <WorkbenchIcon name="archive" />
+          Archive
         </WorkbenchMenuItem>
         <WorkbenchMenuItem disabled={!onDelete} onClick={() => onDelete?.(item.path)}>
           <WorkbenchIcon name="trash" />
@@ -474,11 +511,13 @@ function FileRowActions({
   path,
   onOpen,
   onRename,
+  onArchive,
   onDelete,
 }: {
   path: string;
   onOpen?: () => void;
   onRename?: (path: string) => void;
+  onArchive?: (path: string) => void;
   onDelete?: (path: string) => void;
 }) {
   const name = path.split("/").pop() ?? path;
@@ -506,6 +545,13 @@ function FileRowActions({
             <WorkbenchIcon name="rename" />
             Rename
           </WorkbenchMenuItem>
+          <WorkbenchMenuItem
+            disabled={!onArchive || path.startsWith("archive/")}
+            onClick={() => onArchive?.(path)}
+          >
+            <WorkbenchIcon name="archive" />
+            Archive
+          </WorkbenchMenuItem>
           <WorkbenchMenuItem disabled={!onDelete} onClick={() => onDelete?.(path)}>
             <WorkbenchIcon name="trash" />
             Delete
@@ -521,7 +567,8 @@ export function fileTree(
     path: string;
     name: string;
     kind: "directory" | "markdown" | "text" | "binary";
-  }[]
+  }[],
+  showArchived = true
 ): WorkbenchTreeItem[] {
   const roots: WorkbenchTreeItem[] = [];
   const folders = new Map<string, Extract<WorkbenchTreeItem, { type: "folder" }>>();
@@ -542,6 +589,7 @@ export function fileTree(
   };
 
   for (const entry of [...files].sort((a, b) => a.path.localeCompare(b.path))) {
+    if (!showArchived && (entry.path === "archive" || entry.path.startsWith("archive/"))) continue;
     if (entry.kind === "directory") {
       ensureFolder(entry.path).name = entry.name;
       continue;

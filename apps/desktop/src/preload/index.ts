@@ -1,14 +1,11 @@
 import { contextBridge, ipcRenderer } from "electron";
-import type { AgentEvent, VaultChange } from "@flux/bridge-contract";
+import type { VaultChange } from "@flux/bridge-contract";
 
 let nextWatcherId = 0;
 
 contextBridge.exposeInMainWorld("electronAPI", {
   ping: () => ipcRenderer.invoke("ping"),
   getWindowId: () => ipcRenderer.invoke("get-window-id"),
-  hideWindow: () => ipcRenderer.invoke("hide-window"),
-  showQuickCapture: () => ipcRenderer.invoke("show-quick-capture"),
-  getMCPServerCommand: () => ipcRenderer.invoke("get-mcp-server-command"),
   onCommand: (handler: (command: string) => void) => {
     const listener = (_event: Electron.IpcRendererEvent, command: string) => handler(command);
     ipcRenderer.on("flux-command", listener);
@@ -32,7 +29,11 @@ contextBridge.exposeInMainWorld("electronAPI", {
     const listener = () => {
       void handler().then(
         () => ipcRenderer.send("flux-close-ready"),
-        (error) => ipcRenderer.send("flux-close-failed", error instanceof Error ? error.message : "Could not save changes")
+        (error) =>
+          ipcRenderer.send(
+            "flux-close-failed",
+            error instanceof Error ? error.message : "Could not save changes"
+          )
       );
     };
     ipcRenderer.on("flux-before-close", listener);
@@ -87,27 +88,6 @@ contextBridge.exposeInMainWorld("electronAPI", {
       ipcRenderer.off(revisionChannel, handleRevision);
       ipcRenderer.off(errorChannel, handleError);
       ipcRenderer.send("unwatch-vault-revision", watcherId);
-    };
-  },
-  watchAgentThread: (
-    threadId: string,
-    onEvent: (event: AgentEvent) => void,
-    onError?: (message: string) => void,
-    afterSequence = 0
-  ) => {
-    const watcherId = `${Date.now()}-${++nextWatcherId}`;
-    const eventChannel = `agent-event:${watcherId}`;
-    const errorChannel = `agent-event-error:${watcherId}`;
-    const handleEvent = (_event: Electron.IpcRendererEvent, payload: AgentEvent) =>
-      onEvent(payload);
-    const handleError = (_event: Electron.IpcRendererEvent, message: string) => onError?.(message);
-    ipcRenderer.on(eventChannel, handleEvent);
-    ipcRenderer.on(errorChannel, handleError);
-    ipcRenderer.send("watch-agent-thread", { watcherId, threadId, afterSequence });
-    return () => {
-      ipcRenderer.off(eventChannel, handleEvent);
-      ipcRenderer.off(errorChannel, handleError);
-      ipcRenderer.send("unwatch-agent-thread", watcherId);
     };
   },
 });

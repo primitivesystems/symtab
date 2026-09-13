@@ -24,7 +24,7 @@ type Client struct {
 func New(origin, token string) (*Client, error) {
 	parsed, err := url.Parse(origin)
 	if err != nil || parsed.Scheme != "http" || parsed.Host == "" || token == "" {
-		return nil, errors.New("invalid Flux daemon connection")
+		return nil, errors.New("invalid Symtab daemon connection")
 	}
 	return &Client{origin: strings.TrimRight(origin, "/"), token: token, http: &http.Client{Timeout: 30 * time.Second}}, nil
 }
@@ -115,7 +115,7 @@ func request[T any](ctx context.Context, client *Client, method, endpoint string
 		if json.Unmarshal(content, &problem) == nil && problem.Error != "" {
 			return zero, errors.New(problem.Error)
 		}
-		return zero, fmt.Errorf("Flux daemon returned HTTP %d", response.StatusCode)
+		return zero, fmt.Errorf("Symtab daemon returned HTTP %d", response.StatusCode)
 	}
 	if len(content) == 0 {
 		return zero, nil

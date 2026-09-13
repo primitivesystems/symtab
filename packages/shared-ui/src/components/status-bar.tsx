@@ -8,13 +8,7 @@ import {
   Settings2,
   Vault,
 } from "lucide-react";
-import {
-  Menu,
-  MenuItem,
-  MenuPopup,
-  MenuSeparator,
-  MenuTrigger,
-} from "./ui/menu";
+import { Menu, MenuItem, MenuPopup, MenuSeparator, MenuTrigger } from "./ui/menu";
 
 export interface FluxVaultOption {
   id: string;
@@ -65,11 +59,13 @@ export function FluxStatusBar({
       <div className="flex min-w-0 items-center gap-2 overflow-hidden whitespace-nowrap">
         <Menu>
           <MenuTrigger
-            render={<button
-              type="button"
-              aria-label="Switch vault"
-              className="flex h-7 min-w-0 max-w-48 items-center gap-1.5 rounded-sm px-1.5 outline-none hover:bg-accent hover:text-foreground focus-visible:ring-1 focus-visible:ring-ring/50 data-popup-open:bg-accent data-popup-open:text-foreground"
-            />}
+            render={
+              <button
+                type="button"
+                aria-label="Switch vault"
+                className="flex h-7 min-w-0 max-w-48 items-center gap-1.5 rounded-sm px-1.5 outline-none hover:bg-accent hover:text-foreground focus-visible:ring-1 focus-visible:ring-ring/50 data-popup-open:bg-accent data-popup-open:text-foreground"
+              />
+            }
           >
             <Vault className="size-3.5 shrink-0" />
             <span className="truncate font-medium text-foreground">
@@ -124,7 +120,7 @@ export function FluxStatusBar({
           <>
             <span
               className="flex shrink-0 items-center gap-1 tabular-nums"
-              title="Total CPU and working memory used by FLUX processes"
+              title="Total CPU and working memory used by Symtab processes"
             >
               <CpuIcon className="size-3.5" />
               <span>CPU {cpuPercent.toFixed(1)}%</span>

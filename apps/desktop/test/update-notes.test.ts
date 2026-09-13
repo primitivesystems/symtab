@@ -20,7 +20,13 @@ test("desktop releases ship DMGs and expose a verified install path", () => {
   const packageJson = JSON.parse(
     readFileSync(new URL("../package.json", import.meta.url), "utf8")
   ) as {
-    build: { publish: { provider: string; owner: string; repo: string }; mac: { target: string[]; identity: null } };
+    build: {
+      productName: string;
+      publish: { provider: string; owner: string; repo: string };
+      mac: { target: string[]; identity: null; icon: string };
+      win: { icon: string };
+      linux: { icon: string };
+    };
   };
   const main = readFileSync(new URL("../src/main/index.ts", import.meta.url), "utf8");
   const installer = readFileSync(new URL("../src/main/installer.ts", import.meta.url), "utf8");
@@ -31,11 +37,18 @@ test("desktop releases ship DMGs and expose a verified install path", () => {
     owner: "wizaye",
     repo: "project-flux",
   });
+  expect(packageJson.build.productName).toBe("Symtab");
+  expect(packageJson.build.mac.icon).toBe("assets/icon.icns");
+  expect(packageJson.build.win.icon).toBe("assets/icon.ico");
+  expect(packageJson.build.linux.icon).toBe("assets/icon.png");
   expect(packageJson.build.mac.target).toEqual(["dmg"]);
   expect(packageJson.build.mac.identity).toBeNull();
   expect(main).toContain('ipcMain.handle("install-update"');
   expect(main).toContain("autoUpdater.quitAndInstall(false, true)");
   expect(main).toContain("FLUX_VERSION: app.getVersion()");
+  expect(main).toContain("existsSync(current) || !existsSync(legacy) ? current : legacy");
+  expect(main).toContain('app.setName("Symtab")');
+  expect(main).toContain("app.dock?.setIcon(nativeImage.createFromPath(dockIconPath()))");
   expect(main).toContain('autoUpdater.on("download-progress"');
   expect(main).toContain('autoUpdater.on("update-downloaded"');
   expect(installer).toContain('createHash("sha256")');

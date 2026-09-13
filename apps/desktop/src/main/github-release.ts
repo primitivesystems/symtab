@@ -14,12 +14,17 @@ export function parseMacRelease(value: unknown, arch: string): MacRelease {
   if (!/^\d+\.\d+\.\d+$/.test(version) || release.draft || release.prerelease) {
     throw new Error("Expected a published stable release");
   }
-  const name = `FLUX-${version}-${arch}.dmg`;
+  const name = `Symtab-${version}-${arch}.dmg`;
   const asset = Array.isArray(release.assets)
     ? release.assets.find((item: Record<string, unknown>) => item?.name === name)
     : undefined;
   const url = `https://github.com/${repository}/releases/download/v${version}/${name}`;
-  if (!asset || asset.browser_download_url !== url || !Number.isSafeInteger(asset.size) || asset.size <= 0) {
+  if (
+    !asset ||
+    asset.browser_download_url !== url ||
+    !Number.isSafeInteger(asset.size) ||
+    asset.size <= 0
+  ) {
     throw new Error(`Release has no valid ${arch} DMG`);
   }
   if (typeof asset.digest !== "string" || !/^sha256:[a-f0-9]{64}$/.test(asset.digest)) {

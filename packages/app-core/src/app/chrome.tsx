@@ -6,7 +6,7 @@ import { Button } from "@flux/shared-ui/components/ui/button";
 export type InitializationPhase = "starting" | "vault" | "cache" | "workspace";
 
 const INITIALIZATION_PHASES: Array<{ id: InitializationPhase; label: string }> = [
-  { id: "starting", label: "Starting Flux" },
+  { id: "starting", label: "Starting Symtab" },
   { id: "vault", label: "Loading vault" },
   { id: "cache", label: "Loading cache" },
   { id: "workspace", label: "Restoring workspace" },

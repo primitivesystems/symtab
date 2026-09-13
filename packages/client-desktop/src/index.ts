@@ -1,5 +1,5 @@
 import { WebFluxClient } from "@flux/client-web";
-import type { AgentEvent, VaultChange } from "@flux/bridge-contract";
+import type { VaultChange } from "@flux/bridge-contract";
 
 export interface DesktopFluxBridge {
   fluxFetch(request: {
@@ -16,12 +16,6 @@ export interface DesktopFluxBridge {
     vaultId: string,
     onChange: (change: VaultChange) => void,
     onError?: (message: string) => void
-  ): () => void;
-  watchAgentThread(
-    threadId: string,
-    onEvent: (event: AgentEvent) => void,
-    onError?: (message: string) => void,
-    afterSequence?: number
   ): () => void;
 }
 
@@ -63,20 +57,6 @@ export class DesktopFluxClient extends WebFluxClient {
   ) {
     return this.bridge.watchVaultChanges(vaultId, onChange, (message) =>
       onError?.(new Error(message))
-    );
-  }
-
-  override watchAgentThread(
-    threadId: string,
-    onEvent: (event: AgentEvent) => void,
-    onError?: (error: Error) => void,
-    afterSequence = 0
-  ) {
-    return this.bridge.watchAgentThread(
-      threadId,
-      onEvent,
-      (message) => onError?.(new Error(message)),
-      afterSequence
     );
   }
 }

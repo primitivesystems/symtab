@@ -4,9 +4,6 @@ interface Window {
   electronAPI?: {
     ping: () => Promise<string>;
     getWindowId: () => Promise<string>;
-    hideWindow: () => Promise<void>;
-    showQuickCapture: () => Promise<void>;
-    getMCPServerCommand: () => Promise<{ command: string; args: string[] }>;
     onCommand: (handler: (command: string) => void) => () => void;
     checkForUpdates: () => Promise<{
       currentVersion: string;
@@ -16,7 +13,9 @@ interface Window {
     }>;
     downloadUpdate: () => Promise<void>;
     installUpdate: () => Promise<void>;
-    onUpdateStatus: (handler: (status: import("@flux/app-core").UpdateRuntimeStatus) => void) => () => void;
+    onUpdateStatus: (
+      handler: (status: import("@flux/app-core").UpdateRuntimeStatus) => void
+    ) => () => void;
     getAppVersion: () => Promise<string>;
     getPerformanceStats: () => Promise<{
       cpuPercent: number;
@@ -48,12 +47,6 @@ interface Window {
       vaultId: string,
       onChange: (change: import("@flux/bridge-contract").VaultChange) => void,
       onError?: (message: string) => void
-    ) => () => void;
-    watchAgentThread: (
-      threadId: string,
-      onEvent: (event: import("@flux/bridge-contract").AgentEvent) => void,
-      onError?: (message: string) => void,
-      afterSequence?: number
     ) => () => void;
   };
 }

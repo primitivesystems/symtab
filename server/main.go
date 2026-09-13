@@ -5,7 +5,6 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"errors"
-	"fmt"
 	"log"
 	"net"
 	"net/http"
@@ -16,13 +15,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/flux-pkm/server/internal/agent"
 	"github.com/flux-pkm/server/internal/api"
 	application "github.com/flux-pkm/server/internal/app"
 	"github.com/flux-pkm/server/internal/appdata"
 	"github.com/flux-pkm/server/internal/config"
-	"github.com/flux-pkm/server/internal/modelproviders"
-	"github.com/flux-pkm/server/internal/plugins"
 	"github.com/flux-pkm/server/internal/runtimecoord"
 	"github.com/flux-pkm/server/internal/vault"
 	"github.com/gin-gonic/gin"
@@ -33,21 +29,14 @@ func main() {
 		application.Version = version
 	}
 
-	if len(os.Args) > 1 && os.Args[1] == "mcp" {
-		if err := runMCPBridge(os.Args[2:]); err != nil {
-			log.Fatal(err)
-		}
-		return
-	}
-
 	// Load configuration
 	cfg := config.Load()
 	runtimeLock, err := runtimecoord.Acquire(filepath.Join(cfg.AppDataDir, "runtime", "daemon.lock"))
 	if errors.Is(err, runtimecoord.ErrLocked) {
-		log.Fatal("Another Flux runtime already owns this app-data directory. If the desktop app is open, it already provides the backend; do not run dev:server separately")
+		log.Fatal("Another Symtab runtime already owns this app-data directory. If the desktop app is open, it already provides the backend; do not run dev:server separately")
 	}
 	if err != nil {
-		log.Fatalf("Failed to acquire Flux runtime: %v", err)
+		log.Fatalf("Failed to acquire Symtab runtime: %v", err)
 	}
 	defer runtimeLock.Close()
 
@@ -78,63 +67,6 @@ func main() {
 			log.Printf("Failed to close app data: %v", err)
 		}
 	}()
-	pluginStore, err := plugins.NewMetadataStore(appData.Database(), false)
-	if err != nil {
-		log.Fatalf("Failed to open plugin metadata: %v", err)
-	}
-	pluginManager, err := plugins.NewManager(cfg.AppDataDir, pluginStore, plugins.BundleRuntime{})
-	if err != nil {
-		log.Fatalf("Failed to initialize plugins: %v", err)
-	}
-	pluginRegistry, err := plugins.NewRegistry(
-		cfg.PluginRegistryURL,
-		cfg.PluginRegistrySignatureURL,
-		cfg.PluginRegistryPublicKey,
-	)
-	if err != nil {
-		log.Fatalf("Failed to configure plugin marketplace: %v", err)
-	}
-	pluginManager.SetRegistry(pluginRegistry)
-
-	// Initialize model providers service
-	modelProviderService, err := modelproviders.NewService(cfg.AppDataDir)
-	if err != nil {
-		log.Printf("Failed to initialize model providers service: %v", err)
-		// Continue without model providers service - it's not critical for basic functionality
-		modelProviderService = nil
-	}
-	var agentService *agent.Service
-	// Hosted agent execution stays off until the web app has real user authentication.
-	if cfg.Environment != "production" || cfg.DesktopToken != "" {
-		agentService, err = agent.NewService(appData.Database(), func(vaultID string) (string, error) {
-			if path, pathErr := appService.VaultPath(vaultID); pathErr == nil {
-				return path, nil
-			}
-			recent, recentErr := appData.RecentVaults()
-			if recentErr != nil {
-				return "", recentErr
-			}
-			for _, item := range recent {
-				if item.VaultID != vaultID {
-					continue
-				}
-				info, openErr := appService.OpenVault(item.Path)
-				if openErr != nil {
-					return "", openErr
-				}
-				if info.ID != vaultID {
-					return "", fmt.Errorf("vault identity changed for %s", vaultID)
-				}
-				return appService.VaultPath(vaultID)
-			}
-			return "", fmt.Errorf("vault %s is not registered", vaultID)
-		})
-		if err != nil {
-			log.Fatalf("Failed to initialize agent service: %v", err)
-		}
-		defer agentService.Close()
-	}
-
 	// Set Gin mode
 	if cfg.Environment == "production" || cfg.Environment == "desktop" {
 		gin.SetMode(gin.ReleaseMode)
@@ -165,15 +97,7 @@ func main() {
 	})
 
 	// Register API routes
-	var routeOptions []api.RouteOption
-	routeOptions = append(routeOptions, api.WithAppData(appData), api.WithDesktopToken(cfg.DesktopToken), api.WithPlugins(pluginManager))
-	if modelProviderService != nil {
-		routeOptions = append(routeOptions, api.WithModelProviders(modelProviderService))
-	}
-	if agentService != nil {
-		routeOptions = append(routeOptions, api.WithAgent(agentService))
-	}
-	api.RegisterRoutes(router, appService, routeOptions...)
+	api.RegisterRoutes(router, appService, api.WithAppData(appData), api.WithDesktopToken(cfg.DesktopToken))
 
 	// Health check endpoint
 	router.GET("/health", func(c *gin.Context) {
@@ -187,14 +111,14 @@ func main() {
 		log.Fatalf("Failed to listen on %s: %v", address, err)
 	}
 	defer listener.Close()
-	log.Printf("Starting FLUX server on %s", listener.Addr())
+	log.Printf("Starting Symtab server on %s", listener.Addr())
 	server := &http.Server{Handler: router, ReadHeaderTimeout: 10 * time.Second}
 	descriptorPath := filepath.Join(cfg.AppDataDir, "runtime", "daemon.json")
 	if cfg.Environment == "desktop" {
 		origin := "http://" + listener.Addr().String()
 		descriptor := runtimecoord.Descriptor{PID: os.Getpid(), Origin: origin, Token: cfg.DesktopToken, Version: application.Version, Protocol: 1}
 		if err := runtimecoord.WriteDescriptor(descriptorPath, descriptor); err != nil {
-			log.Fatalf("Failed to publish Flux runtime: %v", err)
+			log.Fatalf("Failed to publish Symtab runtime: %v", err)
 		}
 		defer os.Remove(descriptorPath)
 	}
@@ -215,7 +139,7 @@ func main() {
 		}
 	case <-shutdownSignal.Done():
 	case <-idle:
-		log.Print("Flux daemon idle; shutting down")
+		log.Print("Symtab daemon idle; shutting down")
 	}
 	shutdownContext, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()

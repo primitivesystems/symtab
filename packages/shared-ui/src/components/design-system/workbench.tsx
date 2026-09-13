@@ -18,7 +18,6 @@ import { documentStatistics } from "./workbench/editor/editor-model";
 import { JournalCalendar } from "./workbench/journal/journal-calendar";
 import { GroupButton } from "./group-button";
 import { PrimarySidebar } from "./workbench/sidebar/primary-sidebar";
-import { SecondarySidebar } from "./workbench/sidebar/secondary-sidebar";
 import { WorkbenchIcon } from "./workbench/shared/workbench-icon";
 import { WorkbenchPanel } from "./workbench/shared/workbench-panel";
 import type {
@@ -41,10 +40,6 @@ export type {
 const activityItems: readonly ActivityBarItem[] = [
   { id: "explorer", label: "Explorer", icon: "files" },
   { id: "search", label: "Search", icon: "search" },
-  { id: "source-control", label: "Source Control", icon: "source-control" },
-  { id: "run", label: "Run and Debug", icon: "debug-alt" },
-  { id: "extensions", label: "Extensions", icon: "extensions" },
-  { id: "chat", label: "Chat", icon: "comment-discussion" },
   { id: "journal", label: "Journal", icon: "calendar" },
   { id: "graph", label: "Graph", icon: "type-hierarchy" },
   { id: "backlinks", label: "Backlinks", icon: "references" },
@@ -55,19 +50,6 @@ const activityCopy: Record<string, { title: string; description: string }> = {
   search: {
     title: "Search isn't connected",
     description: "Workspace search will appear here when a document provider is available.",
-  },
-  "source-control": {
-    title: "Source control isn't connected",
-    description: "Repository changes and branches will appear here when Git support is available.",
-  },
-  run: {
-    title: "Run and debug isn't connected",
-    description:
-      "Launch configurations and debug sessions will appear here when runtime support is available.",
-  },
-  extensions: {
-    title: "Extensions aren't available",
-    description: "Extension browsing will appear here when a registry is connected.",
   },
 };
 
@@ -95,11 +77,13 @@ function initialWorkbenchState(value?: unknown): WorkbenchState {
   if (!shell) return fallback;
   return {
     activeActivity:
-      typeof shell.activeActivity === "string" ? shell.activeActivity : fallback.activeActivity,
+      typeof shell.activeActivity === "string" &&
+      activityItems.some(({ id }) => id === shell.activeActivity)
+        ? shell.activeActivity
+        : fallback.activeActivity,
     leftOpen: typeof shell.leftOpen === "boolean" ? shell.leftOpen : fallback.leftOpen,
     rightOpen: typeof shell.rightOpen === "boolean" ? shell.rightOpen : fallback.rightOpen,
-    rightMaximized:
-      typeof shell.rightMaximized === "boolean" ? shell.rightMaximized : fallback.rightMaximized,
+    rightMaximized: false,
     dismissedNotifications: Array.isArray(shell.dismissedNotifications)
       ? shell.dismissedNotifications.filter((id): id is string => typeof id === "string")
       : [],
@@ -130,7 +114,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function previewFor(path: string) {
   if (path === "AGENTS.md") {
-    return "# Flux\n\nLocal-first workspace for thinking, writing, and building.\n\n## Working agreements\n\n- Keep components focused and composable.\n- Build shared interface primitives in the design system.\n- Prefer clear behavior over speculative abstraction.";
+    return "# Symtab\n\nLocal-first workspace for thinking, writing, and building.\n\n## Working agreements\n\n- Keep components focused and composable.\n- Build shared interface primitives in the design system.\n- Prefer clear behavior over speculative abstraction.";
   }
   if (path === "package.json") {
     return '{\n  "name": "flux",\n  "private": true,\n  "scripts": {\n    "dev": "turbo dev",\n    "typecheck": "turbo typecheck"\n  }\n}';
@@ -156,7 +140,6 @@ export function VSCodeWorkbench({
   onInstallUpdate,
   onThemeChange,
   onStateChange,
-  onQuickCapture,
   onCommand,
   onOpenToday,
   renderSearch,
@@ -173,23 +156,28 @@ export function VSCodeWorkbench({
   onCreateFolder,
   onRefreshFiles,
   onRenameFile,
+  onArchiveFile,
   onDeleteFile,
+  onOpenTrash,
   onManageVaults,
   onEditorChange,
   onActiveEditorChange,
   onExportPdf,
   onFindInEditor,
-  chat,
   journal,
   renderEditor,
   renderGraph,
   renderBacklinks,
   renderTags,
+  renderSecondary,
+  onSelectSecondaryPane,
   onMoveEditorToNewWindow,
 }: VSCodeWorkbenchProps) {
   const [workbenchState, setWorkbenchState] = useState(() => initialWorkbenchState(initialState));
   const [panelLayouts, setPanelLayouts] = useState(() => initialPanelLayouts(initialState));
-  const { activeActivity, leftOpen, rightOpen, rightMaximized } = workbenchState;
+  const { activeActivity, leftOpen } = workbenchState;
+  const rightOpen = Boolean(renderSecondary) && workbenchState.rightOpen;
+  const rightMaximized = false;
   const [commandOpen, setCommandOpen] = useState(false);
   const [releaseNotesOpen, setReleaseNotesOpen] = useState(false);
   const [isCheckingForUpdates, setIsCheckingForUpdates] = useState(false);
@@ -204,24 +192,18 @@ export function VSCodeWorkbench({
   const primaryPanel = usePanelRef();
   const editorPanel = usePanelRef();
   const secondaryPanel = usePanelRef();
-  const secondaryWidthBeforeMaximize = useRef<number | null>(null);
 
   // Collapse panels without unmounting their editor/session state.
   useEffect(() => {
     // Let the panel group register the updated size constraints first.
     const frame = requestAnimationFrame(() => {
-    const maximized = rightOpen && rightMaximized;
-    if (!leftOpen || maximized) primaryPanel.current?.collapse();
-    if (!rightOpen) secondaryPanel.current?.collapse();
-    if (maximized) editorPanel.current?.collapse();
-    else editorPanel.current?.expand();
-    if (leftOpen && !maximized) primaryPanel.current?.expand();
-    if (rightOpen) secondaryPanel.current?.expand();
-    if (maximized) secondaryPanel.current?.resize("100%");
-    else if (rightOpen && secondaryWidthBeforeMaximize.current !== null) {
-      secondaryPanel.current?.resize(`${secondaryWidthBeforeMaximize.current}px`);
-      secondaryWidthBeforeMaximize.current = null;
-    }
+      const maximized = rightOpen && rightMaximized;
+      if (!leftOpen || maximized) primaryPanel.current?.collapse();
+      if (!rightOpen) secondaryPanel.current?.collapse();
+      if (maximized) editorPanel.current?.collapse();
+      else editorPanel.current?.expand();
+      if (leftOpen && !maximized) primaryPanel.current?.expand();
+      if (rightOpen) secondaryPanel.current?.expand();
     });
     return () => cancelAnimationFrame(frame);
   }, [leftOpen, rightOpen, rightMaximized, primaryPanel, editorPanel, secondaryPanel]);
@@ -286,8 +268,8 @@ export function VSCodeWorkbench({
       items.push({
         id: "update:no-updates",
         title: "No updates available",
-        message: `Flux ${update?.currentVersion ?? ""} is up to date.`,
-        source: "Flux Update Service",
+        message: `Symtab ${update?.currentVersion ?? ""} is up to date.`,
+        source: "Symtab Update Service",
       });
     }
     if (updateAvailable && latestVersion) {
@@ -295,21 +277,29 @@ export function VSCodeWorkbench({
       if (!dismissedNotifications.has(id)) {
         items.push({
           id,
-          title: `Flux ${latestVersion} is available`,
+          title: `Symtab ${latestVersion} is available`,
           message:
             downloadStatus === "downloading"
               ? "Downloading the update…"
               : downloadStatus === "ready"
-                ? "Download complete. Restart Flux when you're ready to install it."
+                ? "Download complete. Restart Symtab when you're ready to install it."
                 : downloadStatus === "error"
                   ? "The update could not be downloaded. Retry when you're ready."
                   : `Codename ${update?.codename ?? "Atlas"} is ready to download.`,
-          source: "Flux Update Service",
+          source: "Symtab Update Service",
         });
       }
     }
     return items;
-  }, [dismissedNotifications, downloadStatus, latestVersion, noUpdatesAvailable, update?.codename, update?.currentVersion, updateAvailable]);
+  }, [
+    dismissedNotifications,
+    downloadStatus,
+    latestVersion,
+    noUpdatesAvailable,
+    update?.codename,
+    update?.currentVersion,
+    updateAvailable,
+  ]);
 
   function updateWorkbench(changes: Partial<WorkbenchState>) {
     setWorkbenchState((current) => ({ ...current, ...changes }));
@@ -332,16 +322,17 @@ export function VSCodeWorkbench({
   }
 
   function selectActivity(id: string) {
+    if ((id === "backlinks" || id === "tags") && renderSecondary) {
+      onSelectSecondaryPane?.(id);
+      updateWorkbench({ rightOpen: true, rightMaximized: false });
+      return;
+    }
     if (id === "graph" && renderGraph) {
       editorRef.current?.openTab({ id: "workbench:graph", title: "Graph" });
       return;
     }
     if (id === "journal" && journal) {
       editorRef.current?.openTab({ id: "workbench:journal", title: "Journal" });
-      return;
-    }
-    if (id === "chat") {
-      updateWorkbench({ activeActivity: id, rightOpen: true, rightMaximized: false });
       return;
     }
     if (id === activeActivity && leftOpen) {
@@ -358,6 +349,11 @@ export function VSCodeWorkbench({
     });
   }
 
+  function toggleRightPane() {
+    if (!renderSecondary) return;
+    updateWorkbench({ rightOpen: !rightOpen, rightMaximized: false });
+  }
+
   const handleNativeCommand = useEffectEvent((command: WorkbenchNativeCommand) => {
     if (command === "settings") onSettingsOpenChange?.(true);
     if (command === "updates") {
@@ -369,15 +365,14 @@ export function VSCodeWorkbench({
     if (command === "calendar") selectActivity("journal");
     if (command === "daily-today") {
       if (!workspaceOpen) onManageVaults?.();
-      else void onOpenToday?.().then((tab) => { if (tab) editorRef.current?.openTab(tab); });
+      else
+        void onOpenToday?.().then((tab) => {
+          if (tab) editorRef.current?.openTab(tab);
+        });
     }
   });
 
   useEffect(() => onCommand?.(handleNativeCommand), [onCommand]);
-
-  function toggleRightPane() {
-    updateWorkbench({ rightOpen: !rightOpen, rightMaximized: false });
-  }
 
   function toggleTheme() {
     const nextTheme: WorkbenchTheme = theme === "dark" ? "light" : "dark";
@@ -446,6 +441,20 @@ export function VSCodeWorkbench({
               }
             : undefined
         }
+        onArchiveFile={
+          onArchiveFile
+            ? async (path) => {
+                const destination = await onArchiveFile(path);
+                if (!destination) return;
+                editorRef.current?.renamePath(path, destination);
+                setSelectedPath((current) =>
+                  current === path || current.startsWith(`${path}/`)
+                    ? `${destination}${current.slice(path.length)}`
+                    : current
+                );
+              }
+            : undefined
+        }
         onDeleteFile={
           onDeleteFile
             ? async (path) => {
@@ -457,6 +466,7 @@ export function VSCodeWorkbench({
               }
             : undefined
         }
+        onOpenTrash={onOpenTrash}
         onManageVaults={onManageVaults}
       />
     ) : activeActivity === "backlinks" && renderBacklinks ? (
@@ -478,24 +488,6 @@ export function VSCodeWorkbench({
       <ActivityPlaceholder activityId={activeActivity} />
     );
 
-  const secondary = (
-    <SecondarySidebar
-      {...chat}
-      maximized={rightMaximized}
-      onClose={() =>
-        updateWorkbench({
-          rightOpen: false,
-          rightMaximized: false,
-          activeActivity: activeActivity === "chat" ? "explorer" : activeActivity,
-        })
-      }
-      onToggleMaximize={() => {
-        if (!rightMaximized) secondaryWidthBeforeMaximize.current = secondaryPanel.current?.getSize().inPixels ?? 300;
-        updateWorkbench({ rightMaximized: !rightMaximized });
-      }}
-    />
-  );
-
   return (
     <div
       className={`${theme === "dark" ? "dark" : ""} relative grid h-dvh min-h-0 w-full grid-rows-[35px_minmax(0,1fr)_22px] overflow-hidden bg-[var(--workbench-chrome)] text-[13px] text-[var(--workbench-fg)] antialiased`}
@@ -504,13 +496,13 @@ export function VSCodeWorkbench({
       style={rootStyle}
     >
       <WorkbenchHeader
-        title="flux"
+        title="Symtab"
         leftInset={titleBarInset}
         leftPaneOpen={leftOpen}
         rightPaneOpen={rightOpen}
         onCommand={() => setCommandOpen(true)}
         onToggleLeftPane={toggleLeftPane}
-        onToggleRightPane={toggleRightPane}
+        onToggleRightPane={renderSecondary ? toggleRightPane : undefined}
         updateStatus={downloadStatus}
         updateProgress={updateProgress}
         onDownloadUpdate={updateAvailable ? () => void downloadUpdate() : undefined}
@@ -528,118 +520,126 @@ export function VSCodeWorkbench({
           onSettings={() => onSettingsOpenChange?.(true)}
         />
 
-          <ResizablePanelGroup
-            id="workbench-panes"
-            orientation="horizontal"
-            defaultLayout={defaultLayout}
-            onLayoutChanged={(layout, meta) => {
-              if (meta.isUserInteraction) {
-                setPanelLayouts((current) => ({ ...current, [panelLayoutKey]: layout }));
-              }
-            }}
-            className="min-w-0 flex-1 pe-1"
+        <ResizablePanelGroup
+          id="workbench-panes"
+          orientation="horizontal"
+          defaultLayout={defaultLayout}
+          onLayoutChanged={(layout, meta) => {
+            if (meta.isUserInteraction) {
+              setPanelLayouts((current) => ({ ...current, [panelLayoutKey]: layout }));
+            }
+          }}
+          className="min-w-0 flex-1 pe-1"
+        >
+          <ResizablePanel
+            id="primary-sidebar"
+            panelRef={primaryPanel}
+            collapsible
+            defaultSize="296px"
+            minSize="190px"
+            maxSize="45%"
           >
-                <ResizablePanel
-                  id="primary-sidebar"
-                  panelRef={primaryPanel}
-                  collapsible
-                  defaultSize="296px"
-                  minSize="190px"
-                  maxSize="45%"
-                >
-                  {primary}
-                </ResizablePanel>
-                <WorkbenchResizeHandle label="Resize primary side bar" hidden={!leftOpen || rightMaximized} />
+            {primary}
+          </ResizablePanel>
+          <WorkbenchResizeHandle
+            label="Resize primary side bar"
+            hidden={!leftOpen || rightMaximized}
+          />
 
-            <ResizablePanel id="editor" panelRef={editorPanel} collapsible minSize="280px">
-              <div className="h-full overflow-hidden rounded-[6px] border border-[var(--workbench-border)] bg-[var(--workbench-editor)] shadow-[0_1px_2px_var(--workbench-shadow)]">
-                <EditorArea
-                  ref={editorRef}
-                  renderEditor={(tab, updateTab) =>
-                    tab.id === "workbench:graph" && renderGraph ? renderGraph(
+          <ResizablePanel id="editor" panelRef={editorPanel} collapsible minSize="280px">
+            <div className="h-full overflow-hidden rounded-[6px] border border-[var(--workbench-border)] bg-[var(--workbench-editor)] shadow-[0_1px_2px_var(--workbench-shadow)]">
+              <EditorArea
+                ref={editorRef}
+                renderEditor={(tab, updateTab) =>
+                  tab.id === "workbench:graph" && renderGraph ? (
+                    renderGraph(
                       (path) => void openFile(path),
                       (placement) => editorRef.current?.splitActive(placement),
                       () => updateWorkbench({ activeActivity: "search", leftOpen: true })
-                    ) : tab.id === "workbench:journal" && journal ? (
-                      <JournalCalendar
-                        {...journal}
-                        onOpenEntry={async (path) => {
-                          const opened = await journal.onOpenEntry(path);
-                          if (opened) editorRef.current?.openTab(opened);
-                        }}
-                        onCreateEntry={async (date, title, tags) => {
-                          const opened = await journal.onCreateEntry(date, title, tags);
-                          if (opened) editorRef.current?.openTab(opened);
-                          return opened;
-                        }}
-                        onOpenWeekly={async (date) => {
-                          const opened = await journal.onOpenWeekly(date);
-                          if (opened) editorRef.current?.openTab(opened);
-                        }}
-                      />
-                    ) : (
-                      renderEditor?.(tab, updateTab, (path) => void openFile(path))
                     )
-                  }
-                  onMoveToNewWindow={onMoveEditorToNewWindow}
-                  onDocumentChange={onEditorChange}
-                  onActiveTabChange={(tab) => {
-                    setActiveTab(tab);
-                    onActiveEditorChange?.(tab);
-                  }}
-                  onResolveTab={(tab) =>
-                    tab.id.startsWith("file:")
-                      ? (onOpenFile?.(tab.id.slice(5)) ?? Promise.resolve(tab))
-                      : Promise.resolve(tab)
-                  }
-                  onExportPdf={onExportPdf}
-                  onFind={onFindInEditor}
-                  initialTabs={
-                    files
-                      ? []
-                      : [
-                          {
-                            id: "file:AGENTS.md",
-                            title: "AGENTS.md",
-                            content: previewFor("AGENTS.md"),
-                          },
-                        ]
-                  }
-                />
-              </div>
-            </ResizablePanel>
+                  ) : tab.id === "workbench:journal" && journal ? (
+                    <JournalCalendar
+                      {...journal}
+                      onOpenEntry={async (path) => {
+                        const opened = await journal.onOpenEntry(path);
+                        if (opened) editorRef.current?.openTab(opened);
+                      }}
+                      onCreateEntry={async (date, title, tags) => {
+                        const opened = await journal.onCreateEntry(date, title, tags);
+                        if (opened) editorRef.current?.openTab(opened);
+                        return opened;
+                      }}
+                      onOpenWeekly={async (date) => {
+                        const opened = await journal.onOpenWeekly(date);
+                        if (opened) editorRef.current?.openTab(opened);
+                      }}
+                    />
+                  ) : (
+                    renderEditor?.(tab, updateTab, (path) => void openFile(path))
+                  )
+                }
+                onMoveToNewWindow={onMoveEditorToNewWindow}
+                onDocumentChange={onEditorChange}
+                onActiveTabChange={(tab) => {
+                  setActiveTab(tab);
+                  onActiveEditorChange?.(tab);
+                }}
+                onResolveTab={(tab) =>
+                  tab.id.startsWith("file:")
+                    ? (onOpenFile?.(tab.id.slice(5)) ?? Promise.resolve(tab))
+                    : Promise.resolve(tab)
+                }
+                onExportPdf={onExportPdf}
+                onFind={onFindInEditor}
+                initialTabs={
+                  files
+                    ? []
+                    : [
+                        {
+                          id: "file:AGENTS.md",
+                          title: "AGENTS.md",
+                          content: previewFor("AGENTS.md"),
+                        },
+                      ]
+                }
+              />
+            </div>
+          </ResizablePanel>
 
-                <WorkbenchResizeHandle label="Resize secondary side bar" hidden={!rightOpen || rightMaximized} />
-                <ResizablePanel
-                  id="secondary-sidebar"
-                  panelRef={secondaryPanel}
-                  collapsible
-                  defaultSize="300px"
-                  minSize="240px"
-                  maxSize={rightMaximized ? "100%" : "50%"}
-                >
-                  {secondary}
-                </ResizablePanel>
-          </ResizablePanelGroup>
+          {renderSecondary ? (
+            <>
+              <WorkbenchResizeHandle
+                label="Resize secondary side bar"
+                hidden={!rightOpen || rightMaximized}
+              />
+              <ResizablePanel
+                id="secondary-sidebar"
+                panelRef={secondaryPanel}
+                collapsible
+                defaultSize="300px"
+                minSize="240px"
+                maxSize="50%"
+              >
+                <div className="h-full overflow-hidden rounded-[6px] border border-[var(--workbench-border)] bg-[var(--workbench-editor)] shadow-[0_1px_2px_var(--workbench-shadow)]">
+                  {/* eslint-disable-next-line react-hooks/refs */}
+                  {renderSecondary((path) => void openFile(path), () =>
+                    updateWorkbench({ activeActivity: "search", leftOpen: true })
+                  )}
+                </div>
+              </ResizablePanel>
+            </>
+          ) : null}
+        </ResizablePanelGroup>
       </main>
 
       <WorkbenchFooter
         {...documentStatistics(activeTab, { words, characters, backlinks })}
-        onShowBacklinks={renderBacklinks ? () => selectActivity("backlinks") : undefined}
+        onShowBacklinks={
+          renderSecondary || renderBacklinks ? () => selectActivity("backlinks") : undefined
+        }
         cpuPercent={cpuPercent}
         memoryMB={memoryMB}
-        left={
-          <GroupButton>
-            <Button variant="ghost" size="xs" type="button" title="Current branch">
-              <WorkbenchIcon name="git-branch" size={12} />
-              main
-            </Button>
-            <Button variant="ghost" size="xs" type="button" title="No problems">
-              <WorkbenchIcon name="error-small" size={12} />0 0
-            </Button>
-          </GroupButton>
-        }
-        center={`${runtimeLabel} · Flux`}
+        center={`${runtimeLabel} · Symtab`}
         right={
           <GroupButton>
             <Button
@@ -656,7 +656,6 @@ export function VSCodeWorkbench({
             </Button>
             <NotificationCenter
               notifications={notifications}
-              onQuickCapture={onQuickCapture}
               onNotificationClick={openReleaseNotes}
               onAction={(_notificationId, actionId) => {
                 if (actionId === "download") void downloadUpdate();
@@ -712,10 +711,16 @@ export function VSCodeWorkbench({
             label: leftOpen ? "View: Hide Primary Side Bar" : "View: Show Primary Side Bar",
             run: toggleLeftPane,
           },
-          {
-            label: rightOpen ? "View: Hide Secondary Side Bar" : "View: Show Secondary Side Bar",
-            run: toggleRightPane,
-          },
+          ...(renderSecondary
+            ? [
+                {
+                  label: rightOpen
+                    ? "View: Hide Secondary Side Bar"
+                    : "View: Show Secondary Side Bar",
+                  run: toggleRightPane,
+                },
+              ]
+            : []),
           ...(update ? [{ label: "Help: Show Release Notes", run: openReleaseNotes }] : []),
           ...(journal
             ? [{ label: "Journal: Open Calendar", run: () => selectActivity("journal") }]

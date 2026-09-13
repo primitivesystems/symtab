@@ -2,7 +2,10 @@ import type { TrashEntry } from "@flux/bridge-contract";
 import type { DailyNoteConfig } from "../daily-notes/config";
 import { dateFromKey, isoWeekKey, localDateKey, noteFileName } from "../daily-notes/config";
 
-export { VaultManager, type SelectableVault } from "@flux/shared-ui/components/design-system/workbench/chrome/vault-manager";
+export {
+  VaultManager,
+  type SelectableVault,
+} from "@flux/shared-ui/components/design-system/workbench/chrome/vault-manager";
 
 export function RenameDialog({
   request,
@@ -178,7 +181,7 @@ export function TrashManager({
           )}
         </div>
         <div className="border-t px-5 py-3 text-[10px] text-muted-foreground [border-color:var(--layout-separator)]">
-          Flux removes trash older than 30 days when vault opens.
+          Symtab removes trash older than 30 days when vault opens.
         </div>
       </div>
     </div>
