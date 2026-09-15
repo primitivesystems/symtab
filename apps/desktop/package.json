@@ -61,8 +61,12 @@
         "to": "symtab.png"
       },
       {
-        "from": "assets/dock-icon.png",
-        "to": "dock-icon.png"
+        "from": "assets/dock-icon-dark.png",
+        "to": "dock-icon-dark.png"
+      },
+      {
+        "from": "assets/dock-icon-light.png",
+        "to": "dock-icon-light.png"
       },
       {
         "from": "assets/menubarTemplate.png",
