@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { buildGraph, graphNodeRadius } from "../src/workspace/graph/model";
+import { buildGraph, graphLabelBudget, graphNodeRadius } from "../src/workspace/graph/model";
 import type { VaultGraph } from "@flux/bridge-contract";
 
 test("backend graph includes indexed tags without loading document contents", () => {
@@ -18,4 +18,11 @@ test("backend graph includes indexed tags without loading document contents", ()
   expect(shown.nodes.find((node) => node.kind === "tag")?.title).toBe("#focus");
   expect(shown.nodes[0]?.title).toBe("a");
   expect(graphNodeRadius(shown.nodes[0]!, 1)).toBeLessThan(5);
+});
+
+test("graph labels stay bounded at overview zoom", () => {
+  expect(graphLabelBudget(0.2)).toBe(0);
+  expect(graphLabelBudget(0.8)).toBe(20);
+  expect(graphLabelBudget(1.2)).toBe(60);
+  expect(graphLabelBudget(2)).toBe(120);
 });

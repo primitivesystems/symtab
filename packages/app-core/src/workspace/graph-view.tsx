@@ -26,7 +26,7 @@ import { MenuItem } from "@flux/shared-ui/components/ui/menu";
 import { Application, BitmapText, Color, Container, Graphics, Rectangle } from "pixi.js";
 import { FluxEditorPane } from "@flux/shared-ui/components/workspace-tab";
 import type { DemoDocument } from "../editor/markdown-editor";
-import { buildGraph, graphNodeRadius, type GraphNode, type GraphLink } from "./graph/model";
+import { buildGraph, graphLabelBudget, graphNodeRadius, type GraphNode, type GraphLink } from "./graph/model";
 import { GraphSection as ForceSection, GraphSwitch, GraphSlider } from "@flux/shared-ui/components/design-system/graph/graph-controls";
 import { Button } from "@flux/shared-ui/components/ui/button";
 import { Input } from "@flux/shared-ui/components/ui/input";
@@ -121,7 +121,7 @@ export function GraphView({
   const [showTags, setShowTags] = useState(false);
   const [showAttachments, setShowAttachments] = useState(false);
   const [existingFilesOnly, setExistingFilesOnly] = useState(false);
-  const [showOrphans, setShowOrphans] = useState(true);
+  const [showOrphans, setShowOrphans] = useState(false);
   const [showLabels, setShowLabels] = useState(true);
   const [showArrows, setShowArrows] = useState(false);
   const [textFadeThreshold, setTextFadeThreshold] = useState(0);
@@ -137,6 +137,9 @@ export function GraphView({
   const [transform, setTransform] = useState<ZoomTransform>(zoomIdentity);
   const [darkMode, setDarkMode] = useState(() =>
     document.documentElement.classList.contains("dark")
+  );
+  const [reducedMotion, setReducedMotion] = useState(() =>
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches
   );
   const [viewport, setViewport] = useState({ width: WIDTH, height: HEIGHT });
   const surfaceRef = useRef<HTMLDivElement>(null);
@@ -160,6 +163,13 @@ export function GraphView({
     const observer = new MutationObserver(() => setDarkMode(root.classList.contains("dark")));
     observer.observe(root, { attributes: true, attributeFilter: ["class"] });
     return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setReducedMotion(preference.matches);
+    preference.addEventListener("change", update);
+    return () => preference.removeEventListener("change", update);
   }, []);
 
   useEffect(() => {
@@ -308,6 +318,9 @@ export function GraphView({
     const behavior = zoom<HTMLDivElement, unknown>()
       .scaleExtent([0.05, 4])
       .filter((event) => !dragRef.current && (!event.button || event.type === "wheel"))
+      .on("start", (event) => {
+        if (event.sourceEvent) autoFitPendingRef.current = false;
+      })
       .on("zoom", (event) => setTransform(event.transform));
     zoomRef.current = behavior;
     select(surface).call(behavior);
@@ -345,6 +358,12 @@ export function GraphView({
     });
     return counts;
   }, [graph.links]);
+  const labelRank = useMemo(
+    () => new Map([...graph.nodes]
+      .sort((a, b) => (linkCounts.get(b.id) ?? 0) - (linkCounts.get(a.id) ?? 0))
+      .map((node, index) => [node.id, index])),
+    [graph.nodes, linkCounts]
+  );
   const hoveredNeighbors = useMemo(() => {
     const neighbors = new Set<string>(hoveredId ? [hoveredId] : []);
     if (hoveredId) {
@@ -366,7 +385,8 @@ export function GraphView({
     const linkColor = darkMode ? 0x707070 : 0xababab;
     const nodeColor = darkMode ? 0xb2b2b2 : 0x666666;
     const secondaryNodeColor = darkMode ? 0x707070 : 0x929292;
-    const baseLinkAlpha = darkMode ? 0.4 : 0.42;
+    const baseLinkAlpha = Math.max(0.06,
+      Math.min(darkMode ? 0.4 : 0.42, 8 / Math.sqrt(Math.max(1, graph.links.length))));
     if (scene.labelColor !== foreground) {
       for (const label of labelById.values()) label.style.fill = foreground;
       scene.labelColor = foreground;
@@ -397,7 +417,7 @@ export function GraphView({
       links.stroke({
         color: linkColor,
         width: 0.7 * linkThickness,
-        alpha: hoveredId ? 0.12 : baseLinkAlpha,
+        alpha: hoveredId ? Math.min(0.08, baseLinkAlpha) : baseLinkAlpha,
       });
     if (hoveredId) {
       let highlightedLinks = false;
@@ -442,8 +462,9 @@ export function GraphView({
           });
       }
     }
-    const labelsVisible =
-      showLabels && transform.k >= (darkMode ? 0.45 : 0.2) + textFadeThreshold * 1.4;
+    const labelBudget = graphLabelBudget(
+      transform.k - textFadeThreshold * 1.4 - (darkMode ? 0.1 : 0)
+    );
     for (const node of visibleNodes) {
       if (node.x === undefined || node.y === undefined) continue;
       const active = node.id === activePath;
@@ -463,7 +484,8 @@ export function GraphView({
               ? secondaryNodeColor
               : nodeColor;
       nodes.circle(node.x, node.y, radius).fill({ color: fill, alpha: hoveredId && !hoveredNeighbors.has(node.id) ? 0.18 : 1 });
-      if (labelsVisible) {
+      if (showLabels &&
+        (hovered || active || (labelRank.get(node.id) ?? Number.POSITIVE_INFINITY) < labelBudget)) {
         const screenX = node.x * transform.k + transform.x;
         const screenY = node.y * transform.k + transform.y;
         if (
@@ -514,6 +536,7 @@ export function GraphView({
     layoutNodes,
     linkCounts,
     linkThickness,
+    labelRank,
     nodeById,
     nodeSize,
     showArrows,
@@ -545,7 +568,9 @@ export function GraphView({
       .translate(viewport.width / 2, viewport.height / 2)
       .scale(scale)
       .translate(-(minX + maxX) / 2, -(minY + maxY) / 2);
-    select(surface).transition().duration(280).call(behavior.transform, next);
+    const selection = select(surface);
+    if (reducedMotion) selection.call(behavior.transform, next);
+    else selection.transition().duration(180).call(behavior.transform, next);
   };
   useEffect(() => {
     fitGraphRef.current = fitGraph;
@@ -563,7 +588,7 @@ export function GraphView({
     setShowTags(false);
     setShowAttachments(false);
     setExistingFilesOnly(false);
-    setShowOrphans(true);
+    setShowOrphans(false);
     setShowLabels(true);
     setShowArrows(false);
     setTextFadeThreshold(0);
@@ -582,8 +607,11 @@ export function GraphView({
   const changeZoom = (factor: number) => {
     const surface = surfaceRef.current;
     const behavior = zoomRef.current;
-    if (surface && behavior)
-      select(surface).transition().duration(160).call(behavior.scaleBy, factor);
+    if (surface && behavior) {
+      const selection = select(surface);
+      if (reducedMotion) selection.call(behavior.scaleBy, factor);
+      else selection.transition().duration(140).call(behavior.scaleBy, factor);
+    }
   };
   const copyScreenshot = () => {
     const scene = pixiRef.current;
@@ -695,6 +723,7 @@ export function GraphView({
           tabIndex={0}
           onContextMenu={(event) => setContextNode(nodeAtPointer(event))}
           onKeyDown={(event) => {
+            autoFitPendingRef.current = false;
             if (event.key === "+" || event.key === "=") changeZoom(1.25);
             else if (event.key === "-") changeZoom(0.8);
             else if (event.key === "Home") fitGraph();
@@ -710,6 +739,7 @@ export function GraphView({
           }}
           onPointerDown={(event) => {
             if (event.button !== 0) return;
+            autoFitPendingRef.current = false;
             const node = nodeAtPointer(event);
             const coordinates = graphCoordinates(event);
             if (!node || !coordinates) return;
@@ -756,7 +786,10 @@ export function GraphView({
             aria-label="Open graph settings"
             title="Open graph settings"
             className="grid size-7 place-items-center rounded-md hover:bg-accent hover:text-foreground"
-            onClick={() => setShowSettings((open) => !open)}
+            onClick={() => {
+              autoFitPendingRef.current = false;
+              setShowSettings((open) => !open);
+            }}
           >
             <Settings className="size-3.5" />
           </Button>
@@ -765,13 +798,16 @@ export function GraphView({
             aria-label="Animate graph layout"
             title="Animate graph layout"
             className="grid size-7 place-items-center rounded-md hover:bg-accent hover:text-foreground"
-            onClick={() => simulationRef.current?.alpha(1).restart()}
+            onClick={() => {
+              autoFitPendingRef.current = false;
+              simulationRef.current?.alpha(1).restart();
+            }}
           >
             <WandSparkles className="size-3.5" />
           </Button>
         </div>
         {showSettings ? (
-          <aside className="absolute right-2 top-2 z-30 max-h-[calc(100%-1rem)] w-60 max-w-[calc(100%-1rem)] overflow-y-auto rounded-lg bg-popover text-popover-foreground shadow-md ring-1 ring-border">
+          <aside className="absolute right-2 top-2 z-30 max-h-[calc(100%-1rem)] w-60 max-w-[calc(100%-1rem)] animate-in overflow-y-auto rounded-lg bg-popover text-popover-foreground shadow-md ring-1 ring-border fade-in-0 zoom-in-95 duration-150 motion-reduce:animate-none">
             <ForceSection title="Filters" defaultOpen actions={<>
               <Button variant="ghost" size="icon-sm" aria-label="Restore default graph settings" onClick={reset}><RotateCcw className="size-3.5" /></Button>
               <Button variant="ghost" size="icon-sm" aria-label="Close graph settings" onClick={() => setShowSettings(false)}><X className="size-3.5" /></Button>

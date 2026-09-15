@@ -199,7 +199,7 @@ export function PrimarySidebar({
                 Manage vaults
               </Button>
             </div>
-          ) : (
+          ) : tree.length ? (
             tree.map((item) => (
               <TreeRow
                 key={item.path}
@@ -215,6 +215,12 @@ export function PrimarySidebar({
                 onDeleteFile={setDeletePath}
               />
             ))
+          ) : (
+            <div className="flex min-h-36 flex-col items-center justify-center gap-2 px-5 text-center">
+              <p className="text-xs text-[var(--workbench-muted)]">This workspace has no notes.</p>
+              <Button size="sm" variant="outline" type="button" disabled={!onCreateFile}
+                onClick={() => setRequest({ kind: "file" })}>New file</Button>
+            </div>
           )}
         </ScrollArea>
         <ResourceDialog
@@ -373,7 +379,7 @@ function TreeFolderRow({
           />
           <span className="truncate">{item.name}</span>
         </button>
-        <div className="pointer-events-none absolute inset-y-0 end-1 flex items-center bg-[var(--workbench-hover)] opacity-0 group-hover/row:pointer-events-auto group-hover/row:opacity-100 group-focus-within/row:pointer-events-auto group-focus-within/row:opacity-100">
+        <div className="pointer-events-none absolute inset-y-0 end-1 flex items-center bg-[var(--workbench-hover)] opacity-0 transition-opacity duration-100 motion-reduce:transition-none group-hover/row:pointer-events-auto group-hover/row:opacity-100 group-focus-within/row:pointer-events-auto group-focus-within/row:opacity-100">
           {onNewFileInFolder ? (
             <RowActionButton
               label={`New file in ${item.name}`}
@@ -523,7 +529,7 @@ function FileRowActions({
   const name = path.split("/").pop() ?? path;
 
   return (
-    <div className="pointer-events-none absolute inset-y-0 end-1 flex items-center bg-[var(--workbench-hover)] opacity-0 group-hover/row:pointer-events-auto group-hover/row:opacity-100 group-focus-within/row:pointer-events-auto group-focus-within/row:opacity-100">
+    <div className="pointer-events-none absolute inset-y-0 end-1 flex items-center bg-[var(--workbench-hover)] opacity-0 transition-opacity duration-100 motion-reduce:transition-none group-hover/row:pointer-events-auto group-hover/row:opacity-100 group-focus-within/row:pointer-events-auto group-focus-within/row:opacity-100">
       <DropdownMenu>
         <DropdownMenuTrigger
           render={

@@ -90,6 +90,13 @@ func TestRawFileAndWatcherRevision(t *testing.T) {
 	if rawResponse.Code != http.StatusOK || !bytes.Equal(rawResponse.Body.Bytes(), pdf) {
 		t.Fatalf("unexpected raw response %d: %q", rawResponse.Code, rawResponse.Body.Bytes())
 	}
+	rangeRequest := httptest.NewRequest(http.MethodGet, "/api/v1/vaults/"+info.ID+"/files/raw?path=test.pdf", nil)
+	rangeRequest.Header.Set("Range", "bytes=0-3")
+	rangeResponse := httptest.NewRecorder()
+	router.ServeHTTP(rangeResponse, rangeRequest)
+	if rangeResponse.Code != http.StatusPartialContent || rangeResponse.Body.String() != "%PDF" {
+		t.Fatalf("unexpected ranged response %d: %q", rangeResponse.Code, rangeResponse.Body.String())
+	}
 	requestJSON(t, router, http.MethodPost, "/api/v1/vaults/"+info.ID+"/index/rebuild", nil, http.StatusAccepted)
 
 	revision := func() uint64 {

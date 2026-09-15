@@ -199,6 +199,31 @@ func (s *Service) Read(relativePath string) (domain.FileDocument, error) {
 	}, nil
 }
 
+func (s *Service) OpenRaw(relativePath string) (*os.File, domain.FileEntry, error) {
+	s.tree.RLock()
+	defer s.tree.RUnlock()
+	resolvedPath, normalizedPath, err := s.resolve(relativePath)
+	if err != nil {
+		return nil, domain.FileEntry{}, err
+	}
+	if err := rejectSymlinks(s.root, resolvedPath); err != nil {
+		return nil, domain.FileEntry{}, err
+	}
+	file, err := os.Open(resolvedPath)
+	if err != nil {
+		return nil, domain.FileEntry{}, err
+	}
+	info, err := file.Stat()
+	if err != nil || !info.Mode().IsRegular() {
+		_ = file.Close()
+		if err != nil {
+			return nil, domain.FileEntry{}, err
+		}
+		return nil, domain.FileEntry{}, fmt.Errorf("%w: path is not a regular file", ErrInvalidPath)
+	}
+	return file, fileEntry(normalizedPath, info), nil
+}
+
 func (s *Service) Save(relativePath, content, expectedHash string) (domain.SaveResult, domain.FileEntry, error) {
 	s.tree.RLock()
 	defer s.tree.RUnlock()

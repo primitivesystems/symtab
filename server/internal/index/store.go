@@ -67,6 +67,8 @@ func (PropertyRecord) TableName() string { return "properties" }
 type Store struct {
 	db         *gorm.DB
 	writer     sync.Mutex
+	graphMu    sync.Mutex
+	graphCache *domain.VaultGraph
 	ftsEnabled bool
 }
 
@@ -147,7 +149,7 @@ func Open(databasePath string) (*Store, error) {
 func (s *Store) ReplaceFiles(entries []domain.FileEntry) error {
 	s.writer.Lock()
 	defer s.writer.Unlock()
-	return s.db.Transaction(func(tx *gorm.DB) error {
+	err := s.db.Transaction(func(tx *gorm.DB) error {
 		paths := make([]string, 0, len(entries))
 		for _, entry := range entries {
 			paths = append(paths, entry.Path)
@@ -157,12 +159,20 @@ func (s *Store) ReplaceFiles(entries []domain.FileEntry) error {
 		}
 		return s.deleteMissing(tx, paths)
 	})
+	if err == nil {
+		s.invalidateGraph()
+	}
+	return err
 }
 
 func (s *Store) UpsertFile(entry domain.FileEntry) error {
 	s.writer.Lock()
 	defer s.writer.Unlock()
-	return upsertMetadata(s.db, entry)
+	err := upsertMetadata(s.db, entry)
+	if err == nil {
+		s.invalidateGraph()
+	}
+	return err
 }
 
 func (s *Store) ListFiles() ([]domain.FileEntry, error) {
@@ -386,7 +396,7 @@ func (s *Store) IndexPrepared(files []PreparedFile) error {
 	}
 	s.writer.Lock()
 	defer s.writer.Unlock()
-	return s.db.Transaction(func(tx *gorm.DB) error {
+	err := s.db.Transaction(func(tx *gorm.DB) error {
 		records := make([]FileRecord, 0, len(files))
 		paths := make([]string, 0, len(files))
 		type searchRow struct {
@@ -464,13 +474,17 @@ func (s *Store) IndexPrepared(files []PreparedFile) error {
 		}
 		return nil
 	})
+	if err == nil {
+		s.invalidateGraph()
+	}
+	return err
 }
 
 func (s *Store) DeletePath(relativePath string) error {
 	s.writer.Lock()
 	defer s.writer.Unlock()
 	prefix := relativePath + "/"
-	return s.db.Transaction(func(tx *gorm.DB) error {
+	err := s.db.Transaction(func(tx *gorm.DB) error {
 		var paths []string
 		if err := tx.Model(&FileRecord{}).
 			Where("relative_path = ? OR substr(relative_path, 1, ?) = ?", relativePath, len(prefix), prefix).
@@ -495,6 +509,10 @@ func (s *Store) DeletePath(relativePath string) error {
 		}
 		return s.deleteFTS(tx, paths)
 	})
+	if err == nil {
+		s.invalidateGraph()
+	}
+	return err
 }
 
 func (s *Store) DeleteMissing(entries []domain.FileEntry) error {
@@ -504,9 +522,13 @@ func (s *Store) DeleteMissing(entries []domain.FileEntry) error {
 	}
 	s.writer.Lock()
 	defer s.writer.Unlock()
-	return s.db.Transaction(func(tx *gorm.DB) error {
+	err := s.db.Transaction(func(tx *gorm.DB) error {
 		return s.deleteMissing(tx, paths)
 	})
+	if err == nil {
+		s.invalidateGraph()
+	}
+	return err
 }
 
 func (s *Store) deleteMissing(tx *gorm.DB, paths []string) error {
@@ -568,7 +590,7 @@ func (s *Store) Checkpoint() error {
 func (s *Store) Reset() error {
 	s.writer.Lock()
 	defer s.writer.Unlock()
-	return s.db.Transaction(func(tx *gorm.DB) error {
+	err := s.db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&FileRecord{}).Error; err != nil {
 			return err
 		}
@@ -583,6 +605,10 @@ func (s *Store) Reset() error {
 		}
 		return s.clearFTS(tx)
 	})
+	if err == nil {
+		s.invalidateGraph()
+	}
+	return err
 }
 
 func (s *Store) Close() error {
@@ -784,11 +810,14 @@ func extensionCandidates(target string) []string {
 	return []string{target, target + ".md", target + ".markdown"}
 }
 
-// Graph returns a path-keyed snapshot. Resolution follows HLD priority and
-// deliberately leaves duplicate filename targets unresolved.
 func (s *Store) Graph() (domain.VaultGraph, error) {
+	s.graphMu.Lock()
+	defer s.graphMu.Unlock()
+	if s.graphCache != nil {
+		return cloneGraph(*s.graphCache), nil
+	}
 	var records []FileRecord
-	if err := s.db.Where("kind IN ?", []string{
+	if err := s.db.Select("relative_path", "display_name", "kind").Where("kind IN ?", []string{
 		string(domain.FileKindMarkdown),
 		string(domain.FileKindBinary),
 	}).Order("relative_path").Find(&records).Error; err != nil {
@@ -808,7 +837,7 @@ func (s *Store) Graph() (domain.VaultGraph, error) {
 		}
 	}
 	var tagRecords []TagRecord
-	if err := s.db.Order("source_path, tag").Find(&tagRecords).Error; err != nil {
+	if err := s.db.Select("source_path", "tag").Order("source_path, tag").Find(&tagRecords).Error; err != nil {
 		return domain.VaultGraph{}, err
 	}
 	tagsByPath := make(map[string][]string)
@@ -821,7 +850,7 @@ func (s *Store) Graph() (domain.VaultGraph, error) {
 		nodes = append(nodes, domain.GraphNode{ID: record.RelativePath, Path: record.RelativePath, Label: label, Kind: record.Kind, Tags: tagsByPath[record.RelativePath]})
 	}
 	var linkRecords []LinkRecord
-	if err := s.db.Order("source_path, position").Find(&linkRecords).Error; err != nil {
+	if err := s.db.Select("source_path", "raw_target").Order("source_path, position").Find(&linkRecords).Error; err != nil {
 		return domain.VaultGraph{}, err
 	}
 	edgeSet := make(map[string]domain.GraphEdge)
@@ -891,5 +920,26 @@ func (s *Store) Graph() (domain.VaultGraph, error) {
 		}
 		return edges[i].Source < edges[j].Source
 	})
-	return domain.VaultGraph{Nodes: nodes, Edges: edges}, nil
+	graph := domain.VaultGraph{Nodes: nodes, Edges: edges}
+	s.graphCache = &graph
+	return cloneGraph(graph), nil
+}
+
+func (s *Store) invalidateGraph() {
+	s.graphMu.Lock()
+	s.graphCache = nil
+	s.graphMu.Unlock()
+}
+
+func cloneGraph(graph domain.VaultGraph) domain.VaultGraph {
+	clone := domain.VaultGraph{
+		Nodes: append([]domain.GraphNode{}, graph.Nodes...),
+		Edges: append([]domain.GraphEdge{}, graph.Edges...),
+	}
+	for index := range clone.Nodes {
+		if clone.Nodes[index].Tags != nil {
+			clone.Nodes[index].Tags = append([]string{}, clone.Nodes[index].Tags...)
+		}
+	}
+	return clone
 }

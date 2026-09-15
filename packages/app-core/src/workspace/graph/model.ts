@@ -24,6 +24,13 @@ export function graphNodeRadius(node: GraphNode, degree: number, scale = 1) {
   return (baseRadius + rankGrowth) * scale;
 }
 
+export function graphLabelBudget(scale: number) {
+  if (scale < 0.55) return 0;
+  if (scale < 1) return 20;
+  if (scale < 1.5) return 60;
+  return 120;
+}
+
 function tagsFor(content: string) {
   const inlineTags = [...content.matchAll(/(^|\s)#([\w/-]+)/g)].map((match) => match[2]);
   const frontmatterTags =

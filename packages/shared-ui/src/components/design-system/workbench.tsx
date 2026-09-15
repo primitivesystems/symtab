@@ -193,9 +193,7 @@ export function VSCodeWorkbench({
   const editorPanel = usePanelRef();
   const secondaryPanel = usePanelRef();
 
-  // Collapse panels without unmounting their editor/session state.
   useEffect(() => {
-    // Let the panel group register the updated size constraints first.
     const frame = requestAnimationFrame(() => {
       const maximized = rightOpen && rightMaximized;
       if (!leftOpen || maximized) primaryPanel.current?.collapse();
@@ -255,7 +253,6 @@ export function VSCodeWorkbench({
     [workbenchState.dismissedNotifications]
   );
 
-  // Dismiss "no updates" message after 4 seconds
   useEffect(() => {
     if (!noUpdatesAvailable) return;
     const timer = setTimeout(() => setNoUpdatesAvailable(false), 4000);
@@ -311,8 +308,6 @@ export function VSCodeWorkbench({
     setNoUpdatesAvailable(false);
     try {
       await onCheckForUpdates();
-      // After the await, updateAvailable will reflect the new state on next render.
-      // noUpdatesAvailable is set to true here and cleared by the effect if update arrived.
       setNoUpdatesAvailable(true);
     } catch (error) {
       console.error("Failed to check for updates:", error);
@@ -480,7 +475,6 @@ export function VSCodeWorkbench({
       </WorkbenchPanel>
     ) : activeActivity === "search" && renderSearch ? (
       <WorkbenchPanel aria-label="Search" className="overflow-auto">
-        {/* The slot forwards this handler to result clicks; it never reads the editor ref while rendering. */}
         {/* eslint-disable-next-line react-hooks/refs */}
         {renderSearch((path) => void openFile(path))}
       </WorkbenchPanel>

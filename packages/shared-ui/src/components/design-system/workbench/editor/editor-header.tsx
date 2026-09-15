@@ -153,7 +153,7 @@ export function EditorHeader({
                 clearDragState();
               }}
               className={cn(
-                "group/tab relative mx-[2px] flex h-[30px] min-w-[96px] max-w-[220px] flex-none items-center rounded-[7px] text-[var(--workbench-muted)] hover:bg-[var(--workbench-hover)] hover:text-[var(--workbench-fg)] has-[>[data-active]]:text-[var(--workbench-fg)]",
+                "group/tab relative mx-[2px] flex h-[30px] min-w-[96px] max-w-[220px] flex-none items-center rounded-[7px] text-[var(--workbench-muted)] transition-[background-color,color] duration-100 motion-reduce:transition-none hover:bg-[var(--workbench-hover)] hover:text-[var(--workbench-fg)] has-[>[data-active]]:text-[var(--workbench-fg)]",
                 active
                   ? "has-[>[data-active]]:bg-[var(--workbench-tab-active)]"
                   : "has-[>[data-active]]:bg-[var(--workbench-tab-unfocused)] has-[>[data-active]]:text-[var(--workbench-muted)]",
@@ -177,7 +177,7 @@ export function EditorHeader({
                 size="icon-xs"
                 aria-label={`Close ${tab.title}${tab.dirty ? ", unsaved changes" : ""}`}
                 className={cn(
-                  "!size-5 !rounded-[3px] transition-colors hover:bg-[var(--workbench-hover)] focus-visible:ring-2 focus-visible:ring-[var(--workbench-selected)]",
+                  "!size-5 !rounded-[3px] transition-[background-color,opacity] duration-100 motion-reduce:transition-none hover:bg-[var(--workbench-hover)] focus-visible:ring-2 focus-visible:ring-[var(--workbench-selected)]",
                   tab.id === activeTabId || tab.dirty
                     ? "opacity-100"
                     : "opacity-0 group-hover/tab:opacity-100 group-focus-within/tab:opacity-100"
@@ -192,11 +192,11 @@ export function EditorHeader({
                   <span className="relative grid size-3 place-items-center" aria-hidden="true">
                     <WorkbenchIcon
                       name="close-dirty"
-                      className="absolute group-hover/tab:opacity-0"
+                      className="absolute transition-opacity duration-100 motion-reduce:transition-none group-hover/tab:opacity-0"
                     />
                     <WorkbenchIcon
                       name="close"
-                      className="absolute opacity-0 group-hover/tab:opacity-100"
+                      className="absolute opacity-0 transition-opacity duration-100 motion-reduce:transition-none group-hover/tab:opacity-100"
                     />
                   </span>
                 ) : (

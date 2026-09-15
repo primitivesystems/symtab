@@ -88,4 +88,13 @@ describe("workbench visual contract", () => {
     expect(source).toContain("Verifying package…");
     expect(source).toContain("Click to install");
   });
+
+  test("shared buttons animate only properties they change", () => {
+    const source = readFileSync(
+      new URL("../src/components/ui/button.tsx", import.meta.url),
+      "utf8"
+    );
+    expect(source).not.toContain("transition-all");
+    expect(source).toContain("motion-reduce:transition-none");
+  });
 });

@@ -1152,13 +1152,13 @@ func (h *Handler) readFile(c *gin.Context) {
 }
 
 func (h *Handler) readRawFile(c *gin.Context) {
-	document, err := h.app.ReadFile(c.Param("vaultId"), c.Query("path"))
+	file, entry, err := h.app.OpenRawFile(c.Param("vaultId"), c.Query("path"))
 	if err != nil {
 		writeError(c, err)
 		return
 	}
-	content := []byte(document.Content)
-	c.Data(http.StatusOK, http.DetectContentType(content), content)
+	defer file.Close()
+	http.ServeContent(c.Writer, c.Request, entry.Name, entry.ModifiedAt, file)
 }
 
 type saveFileRequest struct {

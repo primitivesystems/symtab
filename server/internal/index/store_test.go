@@ -257,3 +257,38 @@ func TestGraphUsesPathsAndNeverCollapsesDuplicateNames(t *testing.T) {
 		t.Fatalf("move rewrite scanned unrelated sources: %#v", sources)
 	}
 }
+
+func TestGraphCacheIsIsolatedAndInvalidated(t *testing.T) {
+	store, err := Open(t.TempDir() + "/index.db")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = store.Close() })
+	empty, err := store.Graph()
+	if err != nil || empty.Nodes == nil || empty.Edges == nil {
+		t.Fatalf("empty graph changed JSON shape: %#v, %v", empty, err)
+	}
+	now := time.Now().UTC()
+	entry := domain.FileEntry{Path: "one.md", Name: "one.md", Kind: domain.FileKindMarkdown, SizeBytes: 6, ModifiedAt: now}
+	if err := store.IndexFile(entry, strings.NewReader("#focus")); err != nil {
+		t.Fatal(err)
+	}
+	first, err := store.Graph()
+	if err != nil || store.graphCache == nil {
+		t.Fatalf("graph was not cached: %v", err)
+	}
+	first.Nodes[0].ID = "corrupted"
+	first.Nodes[0].Tags[0] = "corrupted"
+	second, err := store.Graph()
+	if err != nil || second.Nodes[0].ID != "one.md" || second.Nodes[0].Tags[0] != "focus" {
+		t.Fatalf("caller mutated cached graph: %#v, %v", second, err)
+	}
+	entry = domain.FileEntry{Path: "two.md", Name: "two.md", Kind: domain.FileKindMarkdown, SizeBytes: 3, ModifiedAt: now}
+	if err := store.IndexFile(entry, strings.NewReader("two")); err != nil {
+		t.Fatal(err)
+	}
+	third, err := store.Graph()
+	if err != nil || len(third.Nodes) != 2 {
+		t.Fatalf("graph cache was not invalidated: %#v, %v", third, err)
+	}
+}

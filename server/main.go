@@ -29,7 +29,6 @@ func main() {
 		application.Version = version
 	}
 
-	// Load configuration
 	cfg := config.Load()
 	runtimeLock, err := runtimecoord.Acquire(filepath.Join(cfg.AppDataDir, "runtime", "daemon.lock"))
 	if errors.Is(err, runtimecoord.ErrLocked) {
@@ -67,12 +66,10 @@ func main() {
 			log.Printf("Failed to close app data: %v", err)
 		}
 	}()
-	// Set Gin mode
 	if cfg.Environment == "production" || cfg.Environment == "desktop" {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
-	// Create router
 	router := gin.Default()
 	var lastActivity atomic.Int64
 	lastActivity.Store(time.Now().UnixNano())
@@ -96,15 +93,12 @@ func main() {
 		c.Next()
 	})
 
-	// Register API routes
 	api.RegisterRoutes(router, appService, api.WithAppData(appData), api.WithDesktopToken(cfg.DesktopToken))
 
-	// Health check endpoint
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, appService.Status())
 	})
 
-	// Start server
 	address := cfg.Host + ":" + cfg.Port
 	listener, err := net.Listen("tcp", address)
 	if err != nil {
