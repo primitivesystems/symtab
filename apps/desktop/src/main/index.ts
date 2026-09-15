@@ -61,6 +61,12 @@ function dockIconPath() {
     : path.join(currentDirectory, "../assets/dock-icon.png");
 }
 
+function menuBarIconPath() {
+  return app.isPackaged
+    ? path.join(process.resourcesPath, "menubarTemplate.png")
+    : path.join(currentDirectory, "../assets/menubarTemplate.png");
+}
+
 type UpdateStatus =
   | { state: "checking" }
   | { state: "available"; update: ReturnType<typeof updateDetails> }
@@ -508,9 +514,7 @@ function setMenuBarIconEnabled(enabled: boolean) {
     return;
   }
   if (menuBarTray) return;
-  const icon = nativeImage.createFromDataURL(
-    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAOUlEQVR4nGNgGOzgPxRTpJksQ9A1k2QILs1EGUJIM15DiNWM0xCKDaDYC1QJREKGkAQo0oxuyCAGAIXVU60eHgTUAAAAAElFTkSuQmCC"
-  );
+  const icon = nativeImage.createFromPath(menuBarIconPath());
   icon.setTemplateImage(true);
   menuBarTray = new Tray(icon);
   menuBarTray.setToolTip("Symtab quick actions");

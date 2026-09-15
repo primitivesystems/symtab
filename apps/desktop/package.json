@@ -63,6 +63,14 @@
       {
         "from": "assets/dock-icon.png",
         "to": "dock-icon.png"
+      },
+      {
+        "from": "assets/menubarTemplate.png",
+        "to": "menubarTemplate.png"
+      },
+      {
+        "from": "assets/menubarTemplate@2x.png",
+        "to": "menubarTemplate@2x.png"
       }
     ],
     "publish": {

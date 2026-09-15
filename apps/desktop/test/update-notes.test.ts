@@ -49,6 +49,8 @@ test("desktop releases ship DMGs and expose a verified install path", () => {
   expect(main).toContain("existsSync(current) || !existsSync(legacy) ? current : legacy");
   expect(main).toContain('app.setName("Symtab")');
   expect(main).toContain("app.dock?.setIcon(nativeImage.createFromPath(dockIconPath()))");
+  expect(main).toContain("nativeImage.createFromPath(menuBarIconPath())");
+  expect(main).not.toContain("data:image/png;base64");
   expect(main).toContain('autoUpdater.on("download-progress"');
   expect(main).toContain('autoUpdater.on("update-downloaded"');
   expect(installer).toContain('createHash("sha256")');
