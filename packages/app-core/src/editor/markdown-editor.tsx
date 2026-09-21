@@ -865,7 +865,7 @@ export function MarkdownEditor({
   document: DemoDocument;
   mode: MarkdownMode;
   onChange: (value: string) => void;
-  onTitleChange: (title: string) => void;
+  onTitleChange?: (title: string) => void;
   onTitleCommit?: (title: string) => void;
   showBacklinks: boolean;
   findRequest: number;
@@ -1064,18 +1064,24 @@ export function MarkdownEditor({
         if (title) onDropDocument?.(title);
       }}
     >
-      <div className="mx-auto flex w-full max-w-[760px] items-start px-9 pb-3 pt-6">
-        <input
-          aria-label="Document title"
-          value={document.title}
-          onChange={(event) => onTitleChange(event.target.value)}
-          onBlur={(event) => onTitleCommit?.(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === "Enter") event.currentTarget.blur();
-          }}
-          className="min-w-0 flex-1 bg-transparent text-[1.75rem] font-semibold leading-tight tracking-[-0.025em] outline-none placeholder:text-muted-foreground"
-          placeholder="Untitled"
-        />
+      <div className="mx-auto flex w-full max-w-[760px] items-start px-9 pb-3 pt-7">
+        {onTitleChange ? (
+          <input
+            aria-label="Document title"
+            value={document.title}
+            onChange={(event) => onTitleChange(event.target.value)}
+            onBlur={(event) => onTitleCommit?.(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") event.currentTarget.blur();
+            }}
+            className="min-w-0 flex-1 bg-transparent text-[1.75rem] font-semibold leading-tight tracking-[-0.025em] outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+            placeholder="Untitled"
+          />
+        ) : (
+          <h1 className="min-w-0 flex-1 truncate text-[1.75rem] font-semibold leading-tight tracking-[-0.025em]">
+            {document.title || "Untitled"}
+          </h1>
+        )}
       </div>
       {mode !== "read" ? (
         <MarkdownSource

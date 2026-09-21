@@ -307,7 +307,6 @@ export function FluxApp({ runtime, windowControlsInset = 0 }: FluxAppProps) {
             update({ content, dirty: true });
             if (path) changeVaultDocument(path, content, () => update({ dirty: false }));
           }}
-          onTitleChange={() => undefined}
           showBacklinks={false}
           documents={documentLocations}
           onOpenDocument={onOpenDocument}
