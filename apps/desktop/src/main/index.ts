@@ -518,17 +518,17 @@ function setMenuBarIconEnabled(enabled: boolean) {
   icon.setTemplateImage(true);
   menuBarTray = new Tray(icon);
   menuBarTray.setToolTip("Symtab quick actions");
-  menuBarTray.setContextMenu(
-    Menu.buildFromTemplate([
-      { label: "Open Today’s Note", click: () => dispatchCommand("daily-today") },
-      { label: "Search Notes…", click: () => dispatchCommand("search") },
-      { type: "separator" },
-      { label: "Open Symtab", click: () => showMainWindow() },
-      { label: "Settings…", click: () => dispatchCommand("settings") },
-      { type: "separator" },
-      { role: "quit" },
-    ])
-  );
+  const menu = Menu.buildFromTemplate([
+    { label: "Open Today’s Note", click: () => dispatchCommand("daily-today") },
+    { label: "Search Notes…", click: () => dispatchCommand("search") },
+    { type: "separator" },
+    { label: "Open Symtab", click: () => showMainWindow() },
+    { label: "Settings…", click: () => dispatchCommand("settings") },
+    { type: "separator" },
+    { role: "quit" },
+  ]);
+  menuBarTray.on("click", () => menuBarTray?.popUpContextMenu(menu));
+  menuBarTray.on("right-click", () => menuBarTray?.popUpContextMenu(menu));
 }
 
 async function menuBarIconEnabled() {

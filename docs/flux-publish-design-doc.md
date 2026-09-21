@@ -1,4 +1,4 @@
-# Flux Publish — High-Level Design and Architecture
+# Symtab Publish — High-Level Design and Architecture
 
 > Status: Proposed — security and delivery scope revised 2026-08-09
 >
@@ -9,22 +9,22 @@
 > Repository: `wizaye/project-flux`
 >
 > Scope: First-party Obsidian-Publish-class publishing, renderer-independent publishing,
-> Git-backed deployment, graph/backlinks/search, and integration with the existing Flux
+> Git-backed deployment, graph/backlinks/search, and integration with the existing Symtab
 > vault/index/runtime architecture.
 
 ---
 
 # 1. Executive Summary
 
-Flux Publish allows a user to turn some or all of a Flux vault into a public knowledge
+Symtab Publish allows a user to turn some or all of a Symtab vault into a public knowledge
 garden without changing the canonical Markdown files or locking the user into a single
 publishing framework.
 
 The core design principle is:
 
-> Flux owns knowledge semantics. Renderers own presentation.
+> Symtab owns knowledge semantics. Renderers own presentation.
 
-Flux already understands:
+Symtab already understands:
 
 - Markdown files.
 - Wiki links.
@@ -43,21 +43,21 @@ Flux already understands:
 That semantic information should not be independently reconstructed by Quartz,
 Flowershow, Fumadocs, or another publisher.
 
-Instead, Flux builds a versioned **Publication Snapshot** containing only content that is
+Instead, Symtab builds a versioned **Publication Snapshot** containing only content that is
 allowed to become public.
 
 That snapshot can then be consumed by multiple renderer adapters:
 
 ```text
-Flux vault
+Symtab vault
     |
     v
-Flux Publish Core
+Symtab Publish Core
     |
     v
 Publication Snapshot / IR
     |
-    +----> Flux Renderer (Fumadocs-based)
+    +----> Symtab Renderer (Fumadocs-based)
     |
     +----> Quartz Adapter
     |
@@ -66,7 +66,7 @@ Publication Snapshot / IR
     +----> Static Bundle / Custom Renderer
 ```
 
-The default first-party Flux renderer should provide an experience comparable to
+The default first-party Symtab renderer should provide an experience comparable to
 Obsidian Publish:
 
 - Knowledge-oriented site navigation.
@@ -93,17 +93,17 @@ Obsidian Publish:
 - Stable permalinks.
 - Deployment to user-controlled infrastructure.
 
-Fumadocs is used as a **framework underneath Flux Publish UI**, not as the product
-identity and not as the owner of Flux knowledge semantics.
+Fumadocs is used as a **framework underneath Symtab Publish UI**, not as the product
+identity and not as the owner of Symtab knowledge semantics.
 
 ---
 
-# 2. Relationship to Existing Flux HLD
+# 2. Relationship to Existing Symtab HLD
 
-The existing Flux HLD currently contains a Quartz integration section whose fundamental
+The existing Symtab HLD currently contains a Quartz integration section whose fundamental
 assumption is:
 
-> Flux does not reproduce Quartz functionality.
+> Symtab does not reproduce Quartz functionality.
 
 That assumption is no longer sufficient.
 
@@ -114,7 +114,7 @@ The new model is:
 ```text
 OLD
 
-Flux
+Symtab
   |
   v
 Quartz
@@ -128,7 +128,7 @@ Quartz
 
 NEW
 
-Flux
+Symtab
   |
   +-- inclusion rules
   +-- link resolution
@@ -140,7 +140,7 @@ Flux
   v
 Publication Snapshot
   |
-  +---- Flux Renderer
+  +---- Symtab Renderer
   +---- Quartz
   +---- Flowershow
   +---- Custom Renderer
@@ -148,7 +148,7 @@ Publication Snapshot
 
 Quartz remains supported.
 
-Flux does **not** need to reimplement Quartz internally.
+Symtab does **not** need to reimplement Quartz internally.
 
 Instead, Quartz becomes one possible consumer of the same publication model used by the
 first-party renderer.
@@ -168,7 +168,7 @@ project-flux/
 ├── server/                     # Go modular monolith
 │
 ├── packages/
-│   ├── app-core/               # Shared Flux product application
+│   ├── app-core/               # Shared Symtab product application
 │   ├── bridge-contract/        # Runtime-neutral FluxClient contract
 │   ├── client-desktop/         # Desktop transport implementation
 │   ├── client-web/             # HTTP/SSE implementation
@@ -201,7 +201,7 @@ project-flux/
 │   ├── shared-domain/
 │   ├── shared-ui/
 │   │
-│   ├── markdown-engine/                # Extracted Flux Markdown semantics
+│   ├── markdown-engine/                # Extracted Symtab Markdown semantics
 │   ├── graph-ui/                       # Shared headless graph UI
 │   ├── publish-contract/               # Stable publication bundle schema
 │   └── publish-ui/                     # Public-site components
@@ -221,20 +221,20 @@ project-flux/
 
 ## 4.1 Primary Goals
 
-Flux Publish must:
+Symtab Publish must:
 
-1. Publish Markdown knowledge gardens directly from Flux.
+1. Publish Markdown knowledge gardens directly from Symtab.
 2. Support selective publication.
 3. Prevent unpublished content from leaking.
 4. Preserve Markdown as canonical source.
-5. Support the Flux first-party publishing experience.
+5. Support the Symtab first-party publishing experience.
 6. Support alternative publishing frameworks.
 7. Support Git-backed workflows.
 8. Support self-hosted and user-controlled deployments.
-9. Reuse the existing Flux knowledge index.
+9. Reuse the existing Symtab knowledge index.
 10. Keep publication renderer-independent.
 11. Support large vaults.
-12. Work without proprietary Flux infrastructure.
+12. Work without proprietary Symtab infrastructure.
 13. Allow a publish operation to be deterministic and idempotent.
 14. Allow users to customize their first-party site substantially.
 15. Avoid maintaining another independent knowledge parser.
@@ -243,15 +243,15 @@ Flux Publish must:
 
 # 5. Non-Goals
 
-Initial Flux Publish does not require:
+Initial Symtab Publish does not require:
 
 - Real-time collaborative editing.
 - Multi-user publication permissions.
-- A Flux-operated proprietary hosting service.
+- A Symtab-operated proprietary hosting service.
 - Arbitrary shell execution.
-- Arbitrary build scripts supplied through the Flux UI.
-- Executing arbitrary JavaScript in Flux-managed sites.
-- Runtime access from a public site into the private Flux vault.
+- Arbitrary build scripts supplied through the Symtab UI.
+- Executing arbitrary JavaScript in Symtab-managed sites.
+- Runtime access from a public site into the private Symtab vault.
 - Publishing `.flux/index.db`.
 - Publishing `.flux/`.
 - Publishing `.git/`.
@@ -267,7 +267,7 @@ Initial Flux Publish does not require:
 ```mermaid
 flowchart LR
     MD["Markdown + Assets"]
-    IDX["Flux SQLite Index"]
+    IDX["Symtab SQLite Index"]
     PUB["Publication Snapshot"]
     RENDER["Renderer"]
     SITE["Public Site"]
@@ -289,7 +289,7 @@ The user can delete and regenerate both.
 
 ---
 
-## 6.2 Flux Owns Semantic Resolution
+## 6.2 Symtab Owns Semantic Resolution
 
 Renderers must not decide independently:
 
@@ -301,7 +301,7 @@ Renderers must not decide independently:
 - Which notes are publishable.
 - Whether a private note should appear in a graph.
 
-Those decisions belong to Flux.
+Those decisions belong to Symtab.
 
 ---
 
@@ -316,7 +316,7 @@ flowchart LR
     Snapshot["Publication Snapshot"]
 
     subgraph Renderers
-        FR["Flux / Fumadocs"]
+        FR["Symtab / Fumadocs"]
         QR["Quartz"]
         FL["Flowershow"]
         SR["Static Bundle"]
@@ -398,7 +398,7 @@ Correct:
 ```mermaid
 flowchart LR
     Vault["Complete Vault"]
-    Filter["Flux Publish Selection"]
+    Filter["Symtab Publish Selection"]
     Snapshot["Sanitized Public Snapshot"]
     Repo["Publication Repository / Branch"]
     Site["Public Renderer"]
@@ -412,7 +412,7 @@ flowchart LR
     Private -. never copied .-> Snapshot
 ```
 
-The public renderer only receives material Flux has already approved for publication.
+The public renderer only receives material Symtab has already approved for publication.
 
 This is a **fail-closed** model.
 
@@ -608,7 +608,7 @@ Hard exclusions always include normalized vault-relative paths matching:
 ```
 
 Resolve symlinks before selection and reject any target outside the vault root. Directories
-named `trash` are not special unless configured; Flux-managed trash is already covered by
+named `trash` are not special unless configured; Symtab-managed trash is already covered by
 `.flux/**`.
 
 Archive remains excluded by default but may be explicitly included.
@@ -627,7 +627,7 @@ See [[Private Interview Notes]].
 
 Suppose the current page is public but the target note is private.
 
-Flux must never automatically publish the target merely because it is linked.
+Symtab must never automatically publish the target merely because it is linked.
 
 Default rendering:
 
@@ -689,9 +689,9 @@ Referenced binary attachments may be automatically included if:
 
 - They are directly referenced from a published note.
 - They are not explicitly denied.
-- They do not reside in internal Flux directories.
+- They do not reside in internal Symtab directories.
 
-Flux should show the user the automatically included attachment set before first publish.
+Symtab should show the user the automatically included attachment set before first publish.
 
 ---
 
@@ -741,12 +741,12 @@ packages/publish-contract
 
 Do not reuse `bridge-contract` as the public publishing contract.
 
-`bridge-contract` describes communication between Flux application runtimes.
+`bridge-contract` describes communication between Symtab application runtimes.
 
 `publish-contract` describes communication between:
 
 ```text
-Flux Publish Core
+Symtab Publish Core
         and
 Public Renderers
 ```
@@ -852,14 +852,14 @@ export interface PublicationLink {
 Without a stable IR:
 
 ```text
-Flux version X
+Symtab version X
     |
     +--> Quartz-specific logic
     +--> Flowershow-specific logic
     +--> Fumadocs-specific logic
 ```
 
-Each renderer begins implementing its own interpretation of Flux.
+Each renderer begins implementing its own interpretation of Symtab.
 
 Eventually:
 
@@ -874,12 +874,12 @@ The IR avoids this.
 ```mermaid
 flowchart TD
     Vault["Vault"]
-    Core["Flux Semantic Engine"]
+    Core["Symtab Semantic Engine"]
     IR["Publication Contract v1"]
 
     Q["Quartz Adapter"]
     F["Flowershow Adapter"]
-    P["Flux Publish"]
+    P["Symtab Publish"]
     C["Custom Renderer"]
 
     Vault --> Core
@@ -895,7 +895,7 @@ flowchart TD
 
 # 15. Publication Snapshot Generation
 
-Existing Flux already contains:
+Existing Symtab already contains:
 
 - File inventory.
 - Link extraction.
@@ -958,7 +958,7 @@ It should:
 
 # 16. Snapshot Consistency
 
-Flux must not lock the user's editor during a publish build.
+Symtab must not lock the user's editor during a publish build.
 
 Use optimistic snapshot consistency with bounded verification.
 
@@ -1007,7 +1007,7 @@ Published revision: 1032
 Current revision:   1037
 ```
 
-Flux can display:
+Symtab can display:
 
 ```text
 5 newer changes are not published.
@@ -1064,7 +1064,7 @@ If:
 newSnapshotHash == lastPublishedSnapshotHash
 ```
 
-then Flux may return:
+then Symtab may return:
 
 ```text
 Already up to date.
@@ -1229,7 +1229,7 @@ No renderer should contain Vercel/GitHub/Cloudflare-specific logic.
 
 ---
 
-# 22. First-Party Flux Renderer
+# 22. First-Party Symtab Renderer
 
 The default renderer ID:
 
@@ -1246,13 +1246,13 @@ Fumadocs Core
 +
 selected Fumadocs UI primitives
 +
-Flux publish-contract
+Symtab publish-contract
 +
-Flux markdown engine
+Symtab markdown engine
 +
-Flux graph UI
+Symtab graph UI
 +
-custom Flux layout
+custom Symtab layout
 ```
 
 Do NOT simply deploy the stock Fumadocs docs layout.
@@ -1264,13 +1264,13 @@ Do NOT simply deploy the stock Fumadocs docs layout.
 The public experience should look like:
 
 ```text
-Flux Publish
+Symtab Publish
 ```
 
 not:
 
 ```text
-Fumadocs with a Flux logo
+Fumadocs with a Symtab logo
 ```
 
 Fumadocs provides useful primitives:
@@ -1283,7 +1283,7 @@ Fumadocs provides useful primitives:
 - Layout primitives.
 - Server-side source loader.
 
-Flux supplies:
+Symtab supplies:
 
 - Content semantics.
 - Graph.
@@ -1294,7 +1294,7 @@ Flux supplies:
 - Publish filters.
 - Hover previews.
 - Public/private boundaries.
-- Flux visual identity.
+- Symtab visual identity.
 
 ---
 
@@ -1430,7 +1430,7 @@ apps/publish/
 
 # 28. Markdown Rendering
 
-The current Flux Reading View contains important functionality:
+The current Symtab Reading View contains important functionality:
 
 - MarkdownIt.
 - Wiki links.
@@ -1480,9 +1480,9 @@ Consumers:
 flowchart TD
     Engine["@flux/markdown-engine"]
 
-    Desktop["Flux Reading View"]
-    Web["Flux PWA"]
-    Publish["Flux Publish Renderer"]
+    Desktop["Symtab Reading View"]
+    Web["Symtab PWA"]
+    Publish["Symtab Publish Renderer"]
     Preview["Publish Preview"]
 
     Engine --> Desktop
@@ -1500,7 +1500,7 @@ semantics remain shared.
 
 The public site must never resolve wiki links using filename heuristics independently.
 
-Flux Snapshot already knows:
+Symtab Snapshot already knows:
 
 ```json
 {
@@ -1534,7 +1534,7 @@ Renderer must not guess.
 
 # 30. Graph Architecture
 
-Flux currently has a real graph implementation backed by the Go index and rendered in
+Symtab currently has a real graph implementation backed by the Go index and rendered in
 the app with a D3 force simulation and Pixi.
 
 Do not introduce a completely separate graph implementation unless necessary.
@@ -1846,7 +1846,7 @@ flowchart LR
     SearchIndex --> Browser
 ```
 
-Later Flux may optionally add semantic search.
+Later Symtab may optionally add semantic search.
 
 That is not required for Publish v1.
 
@@ -2013,9 +2013,9 @@ interface SiteConfig {
 
 # 42. Customization
 
-The Flux first-party renderer should provide two levels.
+The Symtab first-party renderer should provide two levels.
 
-## Level 1 — Flux UI Configuration
+## Level 1 — Symtab UI Configuration
 
 Users can change:
 
@@ -2053,7 +2053,7 @@ They may:
 - Add custom routes.
 - Completely redesign the site.
 
-Flux only updates generated content boundaries.
+Symtab only updates generated content boundaries.
 
 ---
 
@@ -2079,7 +2079,7 @@ my-flux-site/
     └── assets/
 ```
 
-Flux owns:
+Symtab owns:
 
 ```text
 .flux-content/**
@@ -2091,7 +2091,7 @@ User owns:
 everything else
 ```
 
-Flux must never overwrite arbitrary application code during content publication.
+Symtab must never overwrite arbitrary application code during content publication.
 
 ---
 
@@ -2141,7 +2141,7 @@ Publication Repository ---+
 Advantages:
 
 - Code and content have independent histories.
-- Flux cannot conflict with custom site code.
+- Symtab cannot conflict with custom site code.
 - Publication repo contains no build dependencies.
 - One site can consume different content sources.
 
@@ -2195,12 +2195,12 @@ Do:
 
 ```mermaid
 sequenceDiagram
-    participant Flux
+    participant Symtab
     participant Git as Publication Repo
     participant CI as Deployment Build
-    participant App as Flux Publish App
+    participant App as Symtab Publish App
 
-    Flux->>Git: Push immutable public snapshot
+    Symtab->>Git: Push immutable public snapshot
     Git->>CI: Trigger build
     CI->>Git: Clone/fetch once
     CI->>App: Provide publication bundle
@@ -2220,7 +2220,7 @@ This prevents:
 
 # 47. Git Integration
 
-Publishing Git operations should use the same structured Git philosophy as Flux VCS.
+Publishing Git operations should use the same structured Git philosophy as Symtab VCS.
 
 Never accept:
 
@@ -2273,8 +2273,8 @@ Generated commit example:
 ```text
 publish: update Engineering Garden
 
-Flux-Publication: 01991bb8-...
-Flux-Snapshot: sha256:123...
+Symtab-Publication: 01991bb8-...
+Symtab-Snapshot: sha256:123...
 Vault-Revision: 1032
 ```
 
@@ -2284,16 +2284,16 @@ Do not commit if output hash is unchanged.
 
 # 50. Renderer Adapters
 
-## 50.1 Flux Renderer
+## 50.1 Symtab Renderer
 
 ```text
 Publication Snapshot
     |
     v
-Flux/Fumadocs Source Adapter
+Symtab/Fumadocs Source Adapter
     |
     v
-Next.js + Flux Publish UI
+Next.js + Symtab Publish UI
 ```
 
 Best default.
@@ -2318,7 +2318,7 @@ Quartz build environment
 
 Quartz owns its rendering implementation.
 
-Flux continues to own public selection and semantic filtering.
+Symtab continues to own public selection and semantic filtering.
 
 ---
 
@@ -2371,7 +2371,7 @@ Example:
 }
 ```
 
-Flux UI can disable unsupported settings.
+Symtab UI can disable unsupported settings.
 
 ---
 
@@ -2587,7 +2587,7 @@ with registration from the main router.
 
 # 57. Publication Preview
 
-Flux should support preview before deploying.
+Symtab should support preview before deploying.
 
 Preview stages:
 
@@ -2700,7 +2700,7 @@ Excluded
   ✓ **/*.draft.md
 
 Renderer
-  ● Flux
+  ● Symtab
   ○ Quartz
   ○ Flowershow
   ○ Bundle only
@@ -2746,7 +2746,7 @@ Graph
   Orphans                      on
 ```
 
-The graph UI should reuse Flux graph behavior wherever sensible.
+The graph UI should reuse Symtab graph behavior wherever sensible.
 
 ---
 
@@ -2779,7 +2779,7 @@ Do not make these renderer responsibilities semantically.
 Meaning:
 
 ```text
-Flux generates:
+Symtab generates:
     what nodes exist
     what edges exist
     what backlinks exist
@@ -3151,7 +3151,7 @@ Do not pretend every knowledge-base edit is a blog post.
 
 # 77. Analytics
 
-Flux core should not require analytics.
+Symtab core should not require analytics.
 
 First-party site may provide hooks for:
 
@@ -3164,7 +3164,7 @@ custom analytics
 
 under explicit configuration.
 
-No Flux telemetry dependency should be required for the public site.
+No Symtab telemetry dependency should be required for the public site.
 
 ---
 
@@ -3177,18 +3177,18 @@ Model it as deployment capability rather than Markdown semantics.
 Example:
 
 ```text
-Flux Renderer
+Symtab Renderer
     +
 Cloudflare Access
 
 or
 
-Flux Renderer
+Symtab Renderer
     +
 Vercel Authentication
 ```
 
-A future Flux-managed host could expose a common abstraction.
+A future Symtab-managed host could expose a common abstraction.
 
 Do not implement weak client-side "password protection" around static HTML.
 
@@ -3209,7 +3209,7 @@ deployment
     +-- TLS status
 ```
 
-Flux UI may orchestrate the provider API but should not entangle domains with the renderer.
+Symtab UI may orchestrate the provider API but should not entangle domains with the renderer.
 
 ---
 
@@ -3357,7 +3357,7 @@ Future optimization:
 index parsed frontmatter values
 ```
 
-Do not block Flux Publish v1 on a full index schema redesign.
+Do not block Symtab Publish v1 on a full index schema redesign.
 
 ---
 
@@ -3462,26 +3462,26 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant User
-    participant Flux
+    participant Symtab
     participant GitHub
     participant Provider
     participant Site
 
-    User->>Flux: Create publication
-    Flux-->>User: Selection preview
+    User->>Symtab: Create publication
+    Symtab-->>User: Selection preview
 
-    User->>Flux: Publish
+    User->>Symtab: Publish
 
-    Flux->>Flux: Create public snapshot
-    Flux->>GitHub: Create/update publication repo
-    Flux->>GitHub: Push generated snapshot
+    Symtab->>Symtab: Create public snapshot
+    Symtab->>GitHub: Create/update publication repo
+    Symtab->>GitHub: Push generated snapshot
 
     GitHub->>Provider: Trigger deployment
     Provider->>GitHub: Fetch repository
-    Provider->>Provider: Build Flux Publish site
-    Provider-->>Flux: Deployment ready
+    Provider->>Provider: Build Symtab Publish site
+    Provider-->>Symtab: Deployment ready
 
-    Flux-->>User: Public URL
+    Symtab-->>User: Public URL
     User->>Site: Open garden
 ```
 
@@ -3492,27 +3492,27 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant User
-    participant Flux
+    participant Symtab
     participant Vault
     participant Repo
     participant Provider
 
     User->>Vault: Edit notes
-    Vault-->>Flux: revision changed
+    Vault-->>Symtab: revision changed
 
-    Flux-->>User: 5 unpublished changes
+    Symtab-->>User: 5 unpublished changes
 
-    User->>Flux: Publish
+    User->>Symtab: Publish
 
-    Flux->>Flux: Build snapshot hash
+    Symtab->>Symtab: Build snapshot hash
 
     alt snapshot unchanged
-        Flux-->>User: Already up to date
+        Symtab-->>User: Already up to date
     else snapshot changed
-        Flux->>Repo: Commit generated changes
+        Symtab->>Repo: Commit generated changes
         Repo->>Provider: Trigger build
-        Provider-->>Flux: Ready
-        Flux-->>User: Published
+        Provider-->>Symtab: Ready
+        Symtab-->>User: Published
     end
 ```
 
@@ -3526,11 +3526,11 @@ flowchart TB
     Index["index.db"]
 
     Selection["Publish Selection"]
-    Semantics["Flux Semantic Resolver"]
+    Semantics["Symtab Semantic Resolver"]
     Snapshot["Publication Snapshot v1"]
 
     subgraph Adapters
-        Flux["Flux/Fumadocs"]
+        Symtab["Symtab/Fumadocs"]
         Quartz["Quartz"]
         Flower["Flowershow"]
         Custom["Custom"]
@@ -3544,7 +3544,7 @@ flowchart TB
 
     Semantics --> Snapshot
 
-    Snapshot --> Flux
+    Snapshot --> Symtab
     Snapshot --> Quartz
     Snapshot --> Flower
     Snapshot --> Custom
@@ -3556,7 +3556,7 @@ flowchart TB
 
 Publishing itself should initially be first-party core functionality.
 
-Do not implement Flux Publish as an ordinary plugin.
+Do not implement Symtab Publish as an ordinary plugin.
 
 Reasons:
 
@@ -3653,7 +3653,7 @@ publish.deploy
 ```mermaid
 flowchart LR
     Private["Private Vault"]
-    Core["Flux Trusted Publish Core"]
+    Core["Symtab Trusted Publish Core"]
     Snapshot["Public Snapshot"]
     Renderer["Renderer"]
     Internet["Internet"]
@@ -3675,7 +3675,7 @@ Trust boundaries:
 ### Trusted
 
 ```text
-Flux backend
+Symtab backend
 Vault manager
 Selection engine
 Snapshot builder
@@ -3898,7 +3898,7 @@ Every renderer receives the same snapshot fixture.
 Verify:
 
 ```text
-Flux renderer
+Symtab renderer
 Quartz adapter
 Flowershow adapter
 ```
@@ -4000,7 +4000,7 @@ can produce a safe renderer-neutral bundle.
 
 ---
 
-# 102. Phase 2 — Flux Publish Renderer
+# 102. Phase 2 — Symtab Publish Renderer
 
 Add:
 
@@ -4016,7 +4016,7 @@ primitives the renderer actually consumes. Keep the existing product wrappers in
 Implement:
 
 - Fumadocs source adapter.
-- Flux layout.
+- Symtab layout.
 - Article rendering.
 - File explorer.
 - TOC.
@@ -4041,7 +4041,7 @@ fully navigable static knowledge garden
 
 ---
 
-# 103. Phase 3 — Flux Product UI
+# 103. Phase 3 — Symtab Product UI
 
 Update:
 
@@ -4078,7 +4078,7 @@ GitHub Pages configuration
 deployment status
 ```
 
-Recommended first remote target because it aligns naturally with Flux VCS and OSS users.
+Recommended first remote target because it aligns naturally with Symtab VCS and OSS users.
 
 ---
 
@@ -4089,7 +4089,7 @@ Add deployment providers.
 Keep renderer unchanged.
 
 ```text
-Flux Renderer
+Symtab Renderer
       |
       +-- GitHub Pages
       +-- Vercel
@@ -4288,7 +4288,7 @@ That will drift.
 
 # 111. HLD Changes Required
 
-Existing main Flux HLD should be updated.
+Existing main Symtab HLD should be updated.
 
 Remove:
 
@@ -4296,7 +4296,7 @@ Remove:
 Reimplementation of Quartz publishing.
 ```
 
-from the out-of-scope wording if it implies Flux has no first-party publisher.
+from the out-of-scope wording if it implies Symtab has no first-party publisher.
 
 Replace Quartz section with:
 
@@ -4307,9 +4307,9 @@ Publishing Architecture
 and document:
 
 ```text
-Flux Publish Core
+Symtab Publish Core
 Publication Snapshot
-First-party Flux Renderer
+First-party Symtab Renderer
 Quartz Adapter
 Flowershow Adapter
 Deployment Providers
@@ -4321,7 +4321,7 @@ Quartz should become a subsection instead of the publishing architecture itself.
 
 # 112. Product Positioning
 
-Flux should not market this as:
+Symtab should not market this as:
 
 > Supports Fumadocs.
 
@@ -4336,7 +4336,7 @@ Default:
 ```text
 Publish
     ->
-Flux Garden
+Symtab Garden
     ->
 Done
 ```
@@ -4346,7 +4346,7 @@ Advanced:
 ```text
 Publish
     |
-    +-- Flux
+    +-- Symtab
     +-- Quartz
     +-- Flowershow
     +-- Custom
@@ -4362,7 +4362,7 @@ The important abstraction is:
                      Markdown Vault
                            |
                            v
-                 Flux Knowledge Model
+                 Symtab Knowledge Model
                            |
              +-------------+-------------+
              |             |             |
@@ -4377,7 +4377,7 @@ The important abstraction is:
          +-----------------+-------------------+
          |                 |                   |
          v                 v                   v
-     Flux Garden         Quartz           Flowershow
+     Symtab Garden         Quartz           Flowershow
          |
          v
   User-controlled host
@@ -4404,15 +4404,15 @@ Vault
 Obsidian Publish
 ```
 
-Flux model:
+Symtab model:
 
 ```text
 Vault
   |
   v
-Flux Publish Core
+Symtab Publish Core
   |
-  +-- Flux Garden
+  +-- Symtab Garden
   +-- Quartz
   +-- Flowershow
   +-- Static
@@ -4422,7 +4422,7 @@ Flux Publish Core
     Any host
 ```
 
-This gives Flux a strong OSS property:
+This gives Symtab a strong OSS property:
 
 > Publication is a capability, not a hosted-product lock-in.
 
@@ -4449,7 +4449,7 @@ Ship and validate this boundary before building remote deployment:
 
 Add only after V1A is stable:
 
-- [ ] Flux/Fumadocs renderer.
+- [ ] Symtab/Fumadocs renderer.
 - [ ] Explorer navigation and TOC.
 - [ ] Backlinks and backlink context.
 - [ ] Search.
@@ -4482,7 +4482,7 @@ Later:
 
 - [ ] Automatic redirects after note moves.
 - [ ] Password-protected sites.
-- [ ] Managed Flux hosting.
+- [ ] Managed Symtab hosting.
 - [ ] Semantic search.
 - [ ] Analytics UI.
 - [ ] Comment system.
@@ -4501,14 +4501,14 @@ Later:
 
 # 117. Acceptance Criteria
 
-Flux Publish architecture is considered correctly implemented when:
+Symtab Publish architecture is considered correctly implemented when:
 
 1. A private note cannot appear in generated publication artifacts accidentally.
 2. Graphs contain only public nodes.
 3. Backlinks contain only public source documents.
 4. Search indexes contain only public content.
 5. Fumadocs never needs unrestricted access to the source vault.
-6. Quartz and Flux Renderer can consume the same semantic snapshot.
+6. Quartz and Symtab Renderer can consume the same semantic snapshot.
 7. Publishing does not mutate Markdown unless explicitly requested.
 8. Publishing does not block normal editing.
 9. Failed deployments do not destroy the currently published deployment.
@@ -4516,8 +4516,8 @@ Flux Publish architecture is considered correctly implemented when:
 11. Desktop and web use the same `FluxClient` publishing contract.
 12. Renderer choice is independent from hosting provider choice.
 13. Provider credentials never enter the vault or publication repository.
-14. Public-site graph behavior derives from the Flux knowledge model.
-15. First-party site can be heavily customized without forking Flux itself.
+14. Public-site graph behavior derives from the Symtab knowledge model.
+15. First-party site can be heavily customized without forking Symtab itself.
 
 ---
 
@@ -4525,9 +4525,9 @@ Flux Publish architecture is considered correctly implemented when:
 
 ```mermaid
 flowchart TB
-    User["Flux User"]
+    User["Symtab User"]
 
-    subgraph FluxApp["Flux"]
+    subgraph FluxApp["Symtab"]
         UI["app-core Publish UI"]
 
         Bridge["FluxClient"]
@@ -4554,7 +4554,7 @@ flowchart TB
     end
 
     subgraph Renderers["Renderer Layer"]
-        FluxRenderer["Flux / Fumadocs"]
+        FluxRenderer["Symtab / Fumadocs"]
         Quartz["Quartz"]
         Flowershow["Flowershow"]
         Custom["Custom"]
@@ -4614,7 +4614,7 @@ flowchart TB
 
 # 119. Final Recommendation
 
-Implement Flux Publish in this order:
+Implement Symtab Publish in this order:
 
 ```text
 1. Publication Contract
@@ -4622,8 +4622,8 @@ Implement Flux Publish in this order:
 3. Bulk Graph/Backlink Projection
 4. Markdown Engine Extraction
 5. Graph UI Extraction
-6. First-party Flux/Fumadocs Renderer
-7. Flux Publish Preview
+6. First-party Symtab/Fumadocs Renderer
+7. Symtab Publish Preview
 8. Git-backed Deployment
 9. GitHub Pages
 10. Vercel / Cloudflare
@@ -4650,7 +4650,7 @@ publishing feature is built.
 Once that abstraction exists:
 
 ```text
-Flux
+Symtab
 Quartz
 Flowershow
 Fumadocs
@@ -4658,8 +4658,8 @@ Custom sites
 future renderers
 ```
 
-all become replaceable consumers instead of separate implementations of the Flux
+all become replaceable consumers instead of separate implementations of the Symtab
 knowledge model.
 
-That is the architecture that gives Flux an actual long-term advantage instead of merely
+That is the architecture that gives Symtab an actual long-term advantage instead of merely
 adding another "Publish" button.

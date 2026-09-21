@@ -44,6 +44,6 @@ export async function loadPlugin(source: string, pluginId: string): Promise<Flux
       { cause: error }
     );
   }
-  if (plugin === undefined) throw new Error("plugin entry did not register a Flux plugin");
+  if (plugin === undefined) throw new Error("plugin entry did not register a Symtab plugin");
   return plugin;
 }

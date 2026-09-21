@@ -42,7 +42,7 @@ func (BundleRuntime) ValidatePackage(_ context.Context, plugin InstalledPlugin, 
 	}
 	source := string(data)
 	if ambientRuntimePattern.MatchString(source) || !strings.Contains(source, "__fluxRegisterPlugin") {
-		return errors.New("plugin entry is not a self-contained Flux runtime bundle")
+		return errors.New("plugin entry is not a self-contained Symtab runtime bundle")
 	}
 	return nil
 }

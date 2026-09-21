@@ -6,7 +6,7 @@
 ## Structure
 - One or two editor groups, each with a 35px tab strip and flexible editor body.
 - Tabs use inactive chrome background and active editor background.
-- Empty editor uses a restrained Flux wordmark and shortcut list.
+- Empty editor uses a restrained Symtab wordmark and shortcut list.
 - Optional bottom panel is deferred; its layout boundary remains compatible with a future horizontal group.
 
 ## Exact styles

@@ -35,7 +35,7 @@ func Providers() []Provider {
 		})
 	}
 	providers = append(providers, Provider{
-		ID: "demo", Name: "Flux Demo", Available: true, Status: "ready",
+		ID: "demo", Name: "Symtab Demo", Available: true, Status: "ready",
 		Capabilities: acpCapabilities,
 	})
 	return providers

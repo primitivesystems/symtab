@@ -1,8 +1,8 @@
-# Flux Cross-Platform Updater - Testing & Implementation Guide
+# Symtab Cross-Platform Updater - Testing & Implementation Guide
 
 ## Overview
 
-Your Flux updater now implements a **platform-aware** installation system:
+Your Symtab updater now implements a **platform-aware** installation system:
 
 - **macOS (unsigned builds)**: Semi-automatic DMG installation
 - **Windows**: Automatic NSIS installation via `electron-updater`
@@ -14,7 +14,7 @@ All platforms show the same unified state progression to users, but the backend 
 
 ```
                     ┌─────────────────────┐
-                    │  Flux Update Check  │
+                    │  Symtab Update Check  │
                     └──────────┬──────────┘
                                │
                          "checking"
@@ -62,7 +62,7 @@ All platforms show the same unified state progression to users, but the backend 
            └───────────────────┴──────────────────┘
                        │
                     "Done"
-                  Flux relaunch
+                  Symtab relaunch
 ```
 
 ## States & Their Meaning
@@ -101,11 +101,11 @@ npm run release  # Publishes to GitHub Releases
 ### 2. **Test DMG Flow (macOS)**
 
 #### Setup
-1. Build Flux in dev or create a mock DMG
+1. Build Symtab in dev or create a mock DMG
 2. Manually test the installation flow:
 
 ```bash
-# Terminal 1: Run Flux (dev mode)
+# Terminal 1: Run Symtab (dev mode)
 cd apps/desktop
 npm run dev
 
@@ -114,7 +114,7 @@ npm run dev
 mkdir -p ~/Library/Caches/flux/electron-updater/
 cp ~/Downloads/FLUX-0.0.2-arm64.dmg ~/Library/Caches/flux/electron-updater/
 
-# Then in Flux: Click Settings → Check for Updates → Install
+# Then in Symtab: Click Settings → Check for Updates → Install
 ```
 
 #### Expected Flow
@@ -122,11 +122,11 @@ cp ~/Downloads/FLUX-0.0.2-arm64.dmg ~/Library/Caches/flux/electron-updater/
 2. ✓ User clicks "Install"
 3. ✓ State: `installing`
 4. ✓ Finder opens with DMG
-5. ✓ Flux quits
-6. ✓ User drags Flux.app to /Applications
+5. ✓ Symtab quits
+6. ✓ User drags Symtab.app to /Applications
 
 #### What's Being Tested
-- DMG opens **before** Flux quits (no race condition)
+- DMG opens **before** Symtab quits (no race condition)
 - SHA256 verification passes
 - No error handling needed (unsigned build)
 - Graceful shutdown of windows
@@ -152,8 +152,8 @@ npm run release  # Publishes to GitHub Releases
 1. ✓ Download Setup.exe
 2. ✓ Verify checksum
 3. ✓ Call `autoUpdater.quitAndInstall(false, true)`
-4. ✓ NSIS silently replaces Flux
-5. ✓ Flux 0.0.2 launches
+4. ✓ NSIS silently replaces Symtab
+5. ✓ Symtab 0.0.2 launches
 
 ### 4. **Test Linux AppImage Flow**
 
@@ -167,7 +167,7 @@ npm run release  # Publishes to GitHub Releases
 
 #### Setup
 ```bash
-npm run build  # Builds Flux-0.0.2.AppImage
+npm run build  # Builds Symtab-0.0.2.AppImage
 npm run release  # Publishes to GitHub Releases
 ```
 
@@ -176,7 +176,7 @@ npm run release  # Publishes to GitHub Releases
 2. ✓ Verify checksum
 3. ✓ Call `autoUpdater.quitAndInstall()`
 4. ✓ Old AppImage replaced
-5. ✓ Flux relaunches with new version
+5. ✓ Symtab relaunches with new version
 
 ## Implementation Files
 
@@ -216,10 +216,10 @@ npm run release  # Publishes to GitHub Releases
 - Your builds are unsigned → can't use Squirrel.Mac
 
 **The Solution:**
-- Download DMG (contains unsigned Flux.app)
+- Download DMG (contains unsigned Symtab.app)
 - Verify package integrity (SHA256)
 - Open DMG in Finder (macOS native installer)
-- User manually drags Flux.app to /Applications
+- User manually drags Symtab.app to /Applications
 - macOS asks to replace existing app (native prompt)
 
 **Why This is Reasonable:**
@@ -256,7 +256,7 @@ async function installUpdateMacOS(callbacks) {
   // 4. Give Finder time to open before quitting
   await new Promise((resolve) => setTimeout(resolve, 500));
   
-  // 5. Quit Flux
+  // 5. Quit Symtab
   app.quit();
 }
 ```

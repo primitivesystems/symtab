@@ -26,9 +26,9 @@ type DaemonDescriptor = { origin: string; token: string };
 
 export function daemonDescriptorPath(appData = process.env.FLUX_APP_DATA_DIR): string {
   if (appData) return join(appData, "runtime", "daemon.json");
-  if (platform() === "darwin") return join(homedir(), "Library", "Application Support", "Flux", "runtime", "daemon.json");
-  if (platform() === "win32") return join(process.env.APPDATA ?? homedir(), "Flux", "runtime", "daemon.json");
-  return join(process.env.XDG_CONFIG_HOME ?? join(homedir(), ".config"), "Flux", "runtime", "daemon.json");
+  if (platform() === "darwin") return join(homedir(), "Library", "Application Support", "Symtab", "runtime", "daemon.json");
+  if (platform() === "win32") return join(process.env.APPDATA ?? homedir(), "Symtab", "runtime", "daemon.json");
+  return join(process.env.XDG_CONFIG_HOME ?? join(homedir(), ".config"), "Symtab", "runtime", "daemon.json");
 }
 
 async function pushDevelopmentBuild(directory: string): Promise<void> {
@@ -41,7 +41,7 @@ async function pushDevelopmentBuild(directory: string): Promise<void> {
     const descriptor = JSON.parse(
       readFileSync(daemonDescriptorPath(), "utf8")
     ) as DaemonDescriptor;
-    if (!descriptor.origin || !descriptor.token) throw new Error("Flux desktop runtime descriptor is invalid");
+    if (!descriptor.origin || !descriptor.token) throw new Error("Symtab desktop runtime descriptor is invalid");
     const bytes = readFileSync(archive);
     const response = await fetch(`${descriptor.origin}/api/v1/plugins/install`, {
       method: "POST",
@@ -57,7 +57,7 @@ async function pushDevelopmentBuild(directory: string): Promise<void> {
     });
     if (!response.ok) {
       const body = (await response.json().catch(() => ({}))) as { error?: string };
-      throw new Error(body.error ?? `Flux returned ${response.status}`);
+      throw new Error(body.error ?? `Symtab returned ${response.status}`);
     }
     console.log(`Reloaded ${readManifest(root).name ?? basename(root)}`);
   } finally {
@@ -75,7 +75,7 @@ export async function main(args = process.argv.slice(2)): Promise<void> {
   }
   if (command === "validate") {
     readManifest(path);
-    console.log("Valid Flux plugin manifest");
+    console.log("Valid Symtab plugin manifest");
     return;
   }
   if (command === "pack") {

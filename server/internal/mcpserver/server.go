@@ -33,7 +33,7 @@ type Server struct {
 
 func New(app vaultService, policy *capability.Policy, version string) *mcp.Server {
 	h := &Server{app: app, policy: policy}
-	server := mcp.NewServer(&mcp.Implementation{Name: "flux", Version: version}, nil)
+	server := mcp.NewServer(&mcp.Implementation{Name: "symtab", Version: version}, nil)
 	h.addReadTools(server)
 	h.addWriteTools(server)
 	return server
@@ -104,7 +104,7 @@ type vaultPlanInput struct {
 func (h *Server) addReadTools(server *mcp.Server) {
 	readOnly := &mcp.ToolAnnotations{ReadOnlyHint: true}
 	mcp.AddTool(server, &mcp.Tool{Name: "flux_list_vaults", Description: "List vault identifiers authorized for this MCP connection.", Annotations: readOnly}, h.listVaults)
-	mcp.AddTool(server, &mcp.Tool{Name: "flux_list_files", Description: "List files in an authorized Flux vault.", Annotations: readOnly}, h.listFiles)
+	mcp.AddTool(server, &mcp.Tool{Name: "flux_list_files", Description: "List files in an authorized Symtab vault.", Annotations: readOnly}, h.listFiles)
 	mcp.AddTool(server, &mcp.Tool{Name: "flux_read_file", Description: "Read one vault file with content hash for conflict-safe writes.", Annotations: readOnly}, h.readFile)
 	mcp.AddTool(server, &mcp.Tool{Name: "flux_get_graph", Description: "Read complete indexed vault graph. Prefer focused graph tools for large vaults.", Annotations: readOnly}, h.graph)
 	mcp.AddTool(server, &mcp.Tool{Name: "flux_get_graph_neighbors", Description: "Read bounded graph neighborhood around one path.", Annotations: readOnly}, h.neighbors)
@@ -118,7 +118,7 @@ func (h *Server) addWriteTools(server *mcp.Server) {
 	mcp.AddTool(server, &mcp.Tool{Name: "flux_save_file", Description: "Replace one file when expected content hash still matches."}, h.saveFile)
 	mcp.AddTool(server, &mcp.Tool{Name: "flux_apply_vault_plan", Description: "Apply up to 100 preflighted create/update operations with conflict checks and crash-recovery rollback journal."}, h.applyVaultPlan)
 	mcp.AddTool(server, &mcp.Tool{Name: "flux_move_file", Description: "Move one file when expected source content hash still matches."}, h.moveFile)
-	mcp.AddTool(server, &mcp.Tool{Name: "flux_delete_file", Description: "Move one file to Flux trash when expected content hash still matches."}, h.deleteFile)
+	mcp.AddTool(server, &mcp.Tool{Name: "flux_delete_file", Description: "Move one file to Symtab trash when expected content hash still matches."}, h.deleteFile)
 }
 
 func (h *Server) listVaults(ctx context.Context, _ *mcp.CallToolRequest, _ struct{}) (*mcp.CallToolResult, vaultListOutput, error) {
@@ -136,7 +136,7 @@ func ElicitationApprover(ctx context.Context, request capability.ApprovalRequest
 		return false, capability.ErrApprovalRequired
 	}
 	result, err := session.Elicit(ctx, &mcp.ElicitParams{
-		Message: fmt.Sprintf("Flux client %s requests permission in vault %s:\n%s", quoted(request.ClientID), quoted(request.VaultID), bounded(request.Action, 4000)),
+		Message: fmt.Sprintf("Symtab client %s requests permission in vault %s:\n%s", quoted(request.ClientID), quoted(request.VaultID), bounded(request.Action, 4000)),
 		RequestedSchema: &jsonschema.Schema{
 			Type: "object",
 			Properties: map[string]*jsonschema.Schema{

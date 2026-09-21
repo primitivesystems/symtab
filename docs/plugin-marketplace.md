@@ -1,4 +1,4 @@
-# Flux plugin marketplace
+# Symtab plugin marketplace
 
 Marketplace is separate repository. Plugin source and release artifacts remain in publisher repositories.
 
@@ -81,13 +81,13 @@ FLUX_PLUGIN_REGISTRY_SIGNATURE_URL=https://plugins.flux.example/registry.json.si
 FLUX_PLUGIN_REGISTRY_PUBLIC_KEY=<public-key.txt contents>
 ```
 
-Flux verifies signature before showing marketplace, then verifies downloaded package SHA-256 and packaged manifest before staging installation. Marketplace remains disabled when these variables are absent.
+Symtab verifies signature before showing marketplace, then verifies downloaded package SHA-256 and packaged manifest before staging installation. Marketplace remains disabled when these variables are absent.
 
-Landing page may fetch `registry.json` directly for public listings. Install security remains server-side inside Flux.
+Landing page may fetch `registry.json` directly for public listings. Install security remains server-side inside Symtab.
 
 ## Publisher workflow
 
-Publisher works entirely outside Flux monorepo:
+Publisher works entirely outside Symtab monorepo:
 
 ```sh
 bunx create-flux-plugin my-plugin

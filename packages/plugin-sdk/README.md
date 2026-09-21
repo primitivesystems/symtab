@@ -1,6 +1,6 @@
-# Flux Plugin SDK
+# Symtab Plugin SDK
 
-Typed manifest and capability API for sandboxed Flux plugins.
+Typed manifest and capability API for sandboxed Symtab plugins.
 
 ```ts
 import { definePlugin } from "@flux/plugin-sdk";
@@ -33,7 +33,7 @@ Views can request one safe host surface and either a built-in icon or packaged S
 ```
 
 `location` supports `modal`, `left-sidebar`, `right-sidebar`, or `workspace`; omission
-selects the plugin in Flux's left sidebar, like Files or Search. Modal placement must
+selects the plugin in Symtab's left sidebar, like Files or Search. Modal placement must
 be explicit. `icon` supports `puzzle`, `sparkles`, `panel-left`,
 `panel-right`, `layout-dashboard`, `calendar`, `list`, or `git-branch`. `iconPath` takes
 precedence, must point to a packaged SVG no larger than 64 KiB, and is rendered only as

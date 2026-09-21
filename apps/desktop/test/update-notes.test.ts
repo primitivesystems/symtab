@@ -51,6 +51,8 @@ test("desktop releases ship DMGs and expose a verified install path", () => {
   expect(main).toContain('"dock-icon-dark.png"');
   expect(main).toContain("app.dock?.setIcon(nativeImage.createFromPath(dockIconPath()))");
   expect(main).toContain("nativeImage.createFromPath(menuBarIconPath())");
+  expect(main).toContain('menuBarTray.on("click", () => menuBarTray?.popUpContextMenu(menu))');
+  expect(main).not.toContain("menuBarTray.setContextMenu(");
   expect(main).not.toContain("data:image/png;base64");
   expect(main).toContain('autoUpdater.on("download-progress"');
   expect(main).toContain('autoUpdater.on("update-downloaded"');

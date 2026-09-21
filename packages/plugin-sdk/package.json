@@ -1,7 +1,7 @@
 {
   "name": "@flux/plugin-sdk",
   "version": "0.1.0",
-  "description": "Public SDK for Flux plugins",
+  "description": "Public SDK for Symtab plugins",
   "type": "module",
   "files": [
     "dist"

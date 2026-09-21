@@ -39,7 +39,7 @@ export function EditorSurface({
 
   const segments = tab.id.startsWith("file:")
     ? tab.id.slice(5).split("/").filter(Boolean)
-    : ["flux", tab.title];
+    : ["symtab", tab.title];
   const breadcrumbs =
     segments[segments.length - 1] === tab.title ? segments : [...segments, tab.title];
   const content = tab.content ?? "";

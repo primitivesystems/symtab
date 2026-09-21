@@ -1,6 +1,6 @@
-# Flux MCP development
+# Symtab MCP development
 
-Flux MCP is a stdio bridge to the same Go daemon used by the open desktop app. Do not start a
+Symtab MCP is a stdio bridge to the same Go daemon used by the open desktop app. Do not start a
 second normal server for MCP.
 
 ## VS Code
@@ -31,7 +31,7 @@ Tool names use MCP-safe underscores, for example `flux_read_file` and
 Desktop app and MCP bridge must use same app-data directory. Default macOS path is:
 
 ```text
-~/Library/Application Support/Flux
+~/Library/Application Support/Symtab
 ```
 
 When desktop app uses custom `FLUX_APP_DATA_DIR`, add matching MCP argument:
@@ -46,7 +46,7 @@ correctly rejects it.
 
 ## Quick verification
 
-1. Open vault in Flux.
+1. Open vault in Symtab.
 2. Start `flux` MCP server from VS Code.
 3. Confirm tools include `flux_list_vaults`, `flux_list_files`, `flux_read_file`, and graph tools.
 4. Call `flux_list_vaults`; use returned `vaultId` for later calls.
@@ -74,6 +74,6 @@ the packaged `flux-server mcp` binary with connection credentials. `flux_list_va
 grants, and every later tool call supplies an explicit `vaultId`; the bridge has no mutable global
 active vault.
 
-Packaged users never install Go. Flux discovers the bundled sidecar path from its running
+Packaged users never install Go. Symtab discovers the bundled sidecar path from its running
 installation and copies a platform-correct configuration. This section describes the production
 target and must not be used as evidence that connection UI or config generation is implemented.

@@ -261,7 +261,7 @@ export function createPlugin(directory: string): string {
         name: basename(root),
         version: "0.1.0",
         apiVersion: "1",
-        description: "A Flux plugin",
+        description: "A Symtab plugin",
         entry: "dist/main.js",
         activationEvents: [`onCommand:${id}.search-welcome`],
         requiredPermissions: ["vault.search", "ui.view"],
@@ -326,7 +326,7 @@ export function createPlugin(directory: string): string {
   </head>
   <body>
     <main class="card">
-      <p class="label">Flux plugin</p>
+      <p class="label">Symtab plugin</p>
       <h1>Welcome view</h1>
       <p>Edit <code>src/view.html</code>. Dev mode reloads this open view.</p>
       <button type="button">Plugin action</button>
@@ -337,7 +337,7 @@ export function createPlugin(directory: string): string {
   );
   writeFileSync(
     join(root, "README.md"),
-    `# ${basename(root)}\n\n- \`bun install\` installs dependencies.\n- \`bun run dev\` watches, rebuilds, and reloads this plugin in the running Flux desktop app.\n- \`bun run validate\` checks manifest permissions.\n- \`bun run pack\` creates the production \`.flux-plugin\` package.\n\nPlugin views run in sandboxed iframes. Bundle React/shadcn into the view when needed; inherit Flux light/dark colors instead of importing app internals.\n`
+    `# ${basename(root)}\n\n- \`bun install\` installs dependencies.\n- \`bun run dev\` watches, rebuilds, and reloads this plugin in the running Symtab desktop app.\n- \`bun run validate\` checks manifest permissions.\n- \`bun run pack\` creates the production \`.flux-plugin\` package.\n\nPlugin views run in sandboxed iframes. Bundle React/shadcn into the view when needed; inherit Symtab light/dark colors instead of importing app internals.\n`
   );
   writeFileSync(join(root, ".gitignore"), "dist/\n*.flux-plugin\nnode_modules/\n");
   return root;

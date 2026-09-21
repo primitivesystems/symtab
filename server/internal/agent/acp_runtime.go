@@ -76,7 +76,7 @@ func startACPRuntime(
 	defer cancel()
 	response, err := runtime.conn.Initialize(initializeContext, acp.InitializeRequest{
 		ProtocolVersion: acp.ProtocolVersionNumber,
-		ClientInfo:      &acp.Implementation{Name: "Flux", Version: "0.0.1"},
+		ClientInfo:      &acp.Implementation{Name: "Symtab", Version: "0.0.1"},
 		ClientCapabilities: acp.ClientCapabilities{
 			Fs: acp.FileSystemCapabilities{ReadTextFile: true, WriteTextFile: true},
 		},

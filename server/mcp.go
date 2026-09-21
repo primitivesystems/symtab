@@ -21,13 +21,13 @@ import (
 )
 
 func runMCPBridge(arguments []string) error {
-	flags := flag.NewFlagSet("flux mcp", flag.ContinueOnError)
+	flags := flag.NewFlagSet("symtab mcp", flag.ContinueOnError)
 	vaultPath := flags.String("vault", "", "vault directory exposed to this MCP client")
 	connectionID := flags.String("connection", "", "saved MCP connection ID")
 	connectionSecret := flags.String("secret", "", "saved MCP connection secret")
 	clientID := flags.String("client", "local-mcp", "stable MCP client identity")
 	modeValue := flags.String("mode", string(capability.ReadOnly), "read_only, guided_write, or trusted_workspace")
-	appData := flags.String("app-data", "", "Flux app-data directory")
+	appData := flags.String("app-data", "", "Symtab app-data directory")
 	if err := flags.Parse(arguments); err != nil {
 		return err
 	}
@@ -174,7 +174,7 @@ func connectDaemon(ctx context.Context, appDataDirectory string) (*daemonclient.
 		}
 		time.Sleep(100 * time.Millisecond)
 	}
-	return nil, errors.New("Flux daemon did not become ready")
+	return nil, errors.New("Symtab daemon did not become ready")
 }
 
 func descriptorClient(ctx context.Context, descriptorPath string) *daemonclient.Client {

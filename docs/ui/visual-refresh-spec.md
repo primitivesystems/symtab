@@ -1,13 +1,13 @@
-# Flux visual refresh specification
+# Symtab visual refresh specification
 
 ## 1. Executive decision
 
-Flux keeps its existing shell layout. The revamp is a skin and component-quality pass, not an
+Symtab keeps its existing shell layout. The revamp is a skin and component-quality pass, not an
 information-architecture redesign.
 
 Working name for the visual direction: **Quiet Instrument**.
 
-Flux should feel like a focused desktop instrument:
+Symtab should feel like a focused desktop instrument:
 
 - calm at rest
 - precise under interaction
@@ -91,7 +91,7 @@ Do not borrow:
 - model branding
 - message bubbles
 - branch/checkout controls
-- large empty gutters where Flux needs sidebars
+- large empty gutters where Symtab needs sidebars
 
 ### Earlier dashboard and multi-pane references
 
@@ -103,7 +103,7 @@ Borrow only appearance signals:
 - large content-first center
 - controlled use of rounded containers
 
-Do not copy their dashboard or three-column layout. Flux already has its own shell.
+Do not copy their dashboard or three-column layout. Symtab already has its own shell.
 
 ### COSS UI
 
@@ -115,17 +115,17 @@ Use COSS as a component and interaction foundation:
 - consistent state APIs
 
 Do not adopt COSS branding, font, site composition, or default theme unchanged. COSS styling also
-uses a shadcn-like CSS-variable model; Flux must own its token contract.
+uses a shadcn-like CSS-variable model; Symtab must own its token contract.
 
-## 4. Current Flux diagnosis
+## 4. Current Symtab diagnosis
 
-Live Flux inspection at 1280×720 shows the structure works. Main visual issues:
+Live Symtab inspection at 1280×720 shows the structure works. Main visual issues:
 
 1. **Every layer is edge-to-edge.** Titlebar, rail, both sidebars, editor, and status bar meet through
    hairlines. This creates the same pane-grid silhouette associated with Obsidian.
 2. **Surface hierarchy is nearly flat.** In light mode, `background`, `sidebar`, and chrome are close
    neutrals. In dark mode, pane boundaries depend heavily on separators.
-3. **Selected states are generic gray pills.** They work, but do not establish a Flux identity.
+3. **Selected states are generic gray pills.** They work, but do not establish a Symtab identity.
 4. **Tabs use a browser-tab merge treatment.** Active tabs attach to the document surface. References
    favor a quiet contained tab inside chrome.
 5. **Radius usage is broad, not systematic.** Current source contains 144 `rounded-md`, 22
@@ -164,7 +164,7 @@ The solution is not a new shell. It is a coherent layer model applied to the exi
 
 ### Signature
 
-Flux's signature is **active-flow continuity**:
+Symtab's signature is **active-flow continuity**:
 
 - active rail item
 - active sidebar row
@@ -189,7 +189,7 @@ colors, not hardcoded component colors.
 | Elevated surface | `#FFFFFF` | menus, dialogs, tooltips                        |
 | Ink              | `#20211F` | primary text                                    |
 | Muted ink        | `#70736D` | metadata and inactive controls                  |
-| Flux signal      | `#675FD1` | focus, active flow, drag/split state            |
+| Symtab signal      | `#675FD1` | focus, active flow, drag/split state            |
 
 Structural separator: pure black at 7–9% opacity. It is not a palette gray.
 
@@ -203,7 +203,7 @@ Structural separator: pure black at 7–9% opacity. It is not a palette gray.
 | Elevated surface | `#242521` | menus, dialogs, tooltips             |
 | Ink              | `#F0F1EC` | primary text                         |
 | Muted ink        | `#989B93` | metadata and inactive controls       |
-| Flux signal      | `#948AF0` | focus, active flow, drag/split state |
+| Symtab signal      | `#948AF0` | focus, active flow, drag/split state |
 
 Structural separator: pure white at 7–9% opacity.
 
@@ -309,7 +309,7 @@ dialogs only.
 
 - default hairline remains visually quiet
 - hover/focus expands hit affordance without changing layout width
-- active resize line uses Flux signal
+- active resize line uses Symtab signal
 - no full-pane glow
 
 ### Main workspace
@@ -476,10 +476,10 @@ Use COSS selectively, not as a one-command visual overwrite.
 1. Copy/install selected registry components into `packages/shared-ui`.
 2. Prefer MIT-licensed source under COSS's `apps/ui` scope; record upstream path and revision.
 3. Replace Radix behavior component-by-component.
-4. Keep Flux class names and token variables at the styling boundary.
+4. Keep Symtab class names and token variables at the styling boundary.
 5. Do not import Cal.com fonts or brand assets.
-6. Do not make downstream Flux plugins import application internals.
-7. Publish only stable Flux theme variables as the plugin-facing contract.
+6. Do not make downstream Symtab plugins import application internals.
+7. Publish only stable Symtab theme variables as the plugin-facing contract.
 
 Initial primitives:
 
@@ -492,7 +492,7 @@ Initial primitives:
 - Checkbox / Switch
 - Tabs where behavior replacement is useful
 
-Do not replace custom Flux layout, resize, workspace tree, editor, or tab state models.
+Do not replace custom Symtab layout, resize, workspace tree, editor, or tab state models.
 
 ## 14. CSS ownership
 
@@ -502,7 +502,7 @@ Split the current global file by responsibility:
 packages/shared-ui/src/styles/
   tokens.css       theme roles and Tailwind mappings
   base.css         reset, root sizing, focus defaults
-  shell.css        named Flux shell surface classes
+  shell.css        named Symtab shell surface classes
   editor.css       reading/markdown presentation
   print.css        print-only rules
   globals.css      imports only
@@ -520,7 +520,7 @@ Rules:
 
 Revamp is successful when:
 
-- screenshot silhouette is recognizably Flux, not Obsidian
+- screenshot silhouette is recognizably Symtab, not Obsidian
 - current shell geometry and persisted layout behavior are unchanged
 - light and dark themes share the same hierarchy
 - active tab, active rail item, selected file, and editor focus feel related

@@ -1,4 +1,4 @@
-# Flux UI appearance revamp
+# Symtab UI appearance revamp
 
 Status: **proposal only — no UI implementation performed**
 
@@ -7,7 +7,7 @@ starts.
 
 ## Decision
 
-Keep the current Flux shell and interaction model intact:
+Keep the current Symtab shell and interaction model intact:
 
 - 44px integrated title/tab bar
 - 48px workspace rail
@@ -28,7 +28,7 @@ Change only appearance:
 - hover, focus, pressed, loading, active-window, and reduced-motion states
 
 The target is a quiet, native-feeling professional tool: closer in craft to Codex, Cursor, and the
-provided inset-shell reference, without copying their layouts or changing Flux's information
+provided inset-shell reference, without copying their layouts or changing Symtab's information
 architecture.
 
 ## Documents
@@ -44,8 +44,8 @@ The platform blocks inspection of `com.openai.codex` for safety reasons. Analysi
 - both user-provided Codex screenshots
 - both user-provided inset-shell/editor screenshots
 - live browser inspection of COSS UI and Cursor
-- a live local render of Flux in light and dark mode at 1280×720
-- direct inspection of Flux shell, tabs, sidebars, editor, status bar, dialogs, and token code
+- a live local render of Symtab in light and dark mode at 1280×720
+- direct inspection of Symtab shell, tabs, sidebars, editor, status bar, dialogs, and token code
 
 ## Hard stop
 

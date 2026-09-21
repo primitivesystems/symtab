@@ -117,7 +117,7 @@ function previewFor(path: string) {
     return "# Symtab\n\nLocal-first workspace for thinking, writing, and building.\n\n## Working agreements\n\n- Keep components focused and composable.\n- Build shared interface primitives in the design system.\n- Prefer clear behavior over speculative abstraction.";
   }
   if (path === "package.json") {
-    return '{\n  "name": "flux",\n  "private": true,\n  "scripts": {\n    "dev": "turbo dev",\n    "typecheck": "turbo typecheck"\n  }\n}';
+    return '{\n  "name": "symtab",\n  "private": true,\n  "scripts": {\n    "dev": "turbo dev",\n    "typecheck": "turbo typecheck"\n  }\n}';
   }
   if (path.endsWith(".md")) {
     return `# ${path.split("/").pop()}\n\nPreview content is not connected to a workspace document provider yet.`;

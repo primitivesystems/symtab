@@ -1,4 +1,4 @@
-# Flux UI revamp implementation map
+# Symtab UI revamp implementation map
 
 This map identifies where the approved appearance spec should land. It is not an implementation.
 

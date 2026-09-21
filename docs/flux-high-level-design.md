@@ -1,12 +1,12 @@
-# Flux High-Level Design
+# Symtab High-Level Design
 
 ## 1. Purpose
 
-Flux is a local-first, open-source personal knowledge management application for power users, product managers, developers, and teams that want an Obsidian-compatible vault with stronger workflows, extensibility, search, task management, Git integration, and self-hosting.
+Symtab is a local-first, open-source personal knowledge management application for power users, product managers, developers, and teams that want an Obsidian-compatible vault with stronger workflows, extensibility, search, task management, Git integration, and self-hosting.
 
-Flux treats the filesystem as the canonical source of truth. Notes, tasks, attachments, and durable configuration remain ordinary files inside the vault. Derived indexes, caches, crash recovery data, and plugin runtime state live under `.flux/`.
+Symtab treats the filesystem as the canonical source of truth. Notes, tasks, attachments, and durable configuration remain ordinary files inside the vault. Derived indexes, caches, crash recovery data, and plugin runtime state live under `.flux/`.
 
-The same vault can be opened in Flux, Obsidian, a text editor, Git, or another Markdown-compatible tool without conversion.
+The same vault can be opened in Symtab, Obsidian, a text editor, Git, or another Markdown-compatible tool without conversion.
 
 ---
 
@@ -20,7 +20,7 @@ The same vault can be opened in Flux, Obsidian, a text editor, Git, or another M
 2. **Filesystem is canonical**
    - Markdown and other vault files are the durable source of truth.
    - SQLite is disposable derived state.
-   - Flux never reconstructs canonical files from the search index.
+   - Symtab never reconstructs canonical files from the search index.
 
 3. **Obsidian-compatible**
    - Existing Obsidian vaults open directly.
@@ -64,7 +64,7 @@ The same vault can be opened in Flux, Obsidian, a text editor, Git, or another M
 - BYOM runtime abstraction.
 - Tutor Mode workflow.
 - Source ingestion, provenance, flashcards, quizzes, roadmaps, and mind maps.
-- First-party Flux MCP server and unified tool registry.
+- First-party Symtab MCP server and unified tool registry.
 - Optional system-Git integration.
 - Crash recovery.
 - Basic single-admin web authentication.
@@ -72,7 +72,7 @@ The same vault can be opened in Flux, Obsidian, a text editor, Git, or another M
 - Optional telemetry.
 - Official AI Chat plugin with Tutor Mode and other workflows.
 - BYOM runtimes for direct model APIs and external agent harnesses.
-- First-party Flux MCP server for internal and external AI agents.
+- First-party Symtab MCP server for internal and external AI agents.
 
 ### 3.2 Out of Scope for Initial Release
 
@@ -95,7 +95,7 @@ The same vault can be opened in Flux, Obsidian, a text editor, Git, or another M
 flowchart LR
     User[User]
 
-    subgraph Flux["Flux Application"]
+    subgraph Symtab["Symtab Application"]
         UI[Shared React / Vite UI]
         Backend[Go Modular Monolith]
         Plugins[Plugin Runtime]
@@ -233,7 +233,7 @@ flowchart TB
     Browser[Browser]
     Proxy[Reverse Proxy / TLS]
 
-    subgraph Container["Flux Container"]
+    subgraph Container["Symtab Container"]
         WebUI[Built Web UI]
         API[Go HTTP API]
         WS[WebSocket Gateway]
@@ -346,7 +346,7 @@ Modules communicate through interfaces and domain events, not through transport-
 
 A vault is one user-selected root directory.
 
-Flux supports opening:
+Symtab supports opening:
 
 - Existing Obsidian vaults.
 - Existing Git repositories.
@@ -366,7 +366,7 @@ vault/
 ├── .git/                        # Optional Git repository
 └── .flux/
     ├── vault.json
-    ├── config.json                # Durable per-vault Flux feature settings
+    ├── config.json                # Durable per-vault Symtab feature settings
     ├── index.db
     ├── recovery/
     ├── trash/
@@ -395,7 +395,7 @@ A small global app database maps:
 vault_id -> last_known_path
 ```
 
-Moving a vault preserves identity. Copying a vault may produce duplicate IDs; Flux detects this and defaults to assigning the copy a new ID.
+Moving a vault preserves identity. Copying a vault may produce duplicate IDs; Symtab detects this and defaults to assigning the copy a new ID.
 
 ### 8.4 Archive
 
@@ -610,7 +610,7 @@ No lock may wait forever. Save failures retain the editor buffer and surface an 
 
 ### 12.2 Shared Document Sessions
 
-When multiple Flux windows open the same file, they share one in-memory document session through the vault context.
+When multiple Symtab windows open the same file, they share one in-memory document session through the vault context.
 
 This prevents same-application windows from creating avoidable conflicts.
 
@@ -1219,7 +1219,7 @@ A trusted marketplace registry contains:
 Registry is a separate metadata repository. Plugin source and release artifacts stay in
 publisher repositories. Generated `registry.json` snapshots bounded publisher README
 content and release metadata; detached Ed25519 signature covers exact index bytes.
-Flux verifies registry signature, package checksum, and packaged manifest before staging.
+Symtab verifies registry signature, package checksum, and packaged manifest before staging.
 Landing page reads same public index. See `docs/plugin-marketplace.md`.
 
 Plugins are installed globally once:
@@ -1371,7 +1371,7 @@ Git is optional. Vaults work fully without Git.
 - One Git repository per vault.
 - Repository root must equal vault root.
 - Nested repositories and submodules are unsupported in v1.
-- Nested `.git` directories are ignored by Flux Git operations.
+- Nested `.git` directories are ignored by Symtab Git operations.
 - Existing repositories are detected and adopted.
 - Enabling version control runs `git init`.
 - `.flux/` is always added to `.gitignore`.
@@ -1479,7 +1479,7 @@ Crash recovery is separate from Git history.
 
 ## 23. Quartz Integration
 
-Flux does not reproduce Quartz functionality.
+Symtab does not reproduce Quartz functionality.
 
 The integration boundary may:
 
@@ -1598,7 +1598,7 @@ flowchart TD
 
 ## 26. Reliability and Degraded Modes
 
-Flux should remain usable when optional subsystems fail.
+Symtab should remain usable when optional subsystems fail.
 
 | Failure | Required Behavior |
 |---|---|
@@ -1782,7 +1782,7 @@ flowchart TD
 ### 32.1 Desktop
 
 - Signed application packages.
-- Auto-update may update Flux binaries, not vault content.
+- Auto-update may update Symtab binaries, not vault content.
 - Go backend binary shipped with Electron.
 - System Git detected at runtime.
 - OS keychain used for credentials.
@@ -1796,14 +1796,14 @@ Recommended Compose topology:
 flowchart LR
     Internet[User Browser]
     Proxy[Reverse Proxy]
-    Flux[Flux Container]
+    Symtab[Symtab Container]
     Vaults[(Persistent Vault Volume)]
     Secrets[(Secrets)]
     Backup[Operator Backup]
 
-    Internet --> Proxy --> Flux
-    Flux --> Vaults
-    Flux --> Secrets
+    Internet --> Proxy --> Symtab
+    Symtab --> Vaults
+    Symtab --> Secrets
     Vaults --> Backup
 ```
 
@@ -1824,7 +1824,7 @@ Operational requirements:
 
 A one-click deployment should provision:
 
-- Flux container.
+- Symtab container.
 - Persistent storage.
 - TLS-capable frontend or platform routing.
 - Admin password secret.
@@ -1976,7 +1976,7 @@ Initial targets, to be validated with benchmarks:
 
 ### 37.1 One AI Chat Plugin
 
-Flux has one official AI Chat plugin. Tutor Mode is a workflow inside that plugin, not a separately installed plugin.
+Symtab has one official AI Chat plugin. Tutor Mode is a workflow inside that plugin, not a separately installed plugin.
 
 The same AI Chat surface may provide:
 
@@ -2006,8 +2006,8 @@ flowchart TB
         General[General Agent]
     end
 
-    MCP[Flux MCP Server]
-    Services[Flux Application Services]
+    MCP[Symtab MCP Server]
+    Services[Symtab Application Services]
     Vault[(Vault Files)]
     Index[(Derived SQLite Index)]
 
@@ -2044,11 +2044,11 @@ flowchart TB
 
 ### 37.2 Unified MCP Manipulation Path
 
-The internal AI Chat plugin uses the same Flux MCP server exposed to external AI applications. It must not write files, tasks, links, frontmatter, or Git state through a separate privileged path.
+The internal AI Chat plugin uses the same Symtab MCP server exposed to external AI applications. It must not write files, tasks, links, frontmatter, or Git state through a separate privileged path.
 
 ```mermaid
 flowchart LR
-    Internal[Flux AI Chat Plugin]
+    Internal[Symtab AI Chat Plugin]
 
     subgraph External[External AI Applications]
         Codex[Codex]
@@ -2058,9 +2058,9 @@ flowchart LR
         Other[Other MCP Clients]
     end
 
-    MCP[Flux MCP Server]
+    MCP[Symtab MCP Server]
     Policy[Capability and Approval Policy]
-    Core[Flux Application Services]
+    Core[Symtab Application Services]
     Vault[(Vault Files)]
     DB[(Derived SQLite Index)]
 
@@ -2080,9 +2080,9 @@ The invariant is:
 
 ```text
 AI Chat workflow or external AI agent
-    -> Flux MCP tools
+    -> Symtab MCP tools
     -> capability and approval policy
-    -> Flux application services
+    -> Symtab application services
     -> canonical vault files
     -> parser and indexer
     -> backlinks, tasks, search, and graph updated automatically
@@ -2096,7 +2096,7 @@ The AI Chat plugin supports bring-your-own-model and bring-your-own-agent runtim
 
 #### Direct model API runtimes
 
-Flux manages the reasoning and tool-execution loop.
+Symtab manages the reasoning and tool-execution loop.
 
 Examples:
 
@@ -2122,12 +2122,12 @@ flowchart TD
     Runtime{Runtime Type}
 
     Direct[Direct Model API]
-    FluxLoop[Flux-managed Agent Loop]
+    FluxLoop[Symtab-managed Agent Loop]
 
     Agent[External Agent Runtime]
     ProviderLoop[Provider-managed Agent Loop]
 
-    MCP[Flux MCP Server]
+    MCP[Symtab MCP Server]
     Vault[(Vault)]
 
     Chat --> Runtime
@@ -2162,7 +2162,7 @@ context caching
 external-agent-loop
 ```
 
-Flux detects capabilities rather than assuming every runtime supports every feature.
+Symtab detects capabilities rather than assuming every runtime supports every feature.
 
 ### 37.4 Shared MCP Tool Registry
 
@@ -2212,7 +2212,7 @@ flux_git_pull
 flux_git_push
 ```
 
-For reliable multi-file changes, Flux may expose:
+For reliable multi-file changes, Symtab may expose:
 
 ```text
 flux_apply_vault_plan
@@ -2230,7 +2230,7 @@ rollback.
 
 ### 37.5 Tutor Mode Workflow
 
-Tutor Mode is a guided workflow inside AI Chat for students who upload study material and want Flux to transform it into a usable study vault.
+Tutor Mode is a guided workflow inside AI Chat for students who upload study material and want Symtab to transform it into a usable study vault.
 
 Tutor Mode does not merely summarize PDFs. It:
 
@@ -2240,7 +2240,7 @@ Tutor Mode does not merely summarize PDFs. It:
 4. Asks or infers how the user wants content organized.
 5. Creates folders and structured Markdown notes.
 6. Creates links and backlinks between generated notes.
-7. Allows the normal Flux parser to update search and graph state.
+7. Allows the normal Symtab parser to update search and graph state.
 8. Generates a roadmap based on the created notes.
 9. Generates flashcards, quizzes, revision tasks, and mind maps.
 
@@ -2252,7 +2252,7 @@ flowchart TD
     Analyze[Identify Chapters and Topics]
     Preference[Choose Organization Style]
     Plan[Create Vault Mutation Plan]
-    MCP[Execute Through Flux MCP]
+    MCP[Execute Through Symtab MCP]
     Notes[Create Folders and Notes]
     Links[Create Links and Backlinks]
     Index[Update Search and Graph]
@@ -2429,7 +2429,7 @@ Flashcards and quizzes are ordinary Markdown. Operational spaced-repetition stat
 .flux/plugins/ai-chat/state/
 ```
 
-Mind maps are derived from links between generated concept notes. Possible renderings include Mermaid, a filtered Flux graph, a canvas-style AI Chat view, or an exported image. Canonical relationships remain in note links.
+Mind maps are derived from links between generated concept notes. Possible renderings include Mermaid, a filtered Symtab graph, a canvas-style AI Chat view, or an exported image. Canonical relationships remain in note links.
 
 ### 37.10 MCP Security and Approval Modes
 
@@ -2469,8 +2469,8 @@ git reset: deny
 
 ### 37.11 AI Chat and MCP Invariants
 
-1. Flux has one AI Chat plugin; Tutor Mode is a workflow inside it.
-2. Internal AI Chat and external agents use the same Flux MCP server.
+1. Symtab has one AI Chat plugin; Tutor Mode is a workflow inside it.
+2. Internal AI Chat and external agents use the same Symtab MCP server.
 3. AI-generated writes use the same application services as human edits.
 4. MCP clients never bypass locking, atomic writes, or conflict handling.
 5. Graph changes occur through canonical file changes.
@@ -2492,7 +2492,7 @@ desktop authorization model.
 Production MCP access is configured in **Settings → MCP connections**:
 
 1. User creates a named connection.
-2. Flux generates an opaque connection ID and an unguessable bearer secret.
+2. Symtab generates an opaque connection ID and an unguessable bearer secret.
 3. User selects allowed vaults, capabilities, and approval mode.
 4. Global app DB stores connection metadata, a one-way secret hash, grants, creation time,
    last-used time, and revocation state.
@@ -2526,7 +2526,7 @@ Developer configuration may continue using `go run ... mcp --vault ...`.
 ### 38.1 Canonical Daily and Weekly Notes
 
 Daily and weekly notes are ordinary Markdown files. They remain readable and editable without
-Flux, plugins, SQLite, or a calendar view.
+Symtab, plugins, SQLite, or a calendar view.
 
 Default conventions:
 
@@ -2560,7 +2560,7 @@ Indexing may temporarily make indicators incomplete, but direct date-note lookup
 ### 38.3 Quick Capture
 
 Quick Capture is a singleton desktop window with a configurable global shortcut. It targets an
-explicitly configured vault and either a named Markdown file in the inbox folder or today's daily note. Flux never silently
+explicitly configured vault and either a named Markdown file in the inbox folder or today's daily note. Symtab never silently
 chooses another vault when the target is unavailable.
 
 Save pipeline:
@@ -2568,7 +2568,7 @@ Save pipeline:
 ```text
 capture text
     -> validate configured vault and destination
-    -> Flux application service
+    -> Symtab application service
     -> vault mutation coordinator
     -> conflict-safe create or append
     -> atomic filesystem write to ordinary Markdown
@@ -2678,7 +2678,7 @@ These invariants must remain true throughout implementation:
 
 1. A user can delete `.flux/index.db` and rebuild it without losing notes.
 2. A Git or plugin failure cannot prevent ordinary note editing.
-3. Flux never silently chooses an ambiguous link target.
+3. Symtab never silently chooses an ambiguous link target.
 4. A save never overwrites an externally modified file without conflict handling.
 5. Plugin code never receives unrestricted filesystem or shell access.
 6. SQLite is never treated as the only copy of user content.

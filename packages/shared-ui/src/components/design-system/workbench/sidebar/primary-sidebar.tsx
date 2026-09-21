@@ -77,7 +77,7 @@ export type PrimarySidebarProps = {
 export function PrimarySidebar({
   files,
   selectedPath = "package.json",
-  workspaceName = "flux-landing [GitHub]",
+  workspaceName = "symtab-workspace",
   canMutate = true,
   onSelectFile,
   onCreateFile,

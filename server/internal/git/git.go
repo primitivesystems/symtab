@@ -246,7 +246,7 @@ func Diff(ctx context.Context, root, path string, staged bool) (domain.GitDiff, 
 	}
 	const maxDiffBytes = 1 << 20
 	if len(out) > maxDiffBytes {
-		out = append(out[:maxDiffBytes], []byte("\n… diff truncated by Flux\n")...)
+		out = append(out[:maxDiffBytes], []byte("\n… diff truncated by Symtab\n")...)
 	}
 	return domain.GitDiff{Path: path, Staged: staged, Content: string(out)}, nil
 }
