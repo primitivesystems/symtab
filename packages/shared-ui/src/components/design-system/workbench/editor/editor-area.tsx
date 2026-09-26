@@ -346,7 +346,7 @@ function EditorGroup({
   function updateDropPlacement(event: React.DragEvent<HTMLElement>) {
     if (!hasEditorDropData(event.dataTransfer)) return;
     event.preventDefault();
-    const internal = event.dataTransfer.types.includes("application/x-flux-editor-tab");
+    const internal = event.dataTransfer.types.includes("application/x-symtab-editor-tab");
     event.dataTransfer.dropEffect =
       internal && !isCopyOperation(event.nativeEvent) ? "move" : "copy";
     if ((event.target as Element).closest("[data-editor-tab-strip]")) {

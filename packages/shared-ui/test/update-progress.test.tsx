@@ -6,7 +6,7 @@ import { WorkbenchHeader } from "../src/components/design-system/workbench/chrom
 test("header retains download state and percentage on every progress event", () => {
   for (const progress of [0, 24, 75, 100]) {
     const html = renderToStaticMarkup(<WorkbenchHeader
-      title="Flux" leftPaneOpen rightPaneOpen
+      title="Symtab" leftPaneOpen rightPaneOpen
       onCommand={() => {}} onToggleLeftPane={() => {}} onToggleRightPane={() => {}}
       updateStatus="downloading" updateProgress={progress}
       onDownloadUpdate={() => {}} onOpenReleaseNotes={() => {}}

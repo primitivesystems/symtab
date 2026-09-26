@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import type {
-  FluxClient,
+  SymtabClient,
   MarketplacePlugin,
   PluginCatalogEntry,
   VaultInfo,
   VaultPlugin,
-} from "@flux/bridge-contract";
-import { VaultPluginHost, type PluginBundle } from "@flux/plugin-runtime";
-import type { PluginCapability } from "@flux/plugin-sdk";
-import { toast } from "@flux/shared-ui/components/sonner";
+} from "@symtab/bridge-contract";
+import { VaultPluginHost, type PluginBundle } from "@symtab/plugin-runtime";
+import type { PluginCapability } from "@symtab/plugin-sdk";
+import { toast } from "@symtab/shared-ui/components/sonner";
 import type { OpenPluginView, PluginViewLocation } from "./surface";
 
 export function usePlugins({
@@ -17,7 +17,7 @@ export function usePlugins({
   openWindow,
   flushPendingSaves,
 }: {
-  client: FluxClient | null;
+  client: SymtabClient | null;
   vault: VaultInfo | null;
   openWindow?: (url: string) => Promise<void>;
   flushPendingSaves: (vaultId?: string) => Promise<void>;

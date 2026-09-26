@@ -12,10 +12,10 @@ import (
 	"testing"
 	"time"
 
-	application "github.com/flux-pkm/server/internal/app"
-	"github.com/flux-pkm/server/internal/appdata"
-	"github.com/flux-pkm/server/internal/domain"
-	"github.com/flux-pkm/server/internal/vault"
+	application "github.com/symtab-pkm/server/internal/app"
+	"github.com/symtab-pkm/server/internal/appdata"
+	"github.com/symtab-pkm/server/internal/domain"
+	"github.com/symtab-pkm/server/internal/vault"
 	"github.com/gin-gonic/gin"
 )
 
@@ -62,7 +62,7 @@ func TestCreateVault(t *testing.T) {
 	if response.Code != http.StatusCreated {
 		t.Fatalf("unexpected status %d: %s", response.Code, response.Body.String())
 	}
-	if _, err := os.Stat(filepath.Join(root, ".flux", "vault.json")); err != nil {
+	if _, err := os.Stat(filepath.Join(root, ".symtab", "vault.json")); err != nil {
 		t.Fatalf("vault identity was not created: %v", err)
 	}
 }
@@ -202,7 +202,7 @@ func TestDesktopTokenProtectsAPIRoutes(t *testing.T) {
 	}
 
 	authorized := httptest.NewRequest(http.MethodGet, "/api/v1/status", nil)
-	authorized.Header.Set("X-Flux-Desktop-Token", "secret")
+	authorized.Header.Set("X-Symtab-Desktop-Token", "secret")
 	authorizedResponse := httptest.NewRecorder()
 	router.ServeHTTP(authorizedResponse, authorized)
 	if authorizedResponse.Code != http.StatusOK {

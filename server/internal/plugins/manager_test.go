@@ -412,7 +412,7 @@ func TestPluginSettingsStayInsideVaultState(t *testing.T) {
 	if err != nil || values["example.plugin.label"] != "changed" || values["example.plugin.enabled"] != true {
 		t.Fatalf("settings did not merge defaults: %#v, %v", values, err)
 	}
-	settingsPath := filepath.Join(vaultRoot, ".flux", "plugins", manifest.ID, "state", "settings.json")
+	settingsPath := filepath.Join(vaultRoot, ".symtab", "plugins", manifest.ID, "state", "settings.json")
 	if _, err := os.Stat(settingsPath); err != nil {
 		t.Fatal(err)
 	}

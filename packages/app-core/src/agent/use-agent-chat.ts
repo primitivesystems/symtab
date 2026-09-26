@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { AgentEvent, AgentThread, FluxClient } from "@flux/bridge-contract";
+import type { AgentEvent, AgentThread, SymtabClient } from "@symtab/bridge-contract";
 import type {
   ChatModelAdapter,
   ChatConfiguration,
@@ -7,13 +7,13 @@ import type {
   ChatProps,
   ChatProviderOption,
   ThreadAssistantMessagePart,
-} from "@flux/shared-ui/components/ai/chat";
+} from "@symtab/shared-ui/components/ai/chat";
 import { AgentTurnProjection, findApprovalResponse, projectAgentHistory } from "./projection";
-import type { FluxStatePersistence } from "../app/state";
+import type { SymtabStatePersistence } from "../app/state";
 
 const DEFAULT_MODEL = { value: "default", label: "Default", context: 128_000 };
 
-export function useAgentChat(client: FluxClient | null, vaultId?: string, persistence?: FluxStatePersistence): ChatProps | undefined {
+export function useAgentChat(client: SymtabClient | null, vaultId?: string, persistence?: SymtabStatePersistence): ChatProps | undefined {
   const [providers, setProviders] = useState<ChatProviderOption[]>([]);
   const [threads, setThreads] = useState<AgentThread[]>([]);
   const [activeId, setActiveId] = useState<string>();

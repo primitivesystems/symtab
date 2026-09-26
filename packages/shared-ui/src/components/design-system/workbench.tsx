@@ -42,8 +42,6 @@ const activityItems: readonly ActivityBarItem[] = [
   { id: "search", label: "Search", icon: "search" },
   { id: "journal", label: "Journal", icon: "calendar" },
   { id: "graph", label: "Graph", icon: "type-hierarchy" },
-  { id: "backlinks", label: "Backlinks", icon: "references" },
-  { id: "tags", label: "Tags", icon: "tag" },
 ];
 
 const activityCopy: Record<string, { title: string; description: string }> = {
@@ -61,7 +59,7 @@ type WorkbenchState = {
   dismissedNotifications: string[];
 };
 
-const LAYOUT_KEY = "flux-workbench-layout-v2";
+const LAYOUT_KEY = "symtab-workbench-layout-v2";
 
 function initialWorkbenchState(value?: unknown): WorkbenchState {
   const width = typeof window === "undefined" ? 1280 : window.innerWidth;
@@ -117,7 +115,7 @@ function previewFor(path: string) {
     return "# Symtab\n\nLocal-first workspace for thinking, writing, and building.\n\n## Working agreements\n\n- Keep components focused and composable.\n- Build shared interface primitives in the design system.\n- Prefer clear behavior over speculative abstraction.";
   }
   if (path === "package.json") {
-    return '{\n  "name": "flux",\n  "private": true,\n  "scripts": {\n    "dev": "turbo dev",\n    "typecheck": "turbo typecheck"\n  }\n}';
+    return '{\n  "name": "symtab",\n  "private": true,\n  "scripts": {\n    "dev": "turbo dev",\n    "typecheck": "turbo typecheck"\n  }\n}';
   }
   if (path.endsWith(".md")) {
     return `# ${path.split("/").pop()}\n\nPreview content is not connected to a workspace document provider yet.`;

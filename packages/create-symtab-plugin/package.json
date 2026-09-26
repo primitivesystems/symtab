@@ -1,14 +1,14 @@
 {
-  "name": "create-flux-plugin",
+  "name": "create-symtab-plugin",
   "version": "0.1.0",
-  "description": "Create, validate, and package Flux plugins",
+  "description": "Create, validate, and package Symtab plugins",
   "type": "module",
   "files": [
     "dist"
   ],
   "bin": {
-    "create-flux-plugin": "./dist/cli.js",
-    "flux-plugin": "./dist/cli.js"
+    "create-symtab-plugin": "./dist/cli.js",
+    "symtab-plugin": "./dist/cli.js"
   },
   "exports": {
     ".": "./dist/index.js"

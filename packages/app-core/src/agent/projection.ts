@@ -2,13 +2,13 @@ import type {
   AgentEvent,
   AgentEventPayloadMap,
   AgentThread,
-} from "@flux/bridge-contract";
+} from "@symtab/bridge-contract";
 import type {
   ChatMessage,
   ThreadAssistantMessagePart,
   ToolApprovalOptionKind,
   ToolCallMessagePart,
-} from "@flux/shared-ui/components/ai/chat";
+} from "@symtab/shared-ui/components/ai/chat";
 
 type StreamMetadata = {
   timing?: {
@@ -136,9 +136,9 @@ export class AgentTurnProjection {
         break;
       }
       case "plan.updated":
-        this.upsertTool("flux-plan", {
+        this.upsertTool("symtab-plan", {
           type: "tool-call",
-          toolCallId: "flux-plan",
+          toolCallId: "symtab-plan",
           toolName: "plan",
           args: { entries: event.payload.entries },
           argsText: JSON.stringify({ entries: event.payload.entries }),
@@ -226,7 +226,7 @@ export class AgentTurnProjection {
 
   private appendTextPart(type: "reasoning" | "text", id: string, delta: string) {
     const index = this.parts.findIndex(
-      (part) => part.type === type && fluxPartID(part) === id,
+      (part) => part.type === type && symtabPartID(part) === id,
     );
     if (index >= 0) {
       const part = this.parts[index];
@@ -239,13 +239,13 @@ export class AgentTurnProjection {
       type,
       text: delta,
       status: { type: "running" },
-      providerMetadata: { flux: { id } },
+      providerMetadata: { symtab: { id } },
     });
   }
 
   private completePart(type: "reasoning" | "text", id: string) {
     const index = this.parts.findIndex(
-      (part) => part.type === type && fluxPartID(part) === id,
+      (part) => part.type === type && symtabPartID(part) === id,
     );
     const part = this.parts[index];
     if (index >= 0 && part?.type === type) {
@@ -319,9 +319,9 @@ export function findApprovalResponse(parts: readonly ThreadAssistantMessagePart[
   return undefined;
 }
 
-function fluxPartID(part: Extract<ThreadAssistantMessagePart, { type: "text" | "reasoning" }>) {
-  const flux = part.providerMetadata?.flux;
-  return isRecord(flux) && typeof flux.id === "string" ? flux.id : undefined;
+function symtabPartID(part: Extract<ThreadAssistantMessagePart, { type: "text" | "reasoning" }>) {
+  const symtab = part.providerMetadata?.symtab;
+  return isRecord(symtab) && typeof symtab.id === "string" ? symtab.id : undefined;
 }
 
 function approvalKind(kind: AgentEventPayloadMap["approval.requested"]["options"][number]["kind"]): ToolApprovalOptionKind {

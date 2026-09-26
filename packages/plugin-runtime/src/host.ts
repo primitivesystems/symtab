@@ -1,4 +1,4 @@
-import type { PluginCapability } from "@flux/plugin-sdk";
+import type { PluginCapability } from "@symtab/plugin-sdk";
 import type { HostMessage, HostRequest, PluginBundle, WorkerMessage } from "./protocol";
 
 export interface RuntimeWorker {
@@ -46,7 +46,7 @@ type RequestBody = HostRequest extends infer Request
 function defaultWorker(vaultId: string): RuntimeWorker {
   return new Worker(new URL("./worker.ts", import.meta.url), {
     type: "module",
-    name: `flux-plugins:${vaultId}`,
+    name: `symtab-plugins:${vaultId}`,
   });
 }
 

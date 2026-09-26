@@ -13,17 +13,31 @@ describe("workbench visual contract", () => {
       expect(source).toContain(`<WorkbenchPanel aria-label="${label}"`);
     }
   });
+  test("activity bar ends at graph", () => {
+    const source = readFileSync(
+      new URL("../src/components/design-system/workbench.tsx", import.meta.url),
+      "utf8"
+    );
+    expect(source).not.toContain('{ id: "backlinks", label: "Backlinks", icon: "references" }');
+    expect(source).not.toContain('{ id: "tags", label: "Tags", icon: "tag" }');
+  });
   test("standalone windows and portals inherit a semantic separator", () => {
     const css = readFileSync(new URL("../src/styles/globals.css", import.meta.url), "utf8");
     expect(css).toMatch(/:root\s*\{[^}]*--layout-separator:\s*var\(--border\)/);
   });
   test("packaged Electron views load the bundled in-app logo relatively", () => {
     const onboarding = readFileSync(
-      new URL("../src/components/design-system/workbench/chrome/onboarding-page.tsx", import.meta.url),
+      new URL(
+        "../src/components/design-system/workbench/chrome/onboarding-page.tsx",
+        import.meta.url
+      ),
       "utf8"
     );
     const editor = readFileSync(
-      new URL("../src/components/design-system/workbench/editor/editor-surface.tsx", import.meta.url),
+      new URL(
+        "../src/components/design-system/workbench/editor/editor-surface.tsx",
+        import.meta.url
+      ),
       "utf8"
     );
     expect(onboarding).toContain('src="./logo.png"');
@@ -68,12 +82,12 @@ describe("workbench visual contract", () => {
 
     expect(css).toContain("[data-workbench]");
     expect(css).toContain("--workbench-scrollbar-thumb");
-    expect(css).toContain(".flux-print-document");
+    expect(css).toContain(".symtab-print-document");
     expect(css).toContain("@media print");
     expect(css).toContain("white-space: pre-wrap");
-    expect(css).toContain("body > :not(.flux-print-document)");
+    expect(css).toContain("body > :not(.symtab-print-document)");
     expect(css).toContain("height: auto !important");
-    expect(css).toContain("var(--flux-print-margin, 18mm)");
+    expect(css).toContain("var(--symtab-print-margin, 18mm)");
   });
 
   test("updater keeps its blue staged-action treatment", () => {
@@ -95,6 +109,31 @@ describe("workbench visual contract", () => {
       "utf8"
     );
     expect(source).not.toContain("transition-all");
+    expect(source).toContain("active:not-aria-[haspopup]:scale-[0.96]");
     expect(source).toContain("motion-reduce:transition-none");
+  });
+
+  test("single-file editor avoids a redundant breadcrumb row", () => {
+    const source = readFileSync(
+      new URL(
+        "../src/components/design-system/workbench/editor/editor-surface.tsx",
+        import.meta.url
+      ),
+      "utf8"
+    );
+    expect(source).toContain("breadcrumbs.length > 1");
+  });
+
+  test("settings expose selected navigation and theme state", () => {
+    const source = readFileSync(
+      new URL(
+        "../src/components/design-system/workbench/chrome/workbench-settings-dialog.tsx",
+        import.meta.url
+      ),
+      "utf8"
+    );
+    expect(source).toContain('aria-current={page === id ? "page" : undefined}');
+    expect(source).toContain("aria-pressed={selected}");
+    expect(source).toContain("motion-reduce:active:scale-100");
   });
 });

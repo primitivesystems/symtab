@@ -8,12 +8,12 @@ import (
 func TestLoadDefaults(t *testing.T) {
 	t.Setenv("ENVIRONMENT", "")
 	t.Setenv("HOST", "")
-	t.Setenv("FLUX_VAULT_PATH", "")
-	t.Setenv("FLUX_VAULT_ROOT", "")
+	t.Setenv("SYMTAB_VAULT_PATH", "")
+	t.Setenv("SYMTAB_VAULT_ROOT", "")
 	t.Setenv("CORS_ALLOWED_ORIGIN", "")
 	t.Setenv("PORT", "")
-	t.Setenv("FLUX_APP_DATA_DIR", "")
-	t.Setenv("FLUX_DESKTOP_TOKEN", "")
+	t.Setenv("SYMTAB_APP_DATA_DIR", "")
+	t.Setenv("SYMTAB_DESKTOP_TOKEN", "")
 
 	cfg := Load()
 	if cfg.Environment != "development" {
@@ -41,8 +41,8 @@ func TestLoadDefaults(t *testing.T) {
 
 func TestProductionDefaultsToPersistentVaultRoot(t *testing.T) {
 	t.Setenv("ENVIRONMENT", "production")
-	t.Setenv("FLUX_VAULT_PATH", "")
-	t.Setenv("FLUX_VAULT_ROOT", "")
+	t.Setenv("SYMTAB_VAULT_PATH", "")
+	t.Setenv("SYMTAB_VAULT_ROOT", "")
 	if cfg := Load(); cfg.VaultRoot != "/data/vaults" {
 		t.Fatalf("unexpected production vault root: %q", cfg.VaultRoot)
 	}
@@ -50,8 +50,8 @@ func TestProductionDefaultsToPersistentVaultRoot(t *testing.T) {
 
 func TestDesktopKeepsNativeDirectoryAccess(t *testing.T) {
 	t.Setenv("ENVIRONMENT", "desktop")
-	t.Setenv("FLUX_VAULT_PATH", "")
-	t.Setenv("FLUX_VAULT_ROOT", "")
+	t.Setenv("SYMTAB_VAULT_PATH", "")
+	t.Setenv("SYMTAB_VAULT_ROOT", "")
 	if cfg := Load(); cfg.VaultRoot != "" {
 		t.Fatalf("desktop should use its native directory picker, got root %q", cfg.VaultRoot)
 	}
@@ -60,24 +60,24 @@ func TestDesktopKeepsNativeDirectoryAccess(t *testing.T) {
 func TestLoadEnvironment(t *testing.T) {
 	t.Setenv("ENVIRONMENT", "test")
 	t.Setenv("HOST", "0.0.0.0")
-	t.Setenv("FLUX_VAULT_PATH", "/tmp/flux-vault")
-	t.Setenv("FLUX_VAULT_ROOT", "/tmp/flux-vaults")
-	t.Setenv("CORS_ALLOWED_ORIGIN", "https://flux.example")
+	t.Setenv("SYMTAB_VAULT_PATH", "/tmp/symtab-vault")
+	t.Setenv("SYMTAB_VAULT_ROOT", "/tmp/symtab-vaults")
+	t.Setenv("CORS_ALLOWED_ORIGIN", "https://symtab.example")
 	t.Setenv("PORT", "9090")
-	t.Setenv("FLUX_APP_DATA_DIR", "/tmp/flux-app-data")
-	t.Setenv("FLUX_DESKTOP_TOKEN", "secret")
+	t.Setenv("SYMTAB_APP_DATA_DIR", "/tmp/symtab-app-data")
+	t.Setenv("SYMTAB_DESKTOP_TOKEN", "secret")
 
 	cfg := Load()
-	if cfg.Environment != "test" || cfg.VaultPath != "/tmp/flux-vault" || cfg.VaultRoot != "/tmp/flux-vaults" {
+	if cfg.Environment != "test" || cfg.VaultPath != "/tmp/symtab-vault" || cfg.VaultRoot != "/tmp/symtab-vaults" {
 		t.Fatalf("environment values were not loaded: %#v", cfg)
 	}
 	if cfg.Host != "0.0.0.0" || cfg.Port != "9090" {
 		t.Fatalf("runtime values were not loaded: %#v", cfg)
 	}
-	if cfg.AllowedOrigin != "https://flux.example" {
+	if cfg.AllowedOrigin != "https://symtab.example" {
 		t.Fatalf("unexpected allowed origin %q", cfg.AllowedOrigin)
 	}
-	if cfg.AppDataDir != "/tmp/flux-app-data" || cfg.DesktopToken != "secret" {
+	if cfg.AppDataDir != "/tmp/symtab-app-data" || cfg.DesktopToken != "secret" {
 		t.Fatalf("app data values were not loaded: %#v", cfg)
 	}
 }

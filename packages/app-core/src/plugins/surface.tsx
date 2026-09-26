@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from "react";
-import type { PluginCapability } from "@flux/plugin-sdk";
+import type { PluginCapability } from "@symtab/plugin-sdk";
 
 export type PluginViewLocation = "modal" | "left-sidebar" | "right-sidebar" | "workspace";
 
@@ -49,7 +49,7 @@ export function PluginSurface({
   const postTheme = useCallback(() => {
     frameRef.current?.contentWindow?.postMessage(
       {
-        kind: "flux-plugin-theme",
+        kind: "symtab-plugin-theme",
         theme: document.documentElement.classList.contains("dark") ? "dark" : "light",
       },
       "*"
@@ -71,7 +71,7 @@ export function PluginSurface({
         return;
       }
       if (
-        message.kind !== "flux-plugin-capability" ||
+        message.kind !== "symtab-plugin-capability" ||
         typeof message.id !== "number" ||
         typeof message.capability !== "string"
       )
@@ -79,13 +79,13 @@ export function PluginSurface({
       void invokeCapability(view.pluginId, message.capability, message.input).then(
         (value) =>
           frameRef.current?.contentWindow?.postMessage(
-            { kind: "flux-plugin-capability-result", id: message.id, value },
+            { kind: "symtab-plugin-capability-result", id: message.id, value },
             "*"
           ),
         (error) =>
           frameRef.current?.contentWindow?.postMessage(
             {
-              kind: "flux-plugin-capability-result",
+              kind: "symtab-plugin-capability-result",
               id: message.id,
               error: error instanceof Error ? error.message : String(error),
             },

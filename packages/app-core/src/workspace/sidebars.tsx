@@ -36,24 +36,24 @@ import {
   AlertDialogDescription,
   AlertDialogContent,
   AlertDialogTitle,
-} from "@flux/shared-ui/components/ui/alert-dialog";
+} from "@symtab/shared-ui/components/ui/alert-dialog";
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
-} from "@flux/shared-ui/components/ui/hover-card";
+} from "@symtab/shared-ui/components/ui/hover-card";
 import type {
   DocumentReferences,
   FileEntry,
   SearchResult,
   VaultFacets,
-} from "@flux/bridge-contract";
+} from "@symtab/bridge-contract";
 import type { BookmarkItem } from "../bookmarks/store";
 import { getFrontmatterProperties, splitFrontmatter } from "../editor/frontmatter";
 import type { DemoDocument } from "../editor/markdown-editor";
 import { buildLinkIndex, linkedMentionsFor, type DocumentMention } from "../editor/link-index";
 import { VaultExplorer } from "./vault-explorer";
-import { cn } from "@flux/shared-ui";
+import { cn } from "@symtab/shared-ui";
 
 export type LeftPane = "files" | "search" | "bookmarks";
 export type RightPane =
@@ -181,7 +181,7 @@ function SidebarPane({ controls, children }: { controls: ReactNode; children: Re
   return (
     <div className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden">
       <div className="shrink-0 bg-sidebar">{controls}</div>
-      <div className="flux-editor-scroll flux-sidebar-scroll min-h-0 min-w-0 flex-1 overflow-x-clip overflow-y-auto">
+      <div className="symtab-editor-scroll symtab-sidebar-scroll min-h-0 min-w-0 flex-1 overflow-x-clip overflow-y-auto">
         {children}
       </div>
     </div>
@@ -240,19 +240,19 @@ function FileRow({
             onPointerEnter={(event) => setPreviewOpen(event.metaKey || event.ctrlKey)}
             onPointerLeave={() => setPreviewOpen(false)}
             onDragStart={(event) => {
-              event.dataTransfer.setData("application/x-flux-file", document.title);
+              event.dataTransfer.setData("application/x-symtab-file", document.title);
               event.dataTransfer.setData("text/plain", document.title);
               event.dataTransfer.effectAllowed = "move";
             }}
             onDragOver={(event) => {
-              if (!event.dataTransfer.types.includes("application/x-flux-file")) return;
+              if (!event.dataTransfer.types.includes("application/x-symtab-file")) return;
               event.preventDefault();
               event.dataTransfer.dropEffect = "move";
             }}
             onDrop={(event) => {
               event.preventDefault();
               event.stopPropagation();
-              const source = event.dataTransfer.getData("application/x-flux-file");
+              const source = event.dataTransfer.getData("application/x-symtab-file");
               if (source && source !== document.title) onReorder(source, document.title);
             }}
             className={`flex w-full items-center gap-2 rounded-md py-1.5 pr-2 text-left text-xs outline-none focus-visible:ring-2 focus-visible:ring-ring/50 ${
@@ -386,12 +386,12 @@ function FileExplorer({
         role="tree"
         aria-label="Files"
         onDragOver={(event) => {
-          if (!event.dataTransfer.types.includes("application/x-flux-file")) return;
+          if (!event.dataTransfer.types.includes("application/x-symtab-file")) return;
           event.preventDefault();
         }}
         onDrop={(event) => {
           event.preventDefault();
-          const title = event.dataTransfer.getData("application/x-flux-file");
+          const title = event.dataTransfer.getData("application/x-symtab-file");
           if (title && locations[title]) setPendingMove({ kind: "folder", title, folder: null });
         }}
       >
@@ -423,14 +423,14 @@ function FileExplorer({
                 })
               }
               onDragOver={(event) => {
-                if (!event.dataTransfer.types.includes("application/x-flux-file")) return;
+                if (!event.dataTransfer.types.includes("application/x-symtab-file")) return;
                 event.preventDefault();
                 event.dataTransfer.dropEffect = "move";
               }}
               onDrop={(event) => {
                 event.preventDefault();
                 event.stopPropagation();
-                const title = event.dataTransfer.getData("application/x-flux-file");
+                const title = event.dataTransfer.getData("application/x-symtab-file");
                 if (title && locations[title] !== folder) {
                   setPendingMove({ kind: "folder", title, folder });
                 }
@@ -980,7 +980,7 @@ function LeftSidebar({
           )}
         </div>
         <div
-          className="flux-editor-scroll flux-sidebar-scroll h-full min-h-0 overflow-x-clip overflow-y-auto"
+          className="symtab-editor-scroll symtab-sidebar-scroll h-full min-h-0 overflow-x-clip overflow-y-auto"
           hidden={pane !== "search"}
         >
           <SearchPane
@@ -991,7 +991,7 @@ function LeftSidebar({
           />
         </div>
         <div
-          className="flux-editor-scroll flux-sidebar-scroll h-full min-h-0 overflow-x-clip overflow-y-auto"
+          className="symtab-editor-scroll symtab-sidebar-scroll h-full min-h-0 overflow-x-clip overflow-y-auto"
           hidden={pane !== "bookmarks"}
         >
           <BookmarksPane

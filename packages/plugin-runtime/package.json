@@ -1,5 +1,5 @@
 {
-  "name": "@flux/plugin-runtime",
+  "name": "@symtab/plugin-runtime",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -14,7 +14,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@flux/plugin-sdk": "workspace:*",
+    "@symtab/plugin-sdk": "workspace:*",
     "ses": "^2.0.0"
   },
   "devDependencies": {

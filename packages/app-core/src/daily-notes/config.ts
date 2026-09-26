@@ -1,4 +1,4 @@
-import type { FluxClient } from "@flux/bridge-contract";
+import type { SymtabClient } from "@symtab/bridge-contract";
 
 export interface DailyNoteConfig {
   dailyFolder: string;
@@ -32,7 +32,7 @@ function safeVaultPath(value: unknown, fallback: string) {
   return value.replace(/\/+$/, "");
 }
 
-export async function loadDailyNoteConfig(client: FluxClient, vaultId: string) {
+export async function loadDailyNoteConfig(client: SymtabClient, vaultId: string) {
   const value = await client.getVaultConfig(vaultId);
   const timeZone =
     typeof value.timeZone === "string" ? value.timeZone : defaultDailyNoteConfig.timeZone;
@@ -118,7 +118,7 @@ export function dateKeyInTimeZone(date: Date, timeZone: string) {
 }
 
 export async function noteTemplate(
-  client: FluxClient,
+  client: SymtabClient,
   vaultId: string,
   path: string | undefined,
   fallback: string,

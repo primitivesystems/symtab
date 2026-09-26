@@ -77,7 +77,7 @@ export type PrimarySidebarProps = {
 export function PrimarySidebar({
   files,
   selectedPath = "package.json",
-  workspaceName = "flux-landing [GitHub]",
+  workspaceName = "symtab-workspace",
   canMutate = true,
   onSelectFile,
   onCreateFile,
@@ -289,8 +289,8 @@ function TreeRow({
           onClick={() => onSelectFile?.(item.path)}
           onDragStart={(event) => {
             event.dataTransfer.effectAllowed = "copyMove";
-            event.dataTransfer.setData("application/x-flux-path", item.path);
-            event.dataTransfer.setData("application/x-flux-file", item.path);
+            event.dataTransfer.setData("application/x-symtab-path", item.path);
+            event.dataTransfer.setData("application/x-symtab-file", item.path);
             event.dataTransfer.setData("text/plain", item.path);
           }}
           className="flex h-[22px] w-full min-w-0 select-none items-center pe-2 text-start text-[13px] outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--workbench-fg)]"

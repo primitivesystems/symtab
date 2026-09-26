@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/flux-pkm/server/internal/domain"
+	"github.com/symtab-pkm/server/internal/domain"
 )
 
 func TestIndexFileTracksHashesAndInvalidatesChangedMetadata(t *testing.T) {
@@ -76,8 +76,8 @@ func TestIndexStoresTagAndPropertyFacets(t *testing.T) {
 	t.Cleanup(func() { _ = store.Close() })
 	now := time.Now().UTC()
 	inputs := map[string]string{
-		"one.md": "---\ntags: [project/flux, active]\nstatus: draft\n---\n#inline",
-		"two.md": "---\ntags:\n  - active\nowner: flux\n---\n#project/flux",
+		"one.md": "---\ntags: [project/symtab, active]\nstatus: draft\n---\n#inline",
+		"two.md": "---\ntags:\n  - active\nowner: symtab\n---\n#project/symtab",
 	}
 	for filePath, content := range inputs {
 		entry := domain.FileEntry{
@@ -96,7 +96,7 @@ func TestIndexStoresTagAndPropertyFacets(t *testing.T) {
 	for _, facet := range facets.Tags {
 		tagCounts[facet.Name] = facet.Count
 	}
-	if tagCounts["active"] != 2 || tagCounts["project/flux"] != 2 || tagCounts["inline"] != 1 {
+	if tagCounts["active"] != 2 || tagCounts["project/symtab"] != 2 || tagCounts["inline"] != 1 {
 		t.Fatalf("unexpected tag facets: %#v", facets.Tags)
 	}
 	propertyCounts := map[string]int{}

@@ -13,15 +13,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/flux-pkm/server/internal/agent"
-	application "github.com/flux-pkm/server/internal/app"
-	"github.com/flux-pkm/server/internal/appdata"
-	"github.com/flux-pkm/server/internal/domain"
-	"github.com/flux-pkm/server/internal/files"
-	gitadapter "github.com/flux-pkm/server/internal/git"
-	"github.com/flux-pkm/server/internal/modelproviders"
-	"github.com/flux-pkm/server/internal/plugins"
-	"github.com/flux-pkm/server/internal/vault"
+	"github.com/symtab-pkm/server/internal/agent"
+	application "github.com/symtab-pkm/server/internal/app"
+	"github.com/symtab-pkm/server/internal/appdata"
+	"github.com/symtab-pkm/server/internal/domain"
+	"github.com/symtab-pkm/server/internal/files"
+	gitadapter "github.com/symtab-pkm/server/internal/git"
+	"github.com/symtab-pkm/server/internal/modelproviders"
+	"github.com/symtab-pkm/server/internal/plugins"
+	"github.com/symtab-pkm/server/internal/vault"
 	"github.com/gin-gonic/gin"
 )
 
@@ -255,7 +255,7 @@ func (h *Handler) installPlugin(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"code": "invalid_plugin_package", "error": "plugin package must be valid base64 and at most 25 MiB"})
 		return
 	}
-	temporary, err := os.CreateTemp("", "flux-plugin-*.zip")
+	temporary, err := os.CreateTemp("", "symtab-plugin-*.zip")
 	if err != nil {
 		writeError(c, err)
 		return
@@ -810,7 +810,7 @@ func (h *Handler) openVault(c *gin.Context) {
 		writeError(c, err)
 		return
 	}
-	if c.GetHeader("X-Flux-Client") != "mcp" {
+	if c.GetHeader("X-Symtab-Client") != "mcp" {
 		h.rememberOpenedVault(info)
 	}
 	c.JSON(http.StatusOK, info)
@@ -1001,7 +1001,7 @@ func (h *Handler) requireDesktopToken(c *gin.Context) {
 		c.Next()
 		return
 	}
-	provided := c.GetHeader("X-Flux-Desktop-Token")
+	provided := c.GetHeader("X-Symtab-Desktop-Token")
 	if len(provided) != len(h.desktopToken) || subtle.ConstantTimeCompare([]byte(provided), []byte(h.desktopToken)) != 1 {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"code": "unauthorized", "error": "invalid desktop session token"})
 		return

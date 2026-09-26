@@ -24,30 +24,30 @@ export function isEntrypoint(moduleUrl: string, executablePath: string | undefin
 
 type DaemonDescriptor = { origin: string; token: string };
 
-export function daemonDescriptorPath(appData = process.env.FLUX_APP_DATA_DIR): string {
+export function daemonDescriptorPath(appData = process.env.SYMTAB_APP_DATA_DIR): string {
   if (appData) return join(appData, "runtime", "daemon.json");
-  if (platform() === "darwin") return join(homedir(), "Library", "Application Support", "Flux", "runtime", "daemon.json");
-  if (platform() === "win32") return join(process.env.APPDATA ?? homedir(), "Flux", "runtime", "daemon.json");
-  return join(process.env.XDG_CONFIG_HOME ?? join(homedir(), ".config"), "Flux", "runtime", "daemon.json");
+  if (platform() === "darwin") return join(homedir(), "Library", "Application Support", "Symtab", "runtime", "daemon.json");
+  if (platform() === "win32") return join(process.env.APPDATA ?? homedir(), "Symtab", "runtime", "daemon.json");
+  return join(process.env.XDG_CONFIG_HOME ?? join(homedir(), ".config"), "Symtab", "runtime", "daemon.json");
 }
 
 async function pushDevelopmentBuild(directory: string): Promise<void> {
   const root = resolve(directory);
   const build = spawnSync("bun", ["run", "build"], { cwd: root, stdio: "inherit" });
   if (build.status !== 0) throw new Error("plugin build failed");
-  const temporary = mkdtempSync(join(tmpdir(), "flux-plugin-dev-"));
+  const temporary = mkdtempSync(join(tmpdir(), "symtab-plugin-dev-"));
   try {
-    const archive = packPlugin(root, join(temporary, `${basename(root)}.flux-plugin`));
+    const archive = packPlugin(root, join(temporary, `${basename(root)}.symtab-plugin`));
     const descriptor = JSON.parse(
       readFileSync(daemonDescriptorPath(), "utf8")
     ) as DaemonDescriptor;
-    if (!descriptor.origin || !descriptor.token) throw new Error("Flux desktop runtime descriptor is invalid");
+    if (!descriptor.origin || !descriptor.token) throw new Error("Symtab desktop runtime descriptor is invalid");
     const bytes = readFileSync(archive);
     const response = await fetch(`${descriptor.origin}/api/v1/plugins/install`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "X-Flux-Desktop-Token": descriptor.token,
+        "X-Symtab-Desktop-Token": descriptor.token,
       },
       body: JSON.stringify({
         packageBase64: bytes.toString("base64"),
@@ -57,7 +57,7 @@ async function pushDevelopmentBuild(directory: string): Promise<void> {
     });
     if (!response.ok) {
       const body = (await response.json().catch(() => ({}))) as { error?: string };
-      throw new Error(body.error ?? `Flux returned ${response.status}`);
+      throw new Error(body.error ?? `Symtab returned ${response.status}`);
     }
     console.log(`Reloaded ${readManifest(root).name ?? basename(root)}`);
   } finally {
@@ -69,13 +69,13 @@ export async function main(args = process.argv.slice(2)): Promise<void> {
   const [command, path = ".", ...rest] = args;
   if (!command || command === "help" || command === "--help") {
     console.log(
-      "Usage: create-flux-plugin <directory> | flux-plugin validate [directory] | flux-plugin pack [directory] [--out file] | flux-plugin dev [directory]"
+      "Usage: create-symtab-plugin <directory> | symtab-plugin validate [directory] | symtab-plugin pack [directory] [--out file] | symtab-plugin dev [directory]"
     );
     return;
   }
   if (command === "validate") {
     readManifest(path);
-    console.log("Valid Flux plugin manifest");
+    console.log("Valid Symtab plugin manifest");
     return;
   }
   if (command === "pack") {
@@ -88,7 +88,7 @@ export async function main(args = process.argv.slice(2)): Promise<void> {
   }
   if (command === "dev") {
     const root = resolve(path);
-    if (!existsSync(join(root, "flux.plugin.json"))) throw new Error("flux.plugin.json not found");
+    if (!existsSync(join(root, "symtab.plugin.json"))) throw new Error("symtab.plugin.json not found");
     let running = false;
     let queued = false;
     let timer: NodeJS.Timeout | undefined;
@@ -117,9 +117,9 @@ export async function main(args = process.argv.slice(2)): Promise<void> {
     };
     watch(join(root, "src"), { recursive: true }, schedule);
     watch(root, (_event, filename) => {
-      if (filename === "flux.plugin.json") schedule();
+      if (filename === "symtab.plugin.json") schedule();
     });
-    console.log("Watching src and flux.plugin.json. Ctrl+C to stop.");
+    console.log("Watching src and symtab.plugin.json. Ctrl+C to stop.");
     return;
   }
   if (command === "create") {

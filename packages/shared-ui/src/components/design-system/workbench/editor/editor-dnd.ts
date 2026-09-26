@@ -15,9 +15,9 @@ export function isSplitToggleOperation(event: Pick<DragEvent, "altKey" | "shiftK
 }
 
 const EDITOR_DROP_TYPES = [
-  "application/x-flux-editor-tab",
-  "application/x-flux-path",
-  "application/x-flux-file",
+  "application/x-symtab-editor-tab",
+  "application/x-symtab-path",
+  "application/x-symtab-file",
   "Files",
   "text/plain",
 ] as const;
@@ -30,7 +30,7 @@ export function readDroppedTab(dataTransfer: DataTransfer): {
   tab: EditorTab;
   source?: EditorGroupId;
 } | null {
-  const editorTab = dataTransfer.getData("application/x-flux-editor-tab");
+  const editorTab = dataTransfer.getData("application/x-symtab-editor-tab");
   if (editorTab) {
     try {
       const parsed = JSON.parse(editorTab) as {
@@ -57,8 +57,8 @@ export function readDroppedTab(dataTransfer: DataTransfer): {
   if (file) return { tab: { id: `file:${file.name}`, title: file.name } };
 
   const raw =
-    dataTransfer.getData("application/x-flux-path") ||
-    dataTransfer.getData("application/x-flux-file") ||
+    dataTransfer.getData("application/x-symtab-path") ||
+    dataTransfer.getData("application/x-symtab-file") ||
     dataTransfer.getData("text/plain");
   if (!raw || raw.includes("\n")) return null;
 

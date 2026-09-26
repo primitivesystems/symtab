@@ -220,7 +220,7 @@ func (m *Manager) InstallMarketplace(ctx context.Context, pluginID string) (Inst
 	if err != nil {
 		return InstallResult{}, err
 	}
-	temporary, err := os.CreateTemp("", "flux-marketplace-*.flux-plugin")
+	temporary, err := os.CreateTemp("", "symtab-marketplace-*.symtab-plugin")
 	if err != nil {
 		return InstallResult{}, err
 	}

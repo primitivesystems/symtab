@@ -1,5 +1,5 @@
 {
-  "name": "@flux/desktop",
+  "name": "@symtab/desktop",
   "version": "0.0.2",
   "description": "Symtab personal knowledge management desktop application",
   "author": "Symtab Contributors",
@@ -18,9 +18,9 @@
     "clean": "bun run clean:build"
   },
   "dependencies": {
-    "@flux/app-core": "workspace:*",
-    "@flux/client-desktop": "workspace:*",
-    "@flux/shared-ui": "workspace:*",
+    "@symtab/app-core": "workspace:*",
+    "@symtab/client-desktop": "workspace:*",
+    "@symtab/shared-ui": "workspace:*",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "electron-updater": "^6.8.9"
@@ -47,7 +47,7 @@
       "dist/**",
       "dist-electron/**",
       "package.json",
-      "!node_modules/@flux/**/*",
+      "!node_modules/@symtab/**/*",
       "!node_modules/**/.turbo{,/**/*}",
       "!node_modules/**/.cache{,/**/*}"
     ],
@@ -80,7 +80,7 @@
     "publish": {
       "provider": "github",
       "owner": "primitivesystems",
-      "repo": "project-flux",
+      "repo": "symtab",
       "releaseType": "release"
     },
     "mac": {

@@ -21,7 +21,7 @@ import {
 } from "./ui/context-menu";
 import { Menu, MenuItem, MenuPopup, MenuSeparator, MenuTrigger } from "./ui/menu";
 
-export interface FluxTabCommands {
+export interface SymtabTabCommands {
   pinned?: boolean;
   canCloseOthers?: boolean;
   canCloseAfter?: boolean;
@@ -35,11 +35,11 @@ export interface FluxTabCommands {
   onSplitDown?: () => void;
 }
 
-export interface FluxTabContextMenuProps extends FluxTabCommands {
+export interface SymtabTabContextMenuProps extends SymtabTabCommands {
   children: ReactNode;
 }
 
-export interface FluxEditorPaneProps extends FluxTabCommands {
+export interface SymtabEditorPaneProps extends SymtabTabCommands {
   title: ReactNode;
   children: ReactNode;
   headerAction?: ReactNode;
@@ -64,7 +64,7 @@ function ContextCommands({
   onMoveToNewWindow,
   onSplitRight,
   onSplitDown,
-}: FluxTabCommands) {
+}: SymtabTabCommands) {
   return (
     <>
       <ContextMenuItem disabled={!onClose} onClick={onClose}>
@@ -140,7 +140,7 @@ function DropdownCommands({
   onMoveToNewWindow,
   onSplitRight,
   onSplitDown,
-}: FluxTabCommands) {
+}: SymtabTabCommands) {
   return (
     <>
       <MenuItem disabled={!onClose} onClick={onClose}>
@@ -199,7 +199,7 @@ function DropdownCommands({
   );
 }
 
-export function FluxTabContextMenu({ children, ...commands }: FluxTabContextMenuProps) {
+export function SymtabTabContextMenu({ children, ...commands }: SymtabTabContextMenuProps) {
   return (
     <ContextMenu>
       <ContextMenuTrigger render={<div className="contents" />}>{children}</ContextMenuTrigger>
@@ -210,7 +210,7 @@ export function FluxTabContextMenu({ children, ...commands }: FluxTabContextMenu
   );
 }
 
-export function FluxEditorPane({
+export function SymtabEditorPane({
   title,
   children,
   headerAction,
@@ -222,15 +222,15 @@ export function FluxEditorPane({
   onGoForward,
   className,
   ...commands
-}: FluxEditorPaneProps) {
+}: SymtabEditorPaneProps) {
   return (
     <section
       className={cn(
-        "flux-editor-pane flex h-full min-h-0 min-w-0 flex-col bg-sidebar",
+        "symtab-editor-pane flex h-full min-h-0 min-w-0 flex-col bg-sidebar",
         className
       )}
     >
-      <header className="flux-editor-pane-header relative flex h-9 shrink-0 items-center border-b px-2 text-muted-foreground [border-color:var(--layout-separator)]">
+      <header className="symtab-editor-pane-header relative flex h-9 shrink-0 items-center border-b px-2 text-muted-foreground [border-color:var(--layout-separator)]">
         <div className="flex items-center gap-0.5">
           <button
             type="button"

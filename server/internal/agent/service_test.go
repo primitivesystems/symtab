@@ -83,8 +83,8 @@ func TestDemoTurnPersistsOrderedEventsAndResumesAfterApproval(t *testing.T) {
 }
 
 func TestOpenCodeACPStreamsARealTurn(t *testing.T) {
-	if os.Getenv("FLUX_TEST_ACP") != "1" {
-		t.Skip("set FLUX_TEST_ACP=1 to exercise the installed OpenCode provider")
+	if os.Getenv("SYMTAB_TEST_ACP") != "1" {
+		t.Skip("set SYMTAB_TEST_ACP=1 to exercise the installed OpenCode provider")
 	}
 	db, err := gorm.Open(sqlite.Open("file:agent-acp-test?mode=memory&cache=shared"), &gorm.Config{})
 	if err != nil {
@@ -107,7 +107,7 @@ func TestOpenCodeACPStreamsARealTurn(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err = service.StartTurn(thread.ID, StartTurnRequest{Prompt: "Do not use tools. Reply exactly FLUX_STREAM_OK."}); err != nil {
+	if _, err = service.StartTurn(thread.ID, StartTurnRequest{Prompt: "Do not use tools. Reply exactly SYMTAB_STREAM_OK."}); err != nil {
 		t.Fatal(err)
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 90*time.Second)

@@ -5,12 +5,12 @@ import type {
   RecentVault,
   VaultInfo,
   VaultLocation,
-} from "@flux/bridge-contract";
-import type { EditorTab } from "@flux/shared-ui/components/design-system/workbench/editor/editor-area";
+} from "@symtab/bridge-contract";
+import type { EditorTab } from "@symtab/shared-ui/components/design-system/workbench/editor/editor-area";
 
-import type { FluxRuntime } from "../App";
+import type { SymtabRuntime } from "../App";
 import { decodedText, singleTextEdit } from "../app/helpers";
-import type { FluxStatePersistence } from "../app/state";
+import type { SymtabStatePersistence } from "../app/state";
 
 export function useWorkbenchVault({
   runtime,
@@ -18,8 +18,8 @@ export function useWorkbenchVault({
   windowId,
   restore = true,
 }: {
-  runtime: FluxRuntime;
-  persistence: FluxStatePersistence;
+  runtime: SymtabRuntime;
+  persistence: SymtabStatePersistence;
   windowId?: string;
   restore?: boolean;
 }) {

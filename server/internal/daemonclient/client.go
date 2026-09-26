@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/flux-pkm/server/internal/domain"
+	"github.com/symtab-pkm/server/internal/domain"
 )
 
 type Client struct {
@@ -94,8 +94,8 @@ func request[T any](ctx context.Context, client *Client, method, endpoint string
 	if err != nil {
 		return zero, err
 	}
-	request.Header.Set("X-Flux-Desktop-Token", client.token)
-	request.Header.Set("X-Flux-Client", "mcp")
+	request.Header.Set("X-Symtab-Desktop-Token", client.token)
+	request.Header.Set("X-Symtab-Client", "mcp")
 	if body != nil {
 		request.Header.Set("Content-Type", "application/json")
 	}

@@ -10,11 +10,11 @@ import (
 	"time"
 )
 
-// Run with FLUX_LARGE_VAULT_FILES=10000 (or 50000/100000).
+// Run with SYMTAB_LARGE_VAULT_FILES=10000 (or 50000/100000).
 func TestLargeVaultReopen(t *testing.T) {
-	count, err := strconv.Atoi(os.Getenv("FLUX_LARGE_VAULT_FILES"))
+	count, err := strconv.Atoi(os.Getenv("SYMTAB_LARGE_VAULT_FILES"))
 	if err != nil || count <= 0 {
-		t.Skip("set FLUX_LARGE_VAULT_FILES to run scale verification")
+		t.Skip("set SYMTAB_LARGE_VAULT_FILES to run scale verification")
 	}
 	root := t.TempDir()
 	content := []byte("# Durable note\n\nProduction vault scale verification.\n")
@@ -67,7 +67,7 @@ func TestLargeVaultReopen(t *testing.T) {
 			t.Fatalf("watcher retained too many file descriptors: %d", fileDescriptors)
 		}
 	}
-	database, err := os.Stat(filepath.Join(root, ".flux", "index.db"))
+	database, err := os.Stat(filepath.Join(root, ".symtab", "index.db"))
 	if err != nil {
 		t.Fatal(err)
 	}

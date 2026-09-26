@@ -42,7 +42,7 @@ let updateDownload: Promise<void> | null = null;
 const currentDirectory = path.dirname(fileURLToPath(import.meta.url));
 const devServerUrl = process.env.VITE_DEV_SERVER_URL;
 const isDev = Boolean(devServerUrl);
-const externalBackendOrigin = process.env.FLUX_BACKEND_URL;
+const externalBackendOrigin = process.env.SYMTAB_BACKEND_URL;
 let backendOrigin = externalBackendOrigin ?? "";
 let backendToken = "";
 let backendHeartbeat: ReturnType<typeof setInterval> | null = null;
@@ -57,8 +57,8 @@ function applicationIconPath() {
 
 function dockIconPath() {
   return app.isPackaged
-    ? path.join(process.resourcesPath, "dock-icon-dark.png")
-    : path.join(currentDirectory, "../assets/dock-icon-dark.png");
+    ? path.join(process.resourcesPath, "icon.icns")
+    : path.join(currentDirectory, "../assets/icon.icns");
 }
 
 function menuBarIconPath() {
@@ -116,10 +116,10 @@ autoUpdater.on("update-downloaded", (info) => {
 autoUpdater.on("error", (error) => sendUpdateStatus({ state: "error", message: error.message }));
 
 function symtabAppDataDirectory() {
-  if (process.env.FLUX_APP_DATA_DIR) return process.env.FLUX_APP_DATA_DIR;
+  if (process.env.SYMTAB_APP_DATA_DIR) return process.env.SYMTAB_APP_DATA_DIR;
   const parent = app.getPath("appData");
   const current = path.join(parent, app.isPackaged ? "Symtab" : "Symtab Development");
-  const legacy = path.join(parent, app.isPackaged ? "Flux" : "Flux Development");
+  const legacy = path.join(parent, app.isPackaged ? "Symtab" : "Symtab Development");
   return existsSync(current) || !existsSync(legacy) ? current : legacy;
 }
 
@@ -171,7 +171,7 @@ async function stopStalePublishedBackend(force = false) {
     }
     try {
       const response = await fetch(`${origin.origin}/api/v1/status`, {
-        headers: { "X-Flux-Desktop-Token": descriptor.token },
+        headers: { "X-Symtab-Desktop-Token": descriptor.token },
         signal: AbortSignal.timeout(1_000),
       });
       const status = response.ok ? ((await response.json()) as { version?: unknown }) : null;
@@ -196,7 +196,7 @@ async function stopStalePublishedBackend(force = false) {
 }
 
 function backendHeaders() {
-  return backendToken ? { "X-Flux-Desktop-Token": backendToken } : undefined;
+  return backendToken ? { "X-Symtab-Desktop-Token": backendToken } : undefined;
 }
 
 function streamKey(sender: WebContents, watcherId: string) {
@@ -314,10 +314,10 @@ async function ensureBackend() {
     ENVIRONMENT: "desktop",
     HOST: "127.0.0.1",
     PORT: "0",
-    FLUX_APP_DATA_DIR: symtabAppDataDirectory(),
-    FLUX_DESKTOP_TOKEN: "",
-    FLUX_DAEMON_IDLE_TIMEOUT: "2m",
-    FLUX_VERSION: app.getVersion(),
+    SYMTAB_APP_DATA_DIR: symtabAppDataDirectory(),
+    SYMTAB_DESKTOP_TOKEN: "",
+    SYMTAB_DAEMON_IDLE_TIMEOUT: "2m",
+    SYMTAB_VERSION: app.getVersion(),
   };
   if (isDev) {
     // Main-process reload restarts daemon, so go run recompiles backend changes.
@@ -396,7 +396,7 @@ function requestWindowFlush(window: BrowserWindow, windowId: number) {
     return;
   }
   closePendingWindows.add(windowId);
-  window.webContents.send("flux-before-close");
+  window.webContents.send("symtab-before-close");
   const timeout = setTimeout(() => {
     if (closePendingWindows.has(windowId))
       cancelWindowFlush(
@@ -492,7 +492,7 @@ function createWindow(targetUrl?: string) {
 function showMainWindow(command?: string) {
   if (process.platform === "darwin") app.dock?.show();
   const window = mainWindow && !mainWindow.isDestroyed() ? mainWindow : createWindow();
-  const sendCommand = () => command && window.webContents.send("flux-command", command);
+  const sendCommand = () => command && window.webContents.send("symtab-command", command);
   if (window.webContents.isLoadingMainFrame())
     window.webContents.once("did-finish-load", sendCommand);
   else sendCommand();
@@ -518,17 +518,17 @@ function setMenuBarIconEnabled(enabled: boolean) {
   icon.setTemplateImage(true);
   menuBarTray = new Tray(icon);
   menuBarTray.setToolTip("Symtab quick actions");
-  menuBarTray.setContextMenu(
-    Menu.buildFromTemplate([
-      { label: "Open Today’s Note", click: () => dispatchCommand("daily-today") },
-      { label: "Search Notes…", click: () => dispatchCommand("search") },
-      { type: "separator" },
-      { label: "Open Symtab", click: () => showMainWindow() },
-      { label: "Settings…", click: () => dispatchCommand("settings") },
-      { type: "separator" },
-      { role: "quit" },
-    ])
-  );
+  const menu = Menu.buildFromTemplate([
+    { label: "Open Today’s Note", click: () => dispatchCommand("daily-today") },
+    { label: "Search Notes…", click: () => dispatchCommand("search") },
+    { type: "separator" },
+    { label: "Open Symtab", click: () => showMainWindow() },
+    { label: "Settings…", click: () => dispatchCommand("settings") },
+    { type: "separator" },
+    { role: "quit" },
+  ]);
+  menuBarTray.on("click", () => menuBarTray?.popUpContextMenu(menu));
+  menuBarTray.on("right-click", () => menuBarTray?.popUpContextMenu(menu));
 }
 
 async function menuBarIconEnabled() {
@@ -538,8 +538,8 @@ async function menuBarIconEnabled() {
     });
     if (!response.ok) return true;
     const settings = (await response.json()) as Record<string, unknown>;
-    const fluxSettings = settings.fluxSettings as Record<string, unknown> | undefined;
-    const general = fluxSettings?.general as Record<string, unknown> | undefined;
+    const symtabSettings = settings.symtabSettings as Record<string, unknown> | undefined;
+    const general = symtabSettings?.general as Record<string, unknown> | undefined;
     return general?.showMenuBarIcon !== false;
   } catch {
     return true;
@@ -669,13 +669,13 @@ ipcMain.handle("get-window-id", (event) => {
   return mainWindow?.webContents.id === event.sender.id ? "main" : `window-${event.sender.id}`;
 });
 
-ipcMain.on("flux-close-ready", (event) => {
+ipcMain.on("symtab-close-ready", (event) => {
   const window = BrowserWindow.fromWebContents(event.sender);
   if (!window || window.isDestroyed() || !closePendingWindows.has(event.sender.id)) return;
   finishWindowFlush(window, event.sender.id);
 });
 
-ipcMain.on("flux-close-failed", (event, message: unknown) => {
+ipcMain.on("symtab-close-failed", (event, message: unknown) => {
   if (!closePendingWindows.has(event.sender.id)) return;
   cancelWindowFlush(
     event.sender.id,
@@ -702,7 +702,7 @@ ipcMain.handle("select-vault-directory", async (_event, mode: unknown) => {
   return result.canceled ? null : result.filePaths[0];
 });
 
-ipcMain.handle("flux-fetch", async (_event, request: unknown) => {
+ipcMain.handle("symtab-fetch", async (_event, request: unknown) => {
   await backendStartup;
   if (!request || typeof request !== "object") throw new TypeError("Invalid Symtab request");
   const value = request as { url?: unknown; method?: unknown; body?: unknown };

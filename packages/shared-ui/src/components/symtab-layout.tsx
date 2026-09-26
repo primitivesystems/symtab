@@ -13,15 +13,15 @@ import { useReducedMotion } from "motion/react";
 import * as m from "motion/react-m";
 
 import {
-  useFluxLayout,
-  type FluxLayoutState,
-  type FluxSidebarOptions,
-  type FluxSidebarSide,
-} from "../hooks/use-flux-layout";
+  useSymtabLayout,
+  type SymtabLayoutState,
+  type SymtabSidebarOptions,
+  type SymtabSidebarSide,
+} from "../hooks/use-symtab-layout";
 import { cn } from "../lib/utils";
-import { FluxTab, FluxTabBar } from "./flux-tabs";
+import { SymtabTab, SymtabTabBar } from "./symtab-tabs";
 
-export interface FluxLayoutProps extends Omit<HTMLAttributes<HTMLDivElement>, "title"> {
+export interface SymtabLayoutProps extends Omit<HTMLAttributes<HTMLDivElement>, "title"> {
   main: ReactNode;
   stickySidebar?: ReactNode;
   leftSidebar?: ReactNode;
@@ -37,10 +37,10 @@ export interface FluxLayoutProps extends Omit<HTMLAttributes<HTMLDivElement>, "t
   footer?: ReactNode;
   stickySidebarWidth?: number;
   windowControlsInset?: number;
-  leftSidebarOptions?: FluxSidebarOptions;
-  rightSidebarOptions?: FluxSidebarOptions;
-  onLayoutChange?: (state: FluxLayoutState) => void;
-  layoutState?: FluxLayoutState;
+  leftSidebarOptions?: SymtabSidebarOptions;
+  rightSidebarOptions?: SymtabSidebarOptions;
+  onLayoutChange?: (state: SymtabLayoutState) => void;
+  layoutState?: SymtabLayoutState;
   mainExtendsIntoTitlebar?: boolean;
 }
 
@@ -51,14 +51,14 @@ const LAYOUT_TRANSITION = {
 };
 
 interface ResizeHandleProps {
-  side: FluxSidebarSide;
+  side: SymtabSidebarSide;
   panelId: string;
   width: number;
   minWidth: number;
   maxWidth: number;
   collapsePressure: number;
-  onResize: (side: FluxSidebarSide, width: number) => void;
-  onDragChange: (side: FluxSidebarSide | null) => void;
+  onResize: (side: SymtabSidebarSide, width: number) => void;
+  onDragChange: (side: SymtabSidebarSide | null) => void;
 }
 
 function ResizeHandle({
@@ -141,7 +141,7 @@ function SidebarToggle({
   controls,
   onToggle,
 }: {
-  side: FluxSidebarSide;
+  side: SymtabSidebarSide;
   collapsed: boolean;
   controls: string;
   onToggle: () => void;
@@ -153,7 +153,7 @@ function SidebarToggle({
   return (
     <button
       type="button"
-      className="flux-window-no-drag grid size-8 shrink-0 place-items-center rounded-lg outline-none hover:bg-muted hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
+      className="symtab-window-no-drag grid size-8 shrink-0 place-items-center rounded-lg outline-none hover:bg-muted hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
       aria-label={label}
       aria-controls={controls}
       aria-expanded={!collapsed}
@@ -187,7 +187,7 @@ function SidebarToggle({
   );
 }
 
-export function FluxLayout({
+export function SymtabLayout({
   main,
   stickySidebar,
   leftSidebar,
@@ -211,15 +211,15 @@ export function FluxLayout({
   className,
   style,
   ...props
-}: FluxLayoutProps) {
+}: SymtabLayoutProps) {
   const leftId = useId();
   const rightId = useId();
   const [windowActive, setWindowActive] = useState(() =>
     typeof document === "undefined" ? true : document.hasFocus()
   );
-  const [resizingSide, setResizingSide] = useState<FluxSidebarSide | null>(null);
+  const [resizingSide, setResizingSide] = useState<SymtabSidebarSide | null>(null);
   const reduceMotion = useReducedMotion();
-  const { state, constraints, resize, toggle } = useFluxLayout({
+  const { state, constraints, resize, toggle } = useSymtabLayout({
     left: leftSidebarOptions,
     right: rightSidebarOptions,
     onStateChange: onLayoutChange,
@@ -266,10 +266,10 @@ export function FluxLayout({
   ].join(" ");
   const layoutTransition = resizingSide || reduceMotion ? { duration: 0 } : LAYOUT_TRANSITION;
   const titlebarStyle = {
-    "--flux-titlebar-left-inset": `${
+    "--symtab-titlebar-left-inset": `${
       mainExtendsIntoTitlebar && !leftVisible ? tabRailLeft - leftFootprint - 8 : 0
     }px`,
-    "--flux-titlebar-right-inset": `${
+    "--symtab-titlebar-right-inset": `${
       mainExtendsIntoTitlebar && !rightVisible ? rightChromeWidth - 8 : 0
     }px`,
     ...style,
@@ -278,7 +278,7 @@ export function FluxLayout({
   return (
     <div
       className={cn(
-        "flux-layout-root group/layout relative grid h-svh min-h-0 w-full grid-rows-[44px_minmax(0,1fr)_28px] overflow-hidden bg-[var(--window-well)] text-foreground",
+        "symtab-layout-root group/layout relative grid h-svh min-h-0 w-full grid-rows-[44px_minmax(0,1fr)_28px] overflow-hidden bg-[var(--window-well)] text-foreground",
         resizingSide && "cursor-col-resize select-none [&_iframe]:pointer-events-none",
         className
       )}
@@ -287,7 +287,7 @@ export function FluxLayout({
       {...props}
     >
       <header
-        className="flux-window-drag relative min-w-0 text-sidebar-foreground"
+        className="symtab-window-drag relative min-w-0 text-sidebar-foreground"
         style={{ backgroundColor: chromeColor }}
       >
         <div className="absolute inset-y-0 left-0 z-20 flex min-w-0 items-center pl-1">
@@ -298,7 +298,7 @@ export function FluxLayout({
           />
           <m.div
             className={cn(
-              "flux-window-no-drag flex min-w-0 items-center gap-0.5",
+              "symtab-window-no-drag flex min-w-0 items-center gap-0.5",
               !leftVisible && "pointer-events-none"
             )}
             aria-hidden={!leftVisible}
@@ -310,7 +310,7 @@ export function FluxLayout({
             {leftSidebarHeader}
           </m.div>
           <m.div
-            className={cn("flux-window-no-drag min-w-0", !leftVisible && "pointer-events-none")}
+            className={cn("symtab-window-no-drag min-w-0", !leftVisible && "pointer-events-none")}
             initial={false}
             animate={{ opacity: leftVisible ? 1 : 0 }}
             transition={reduceMotion ? { duration: 0 } : { duration: 0.14 }}
@@ -343,9 +343,9 @@ export function FluxLayout({
             transition={layoutTransition}
             style={{ backgroundColor: chromeColor }}
           >
-            <FluxTabBar inlineAction={tabInlineAction} actions={tabActions}>
-              {tabs ?? (title ? <FluxTab active>{title}</FluxTab> : null)}
-            </FluxTabBar>
+            <SymtabTabBar inlineAction={tabInlineAction} actions={tabActions}>
+              {tabs ?? (title ? <SymtabTab active>{title}</SymtabTab> : null)}
+            </SymtabTabBar>
           </m.div>
         ) : null}
 
@@ -359,7 +359,7 @@ export function FluxLayout({
           <div className="absolute inset-y-0 left-2 flex min-w-0 items-center gap-1">
             <div
               className={cn(
-                "flux-window-no-drag flex min-w-0 items-center gap-0.5",
+                "symtab-window-no-drag flex min-w-0 items-center gap-0.5",
                 !rightVisible && "pointer-events-none"
               )}
               aria-hidden={!rightVisible}
@@ -369,7 +369,7 @@ export function FluxLayout({
               {rightSidebarHeader}
             </div>
             {rightVisible ? (
-              <div className="flux-window-no-drag min-w-0">{titlebarTrailing}</div>
+              <div className="symtab-window-no-drag min-w-0">{titlebarTrailing}</div>
             ) : null}
           </div>
           {hasRightSidebar ? (
@@ -427,7 +427,7 @@ export function FluxLayout({
           inert={!leftVisible}
           aria-hidden={!leftVisible}
           className={cn(
-            "flux-surface col-start-2 m-1 min-h-0 overflow-hidden rounded-lg bg-sidebar text-sidebar-foreground",
+            "symtab-surface col-start-2 m-1 min-h-0 overflow-hidden rounded-lg bg-sidebar text-sidebar-foreground",
             !windowActive &&
               "relative before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:z-20 before:h-px before:bg-[var(--layout-separator)]",
             !leftVisible && "pointer-events-none"
@@ -453,7 +453,7 @@ export function FluxLayout({
           <div className="col-start-3" />
         )}
 
-        <main className="flux-surface col-start-4 m-1 min-h-0 min-w-0 overflow-auto rounded-lg bg-background">
+        <main className="symtab-surface col-start-4 m-1 min-h-0 min-w-0 overflow-auto rounded-lg bg-background">
           {mainExtendsIntoTitlebar ? null : main}
         </main>
 
@@ -477,7 +477,7 @@ export function FluxLayout({
           inert={!rightVisible}
           aria-hidden={!rightVisible}
           className={cn(
-            "flux-surface col-start-6 m-1 min-h-0 overflow-hidden rounded-lg bg-sidebar text-sidebar-foreground",
+            "symtab-surface col-start-6 m-1 min-h-0 overflow-hidden rounded-lg bg-sidebar text-sidebar-foreground",
             !windowActive &&
               "relative before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:z-20 before:h-px before:bg-[var(--layout-separator)]",
             !rightVisible && "pointer-events-none"

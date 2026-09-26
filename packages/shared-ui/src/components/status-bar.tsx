@@ -10,14 +10,14 @@ import {
 } from "lucide-react";
 import { Menu, MenuItem, MenuPopup, MenuSeparator, MenuTrigger } from "./ui/menu";
 
-export interface FluxVaultOption {
+export interface SymtabVaultOption {
   id: string;
   label: string;
 }
 
-export interface FluxStatusBarProps {
+export interface SymtabStatusBarProps {
   activeVaultId: string;
-  vaults: FluxVaultOption[];
+  vaults: SymtabVaultOption[];
   onVaultChange: (id: string) => void;
   onManageVaults?: () => void;
   version: string;
@@ -36,7 +36,7 @@ function StatusSeparator() {
   return <span aria-hidden="true" className="h-3.5 w-px shrink-0 bg-[var(--layout-separator)]" />;
 }
 
-export function FluxStatusBar({
+export function SymtabStatusBar({
   activeVaultId,
   vaults,
   onVaultChange,
@@ -51,7 +51,7 @@ export function FluxStatusBar({
   cpuPercent,
   memoryMB,
   themeControl,
-}: FluxStatusBarProps) {
+}: SymtabStatusBarProps) {
   const activeVault = vaults.find((vault) => vault.id === activeVaultId) ?? vaults[0];
 
   return (

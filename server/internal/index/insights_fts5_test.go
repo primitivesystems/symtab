@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/flux-pkm/server/internal/domain"
+	"github.com/symtab-pkm/server/internal/domain"
 )
 
 func TestSearchOperatorsAndDocumentReferences(t *testing.T) {

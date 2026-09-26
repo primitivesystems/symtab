@@ -19,7 +19,7 @@ RUN bun install --frozen-lockfile
 COPY . .
 
 # Build the web app — output lands in apps/web/dist
-RUN bun run build --filter=@flux/web
+RUN bun run build --filter=@symtab/web
 
 # ─── Stage 2: Serve with Nginx ────────────────────────────────────────────────
 FROM nginx:1.27-alpine AS runtime

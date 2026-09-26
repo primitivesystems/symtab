@@ -100,7 +100,7 @@ export function EditorHeader({
               onDragStart={(event) => {
                 event.dataTransfer.effectAllowed = "copyMove";
                 event.dataTransfer.setData(
-                  "application/x-flux-editor-tab",
+                  "application/x-symtab-editor-tab",
                   JSON.stringify({ tab, source: group })
                 );
                 event.dataTransfer.setData("text/plain", tab.title);

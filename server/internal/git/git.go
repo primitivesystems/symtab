@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/flux-pkm/server/internal/domain"
+	"github.com/symtab-pkm/server/internal/domain"
 )
 
 var (
@@ -35,7 +35,7 @@ func Status(ctx context.Context, root string) (domain.GitStatus, error) {
 		return status, nil
 	}
 	status.Initialized = true
-	out, err := run(ctx, root, "status", "--porcelain=v2", "--branch", "-z", "--untracked-files=all", "--", ".", ":(exclude,top).flux/**")
+	out, err := run(ctx, root, "status", "--porcelain=v2", "--branch", "-z", "--untracked-files=all", "--", ".", ":(exclude,top).symtab/**")
 	if err != nil {
 		return domain.GitStatus{}, err
 	}
@@ -66,7 +66,7 @@ func Enable(ctx context.Context, root string) error {
 			return err
 		}
 	}
-	return ensureIgnored(root, ".flux/")
+	return ensureIgnored(root, ".symtab/")
 }
 
 func Stage(ctx context.Context, root string, paths []string) error {
@@ -83,7 +83,7 @@ func Stage(ctx context.Context, root string, paths []string) error {
 	if _, err = run(ctx, root, args...); err != nil || len(paths) != 0 {
 		return err
 	}
-	_, err = run(ctx, root, "rm", "--cached", "-r", "--ignore-unmatch", "--", ".flux")
+	_, err = run(ctx, root, "rm", "--cached", "-r", "--ignore-unmatch", "--", ".symtab")
 	return err
 }
 
@@ -246,7 +246,7 @@ func Diff(ctx context.Context, root, path string, staged bool) (domain.GitDiff, 
 	}
 	const maxDiffBytes = 1 << 20
 	if len(out) > maxDiffBytes {
-		out = append(out[:maxDiffBytes], []byte("\n… diff truncated by Flux\n")...)
+		out = append(out[:maxDiffBytes], []byte("\n… diff truncated by Symtab\n")...)
 	}
 	return domain.GitDiff{Path: path, Staged: staged, Content: string(out)}, nil
 }
@@ -456,7 +456,7 @@ func pathArgs(prefix, paths []string) ([]string, error) {
 			result = append(result, value)
 			continue
 		}
-		if value == "" || value != filepath.ToSlash(filepath.Clean(value)) || filepath.IsAbs(value) || value == ".." || strings.HasPrefix(value, "../") || value == ".flux" || strings.HasPrefix(value, ".flux/") || strings.ContainsRune(value, 0) {
+		if value == "" || value != filepath.ToSlash(filepath.Clean(value)) || filepath.IsAbs(value) || value == ".." || strings.HasPrefix(value, "../") || value == ".symtab" || strings.HasPrefix(value, ".symtab/") || strings.ContainsRune(value, 0) {
 			return nil, ErrInvalidPath
 		}
 		result = append(result, ":(top,literal)"+value)

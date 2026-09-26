@@ -1,4 +1,4 @@
-module github.com/flux-pkm/server
+module github.com/symtab-pkm/server
 
 go 1.25.0
 

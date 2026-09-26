@@ -8,7 +8,7 @@ import {
   type BookmarkItem,
 } from "./store";
 import { bookmarkGroupsKey, bookmarkItemsKey } from "../app/helpers";
-import { useAppStore, type FluxStatePersistence } from "../app/state";
+import { useAppStore, type SymtabStatePersistence } from "../app/state";
 
 const EMPTY_BOOKMARKS: BookmarkItem[] = [];
 
@@ -31,7 +31,7 @@ export function useBookmarks({
   onStatus,
 }: {
   vaultId?: string;
-  persistence?: FluxStatePersistence;
+  persistence?: SymtabStatePersistence;
   defaultTarget: BookmarkTarget | null;
   onStatus: (status: string) => void;
 }) {

@@ -39,31 +39,33 @@ export function EditorSurface({
 
   const segments = tab.id.startsWith("file:")
     ? tab.id.slice(5).split("/").filter(Boolean)
-    : ["flux", tab.title];
+    : ["symtab", tab.title];
   const breadcrumbs =
     segments[segments.length - 1] === tab.title ? segments : [...segments, tab.title];
   const content = tab.content ?? "";
 
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-[var(--workbench-editor)]">
-      <nav
-        aria-label="File breadcrumbs"
-        className="flex h-[23px] shrink-0 items-center overflow-hidden border-b border-[var(--workbench-border)] px-2 text-[12px] text-[var(--workbench-muted)]"
-      >
-        {breadcrumbs.map((segment, index) => (
-          <span key={`${segment}-${index}`} className="flex min-w-0 items-center">
-            {index > 0 ? <WorkbenchIcon name="chevron-right" size={14} /> : null}
-            <span
-              className={cn(
-                "truncate",
-                index === breadcrumbs.length - 1 && "text-[var(--workbench-fg)]"
-              )}
-            >
-              {segment}
+      {breadcrumbs.length > 1 ? (
+        <nav
+          aria-label="File breadcrumbs"
+          className="flex h-[23px] shrink-0 items-center overflow-hidden border-b border-[var(--workbench-border)] px-2 text-[12px] text-[var(--workbench-muted)]"
+        >
+          {breadcrumbs.map((segment, index) => (
+            <span key={`${segment}-${index}`} className="flex min-w-0 items-center">
+              {index > 0 ? <WorkbenchIcon name="chevron-right" size={14} /> : null}
+              <span
+                className={cn(
+                  "truncate",
+                  index === breadcrumbs.length - 1 && "text-[var(--workbench-fg)]"
+                )}
+              >
+                {segment}
+              </span>
             </span>
-          </span>
-        ))}
-      </nav>
+          ))}
+        </nav>
+      ) : null}
 
       {renderEditor?.(tab, onUpdate ?? (() => undefined)) ?? (
         <CodeEditor
@@ -154,7 +156,7 @@ function CodeEditor({
     if (active) viewRef.current?.requestMeasure();
   }, [active]);
 
-  return <div ref={hostRef} className="flux-code-editor min-h-0 min-w-0 flex-1 overflow-hidden" />;
+  return <div ref={hostRef} className="symtab-code-editor min-h-0 min-w-0 flex-1 overflow-hidden" />;
 }
 
 function languageFor(title: string): Extension {

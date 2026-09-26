@@ -1,10 +1,10 @@
-import { createClientStatePersistence, FluxApp, type FluxRuntime } from "@flux/app-core";
-import { DesktopFluxClient } from "@flux/client-desktop";
+import { createClientStatePersistence, SymtabApp, type SymtabRuntime } from "@symtab/app-core";
+import { DesktopSymtabClient } from "@symtab/client-desktop";
 
-const client = window.electronAPI ? new DesktopFluxClient(window.electronAPI) : null;
+const client = window.electronAPI ? new DesktopSymtabClient(window.electronAPI) : null;
 const statePersistence = client ? createClientStatePersistence(client) : undefined;
 
-const desktopRuntime: FluxRuntime = {
+const desktopRuntime: SymtabRuntime = {
   label: "Desktop",
   client,
   statePersistence,
@@ -50,5 +50,5 @@ const desktopRuntime: FluxRuntime = {
 };
 
 export default function App() {
-  return <FluxApp runtime={desktopRuntime} windowControlsInset={72} />;
+  return <SymtabApp runtime={desktopRuntime} windowControlsInset={72} />;
 }

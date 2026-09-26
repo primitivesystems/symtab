@@ -10,29 +10,29 @@ import (
 	"path/filepath"
 	"time"
 
-	application "github.com/flux-pkm/server/internal/app"
-	"github.com/flux-pkm/server/internal/appdata"
-	"github.com/flux-pkm/server/internal/capability"
-	"github.com/flux-pkm/server/internal/config"
-	"github.com/flux-pkm/server/internal/daemonclient"
-	"github.com/flux-pkm/server/internal/mcpserver"
-	"github.com/flux-pkm/server/internal/runtimecoord"
+	application "github.com/symtab-pkm/server/internal/app"
+	"github.com/symtab-pkm/server/internal/appdata"
+	"github.com/symtab-pkm/server/internal/capability"
+	"github.com/symtab-pkm/server/internal/config"
+	"github.com/symtab-pkm/server/internal/daemonclient"
+	"github.com/symtab-pkm/server/internal/mcpserver"
+	"github.com/symtab-pkm/server/internal/runtimecoord"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
 func runMCPBridge(arguments []string) error {
-	flags := flag.NewFlagSet("flux mcp", flag.ContinueOnError)
+	flags := flag.NewFlagSet("symtab mcp", flag.ContinueOnError)
 	vaultPath := flags.String("vault", "", "vault directory exposed to this MCP client")
 	connectionID := flags.String("connection", "", "saved MCP connection ID")
 	connectionSecret := flags.String("secret", "", "saved MCP connection secret")
 	clientID := flags.String("client", "local-mcp", "stable MCP client identity")
 	modeValue := flags.String("mode", string(capability.ReadOnly), "read_only, guided_write, or trusted_workspace")
-	appData := flags.String("app-data", "", "Flux app-data directory")
+	appData := flags.String("app-data", "", "Symtab app-data directory")
 	if err := flags.Parse(arguments); err != nil {
 		return err
 	}
 	if *connectionSecret == "" {
-		*connectionSecret = os.Getenv("FLUX_MCP_SECRET")
+		*connectionSecret = os.Getenv("SYMTAB_MCP_SECRET")
 	}
 	if *vaultPath == "" && (*connectionID == "" || *connectionSecret == "") {
 		return errors.New("--connection and --secret are required; use --vault only for development")
@@ -156,9 +156,9 @@ func connectDaemon(ctx context.Context, appDataDirectory string) (*daemonclient.
 		"ENVIRONMENT=desktop",
 		"HOST=127.0.0.1",
 		"PORT=0",
-		"FLUX_APP_DATA_DIR="+appDataDirectory,
-		"FLUX_DESKTOP_TOKEN=",
-		"FLUX_DAEMON_IDLE_TIMEOUT=2m",
+		"SYMTAB_APP_DATA_DIR="+appDataDirectory,
+		"SYMTAB_DESKTOP_TOKEN=",
+		"SYMTAB_DAEMON_IDLE_TIMEOUT=2m",
 	)
 	// Never let daemon output corrupt MCP stdout.
 	command.Stdout = os.Stderr
@@ -174,7 +174,7 @@ func connectDaemon(ctx context.Context, appDataDirectory string) (*daemonclient.
 		}
 		time.Sleep(100 * time.Millisecond)
 	}
-	return nil, errors.New("Flux daemon did not become ready")
+	return nil, errors.New("Symtab daemon did not become ready")
 }
 
 func descriptorClient(ctx context.Context, descriptorPath string) *daemonclient.Client {

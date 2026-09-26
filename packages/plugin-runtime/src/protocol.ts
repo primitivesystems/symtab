@@ -1,4 +1,4 @@
-import type { PluginCapability, PluginManifest } from "@flux/plugin-sdk";
+import type { PluginCapability, PluginManifest } from "@symtab/plugin-sdk";
 
 export interface PluginBundle {
   manifest: PluginManifest;

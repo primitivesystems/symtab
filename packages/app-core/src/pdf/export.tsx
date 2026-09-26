@@ -6,7 +6,7 @@ import {
   DialogDescription,
   DialogContent,
   DialogTitle,
-} from "@flux/shared-ui/components/ui/dialog";
+} from "@symtab/shared-ui/components/ui/dialog";
 import ReadingView from "../editor/reading-view";
 import { splitFrontmatter } from "../editor/frontmatter";
 import type { DemoDocument } from "../editor/markdown-editor";
@@ -84,14 +84,14 @@ export function PdfExportDialog({
     <>
       <style media="print">{`@page { size: ${pageRule}; margin: 0; }`}</style>
       <div
-        className="flux-print-document"
+        className="symtab-print-document"
         style={{
-          "--flux-print-scale": `${onExport ? 1 : scale / 100}`,
-          "--flux-print-margin": `${marginMillimetres[margin]}mm`,
+          "--symtab-print-scale": `${onExport ? 1 : scale / 100}`,
+          "--symtab-print-margin": `${marginMillimetres[margin]}mm`,
         } as React.CSSProperties}
         aria-hidden="true"
       >
-        {includeTitle ? <h1 className="flux-print-title">{document.title}</h1> : null}
+        {includeTitle ? <h1 className="symtab-print-title">{document.title}</h1> : null}
         <ReadingView value={body} documents={documents} />
       </div>
     </>

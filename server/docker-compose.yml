@@ -1,13 +1,13 @@
 services:
   server:
     build: .
-    container_name: flux-server
+    container_name: symtab-server
     ports:
       - "8080:8080"
     environment:
       ENVIRONMENT: development
       HOST: 0.0.0.0
-      FLUX_VAULT_ROOT: /data/vaults
+      SYMTAB_VAULT_ROOT: /data/vaults
       CORS_ALLOWED_ORIGIN: ${CORS_ALLOWED_ORIGIN:-http://localhost:3000}
     volumes:
       - vaults:/data/vaults

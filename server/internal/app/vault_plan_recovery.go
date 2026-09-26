@@ -9,7 +9,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/flux-pkm/server/internal/vault"
+	"github.com/symtab-pkm/server/internal/vault"
 	"github.com/google/uuid"
 )
 
@@ -190,7 +190,7 @@ func removeJournal(path string) error {
 }
 
 func vaultPlanJournalDirectory(root string) string {
-	return filepath.Join(root, ".flux", "recovery", "vault-plans")
+	return filepath.Join(root, ".symtab", "recovery", "vault-plans")
 }
 
 func syncDirectory(path string) error {

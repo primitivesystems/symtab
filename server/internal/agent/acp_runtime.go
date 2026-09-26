@@ -76,7 +76,7 @@ func startACPRuntime(
 	defer cancel()
 	response, err := runtime.conn.Initialize(initializeContext, acp.InitializeRequest{
 		ProtocolVersion: acp.ProtocolVersionNumber,
-		ClientInfo:      &acp.Implementation{Name: "Flux", Version: "0.0.1"},
+		ClientInfo:      &acp.Implementation{Name: "Symtab", Version: "0.0.1"},
 		ClientCapabilities: acp.ClientCapabilities{
 			Fs: acp.FileSystemCapabilities{ReadTextFile: true, WriteTextFile: true},
 		},
@@ -517,7 +517,7 @@ func (c *acpClient) WriteTextFile(_ context.Context, request acp.WriteTextFileRe
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return acp.WriteTextFileResponse{}, err
 	}
-	temporary, err := os.CreateTemp(filepath.Dir(path), ".flux-agent-*")
+	temporary, err := os.CreateTemp(filepath.Dir(path), ".symtab-agent-*")
 	if err != nil {
 		return acp.WriteTextFileResponse{}, err
 	}

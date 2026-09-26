@@ -8,7 +8,7 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/flux-pkm/server/internal/domain"
+	"github.com/symtab-pkm/server/internal/domain"
 )
 
 const maxReferenceCandidates = 250

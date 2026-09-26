@@ -1,4 +1,4 @@
-# Flux plugin runtime
+# Symtab plugin runtime
 
 `VaultPluginHost` owns one browser Worker per open vault. Every plugin gets a separate SES
 compartment inside that Worker. The compartment has no Node, Electron, filesystem, shell,

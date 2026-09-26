@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import type { RecentVault } from "@flux/bridge-contract";
-import { Button } from "@flux/shared-ui/components/ui/button";
-import { Input } from "@flux/shared-ui/components/ui/input";
-import { Textarea } from "@flux/shared-ui/components/ui/textarea";
-import { ThemeProvider, type Theme } from "@flux/shared-ui/components/theme-provider";
+import type { RecentVault } from "@symtab/bridge-contract";
+import { Button } from "@symtab/shared-ui/components/ui/button";
+import { Input } from "@symtab/shared-ui/components/ui/input";
+import { Textarea } from "@symtab/shared-ui/components/ui/textarea";
+import { ThemeProvider, type Theme } from "@symtab/shared-ui/components/theme-provider";
 import { errorMessage } from "../app/helpers";
 import {
   dateKeyInTimeZone,
@@ -12,9 +12,9 @@ import {
   noteTemplate,
 } from "../daily-notes/config";
 import { quickCaptureInboxPath } from "./path";
-import type { FluxRuntime } from "../App";
+import type { SymtabRuntime } from "../App";
 
-export function QuickCapture({ runtime }: { runtime: FluxRuntime }) {
+export function QuickCapture({ runtime }: { runtime: SymtabRuntime }) {
   const [theme, setTheme] = useState<Theme>("system");
   const [vaults, setVaults] = useState<RecentVault[]>([]);
   const [vaultId, setVaultId] = useState("");

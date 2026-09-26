@@ -10,7 +10,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/flux-pkm/server/internal/files"
+	"github.com/symtab-pkm/server/internal/files"
 	"github.com/fsnotify/fsnotify"
 )
 
@@ -170,7 +170,7 @@ func (w *Watcher) ignored(current string) bool {
 		return false
 	}
 	base := filepath.Base(relative)
-	if strings.HasPrefix(base, ".flux-write-") || strings.HasPrefix(base, ".flux-rename-") ||
+	if strings.HasPrefix(base, ".symtab-write-") || strings.HasPrefix(base, ".symtab-rename-") ||
 		strings.HasSuffix(base, ".swp") || strings.HasSuffix(base, "~") || base == ".DS_Store" {
 		return true
 	}

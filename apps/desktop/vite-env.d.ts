@@ -14,7 +14,7 @@ interface Window {
     downloadUpdate: () => Promise<void>;
     installUpdate: () => Promise<void>;
     onUpdateStatus: (
-      handler: (status: import("@flux/app-core").UpdateRuntimeStatus) => void
+      handler: (status: import("@symtab/app-core").UpdateRuntimeStatus) => void
     ) => () => void;
     getAppVersion: () => Promise<string>;
     getPerformanceStats: () => Promise<{
@@ -33,7 +33,7 @@ interface Window {
       scale: number;
     }) => Promise<string | null>;
     selectVaultDirectory: (mode: "open" | "create" | "location") => Promise<string | null>;
-    fluxFetch: (request: {
+    symtabFetch: (request: {
       url: string;
       method?: string;
       body?: string;
@@ -45,7 +45,7 @@ interface Window {
     ) => () => void;
     watchVaultChanges: (
       vaultId: string,
-      onChange: (change: import("@flux/bridge-contract").VaultChange) => void,
+      onChange: (change: import("@symtab/bridge-contract").VaultChange) => void,
       onError?: (message: string) => void
     ) => () => void;
   };

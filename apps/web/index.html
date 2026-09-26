@@ -14,7 +14,7 @@
         height: 100%;
         margin: 0;
       }
-      .flux-startup {
+      .symtab-startup {
         display: grid;
         height: 100%;
         place-items: center;
@@ -26,35 +26,35 @@
           "Segoe UI",
           sans-serif;
       }
-      .flux-startup > div {
+      .symtab-startup > div {
         display: grid;
         justify-items: center;
         gap: 12px;
       }
-      .flux-startup-spinner {
+      .symtab-startup-spinner {
         width: 16px;
         height: 16px;
         border: 2px solid #b8b8b8;
         border-top-color: currentColor;
         border-radius: 999px;
-        animation: flux-spin 0.8s linear infinite;
+        animation: symtab-spin 0.8s linear infinite;
       }
       @media (prefers-color-scheme: dark) {
-        .flux-startup {
+        .symtab-startup {
           background: #242424;
           color: #ededed;
         }
-        .flux-startup-spinner {
+        .symtab-startup-spinner {
           border-color: #555;
           border-top-color: currentColor;
         }
       }
       @media (prefers-reduced-motion: reduce) {
-        .flux-startup-spinner {
+        .symtab-startup-spinner {
           animation: none;
         }
       }
-      @keyframes flux-spin {
+      @keyframes symtab-spin {
         to {
           transform: rotate(360deg);
         }
@@ -63,9 +63,9 @@
   </head>
   <body>
     <div id="root">
-      <div class="flux-startup" role="status" aria-live="polite">
+      <div class="symtab-startup" role="status" aria-live="polite">
         <div>
-          <span class="flux-startup-spinner" aria-hidden="true"></span><span>Starting Symtab</span>
+          <span class="symtab-startup-spinner" aria-hidden="true"></span><span>Starting Symtab</span>
         </div>
       </div>
     </div>

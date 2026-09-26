@@ -17,7 +17,7 @@ describe("plugin sandbox", () => {
 
   test("loads a self-contained default export without ambient authority", async () => {
     const plugin = await loadPlugin(
-      `__fluxRegisterPlugin({
+      `__symtabRegisterPlugin({
         activate(context) {
           context.probe({
             fetch: typeof fetch,
@@ -41,7 +41,7 @@ describe("plugin sandbox", () => {
 
   test("provides safe console logging", async () => {
     const plugin = await loadPlugin(
-      `__fluxRegisterPlugin({ activate() { console.info("plugin ready"); } })`,
+      `__symtabRegisterPlugin({ activate() { console.info("plugin ready"); } })`,
       "logging.plugin"
     );
     expect(() => plugin.activate({} as never)).not.toThrow();
@@ -56,11 +56,11 @@ describe("plugin sandbox", () => {
   test("gives each plugin a private compartment global", async () => {
     const first = await loadPlugin(
       `globalThis.privateValue = "first";
-       __fluxRegisterPlugin({ activate(context) { context.probe(globalThis.privateValue); } });`,
+       __symtabRegisterPlugin({ activate(context) { context.probe(globalThis.privateValue); } });`,
       "first.plugin"
     );
     const second = await loadPlugin(
-      `__fluxRegisterPlugin({ activate(context) { context.probe(globalThis.privateValue); } });`,
+      `__symtabRegisterPlugin({ activate(context) { context.probe(globalThis.privateValue); } });`,
       "second.plugin"
     );
     const values: unknown[] = [];

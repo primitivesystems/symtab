@@ -199,7 +199,7 @@ export function validateManifest(value: unknown): JsonObject {
 }
 
 export function readManifest(directory: string): JsonObject {
-  const path = join(resolve(directory), "flux.plugin.json");
+  const path = join(resolve(directory), "symtab.plugin.json");
   let value: unknown;
   try {
     value = JSON.parse(readFileSync(path, "utf8"));
@@ -241,19 +241,19 @@ export function createPlugin(directory: string): string {
         scripts: {
           build:
             "bun build src/main.ts --target browser --format iife --outfile dist/main.js && node -e \"require('node:fs').copyFileSync('src/view.html', 'dist/view.html')\"",
-          dev: "flux-plugin dev",
-          validate: "flux-plugin validate",
-          pack: "bun run build && flux-plugin pack",
+          dev: "symtab-plugin dev",
+          validate: "symtab-plugin validate",
+          pack: "bun run build && symtab-plugin pack",
         },
-        dependencies: { "@flux/plugin-sdk": "^0.1.0" },
-        devDependencies: { "create-flux-plugin": "^0.1.0", typescript: "^6.0.2" },
+        dependencies: { "@symtab/plugin-sdk": "^0.1.0" },
+        devDependencies: { "create-symtab-plugin": "^0.1.0", typescript: "^6.0.2" },
       },
       null,
       2
     )}\n`
   );
   writeFileSync(
-    join(root, "flux.plugin.json"),
+    join(root, "symtab.plugin.json"),
     `${JSON.stringify(
       {
         schemaVersion: 1,
@@ -261,7 +261,7 @@ export function createPlugin(directory: string): string {
         name: basename(root),
         version: "0.1.0",
         apiVersion: "1",
-        description: "A Flux plugin",
+        description: "A Symtab plugin",
         entry: "dist/main.js",
         activationEvents: [`onCommand:${id}.search-welcome`],
         requiredPermissions: ["vault.search", "ui.view"],
@@ -303,7 +303,7 @@ export function createPlugin(directory: string): string {
   );
   writeFileSync(
     join(root, "src/main.ts"),
-    `import { definePlugin } from "@flux/plugin-sdk";\n\nlet stop: (() => void) | undefined;\n\nexport default definePlugin({\n  activate(context) {\n    stop = context.on("command:${id}.search-welcome", async () => {\n      await context.capabilities.invoke("vault.search", {\n        query: "#welcome",\n        limit: 5,\n      });\n    });\n  },\n  deactivate() {\n    stop?.();\n  },\n});\n`
+    `import { definePlugin } from "@symtab/plugin-sdk";\n\nlet stop: (() => void) | undefined;\n\nexport default definePlugin({\n  activate(context) {\n    stop = context.on("command:${id}.search-welcome", async () => {\n      await context.capabilities.invoke("vault.search", {\n        query: "#welcome",\n        limit: 5,\n      });\n    });\n  },\n  deactivate() {\n    stop?.();\n  },\n});\n`
   );
   writeFileSync(
     join(root, "src/view.html"),
@@ -326,7 +326,7 @@ export function createPlugin(directory: string): string {
   </head>
   <body>
     <main class="card">
-      <p class="label">Flux plugin</p>
+      <p class="label">Symtab plugin</p>
       <h1>Welcome view</h1>
       <p>Edit <code>src/view.html</code>. Dev mode reloads this open view.</p>
       <button type="button">Plugin action</button>
@@ -337,9 +337,9 @@ export function createPlugin(directory: string): string {
   );
   writeFileSync(
     join(root, "README.md"),
-    `# ${basename(root)}\n\n- \`bun install\` installs dependencies.\n- \`bun run dev\` watches, rebuilds, and reloads this plugin in the running Flux desktop app.\n- \`bun run validate\` checks manifest permissions.\n- \`bun run pack\` creates the production \`.flux-plugin\` package.\n\nPlugin views run in sandboxed iframes. Bundle React/shadcn into the view when needed; inherit Flux light/dark colors instead of importing app internals.\n`
+    `# ${basename(root)}\n\n- \`bun install\` installs dependencies.\n- \`bun run dev\` watches, rebuilds, and reloads this plugin in the running Symtab desktop app.\n- \`bun run validate\` checks manifest permissions.\n- \`bun run pack\` creates the production \`.symtab-plugin\` package.\n\nPlugin views run in sandboxed iframes. Bundle React/shadcn into the view when needed; inherit Symtab light/dark colors instead of importing app internals.\n`
   );
-  writeFileSync(join(root, ".gitignore"), "dist/\n*.flux-plugin\nnode_modules/\n");
+  writeFileSync(join(root, ".gitignore"), "dist/\n*.symtab-plugin\nnode_modules/\n");
   return root;
 }
 
@@ -355,7 +355,7 @@ function collectFiles(root: string, manifest: JsonObject): Map<string, Buffer> {
     const name = relative(root, path).split(sep).join("/");
     files.set(name, readFileSync(path));
   };
-  add(join(root, "flux.plugin.json"));
+  add(join(root, "symtab.plugin.json"));
   add(join(root, "dist"));
   const entry = safeEntry(manifest.entry);
   if (!files.has(entry)) throw new Error(`entry does not exist: ${entry}`);
@@ -431,7 +431,7 @@ export function packPlugin(directory: string, output?: string): string {
   const manifest = readManifest(root);
   const files = collectFiles(root, manifest);
   const target = resolve(
-    output ?? join(root, `${String(manifest.id)}-${String(manifest.version)}.flux-plugin`)
+    output ?? join(root, `${String(manifest.id)}-${String(manifest.version)}.symtab-plugin`)
   );
   writeFileSync(target, zip(files));
   return target;

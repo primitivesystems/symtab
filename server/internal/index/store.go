@@ -16,7 +16,7 @@ import (
 	"time"
 	"unicode"
 
-	"github.com/flux-pkm/server/internal/domain"
+	"github.com/symtab-pkm/server/internal/domain"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -547,35 +547,35 @@ func (s *Store) deleteMissing(tx *gorm.DB, paths []string) error {
 		}
 		return s.clearFTS(tx)
 	}
-	if err := tx.Exec("DROP TABLE IF EXISTS temp.flux_live_paths").Error; err != nil {
+	if err := tx.Exec("DROP TABLE IF EXISTS temp.symtab_live_paths").Error; err != nil {
 		return err
 	}
-	if err := tx.Exec("CREATE TEMP TABLE flux_live_paths(path TEXT PRIMARY KEY)").Error; err != nil {
+	if err := tx.Exec("CREATE TEMP TABLE symtab_live_paths(path TEXT PRIMARY KEY)").Error; err != nil {
 		return err
 	}
-	defer tx.Exec("DROP TABLE IF EXISTS temp.flux_live_paths")
+	defer tx.Exec("DROP TABLE IF EXISTS temp.symtab_live_paths")
 	type livePath struct{ Path string }
 	rows := make([]livePath, len(paths))
 	for index, path := range paths {
 		rows[index].Path = path
 	}
-	if err := tx.Table("flux_live_paths").CreateInBatches(rows, 500).Error; err != nil {
+	if err := tx.Table("symtab_live_paths").CreateInBatches(rows, 500).Error; err != nil {
 		return err
 	}
 	var stale []string
-	if err := tx.Raw("SELECT relative_path FROM files WHERE NOT EXISTS (SELECT 1 FROM flux_live_paths WHERE path = files.relative_path)").Scan(&stale).Error; err != nil {
+	if err := tx.Raw("SELECT relative_path FROM files WHERE NOT EXISTS (SELECT 1 FROM symtab_live_paths WHERE path = files.relative_path)").Scan(&stale).Error; err != nil {
 		return err
 	}
-	if err := tx.Exec("DELETE FROM files WHERE NOT EXISTS (SELECT 1 FROM flux_live_paths WHERE path = files.relative_path)").Error; err != nil {
+	if err := tx.Exec("DELETE FROM files WHERE NOT EXISTS (SELECT 1 FROM symtab_live_paths WHERE path = files.relative_path)").Error; err != nil {
 		return err
 	}
-	if err := tx.Exec("DELETE FROM links WHERE NOT EXISTS (SELECT 1 FROM flux_live_paths WHERE path = links.source_path)").Error; err != nil {
+	if err := tx.Exec("DELETE FROM links WHERE NOT EXISTS (SELECT 1 FROM symtab_live_paths WHERE path = links.source_path)").Error; err != nil {
 		return err
 	}
-	if err := tx.Exec("DELETE FROM tags WHERE NOT EXISTS (SELECT 1 FROM flux_live_paths WHERE path = tags.source_path)").Error; err != nil {
+	if err := tx.Exec("DELETE FROM tags WHERE NOT EXISTS (SELECT 1 FROM symtab_live_paths WHERE path = tags.source_path)").Error; err != nil {
 		return err
 	}
-	if err := tx.Exec("DELETE FROM properties WHERE NOT EXISTS (SELECT 1 FROM flux_live_paths WHERE path = properties.source_path)").Error; err != nil {
+	if err := tx.Exec("DELETE FROM properties WHERE NOT EXISTS (SELECT 1 FROM symtab_live_paths WHERE path = properties.source_path)").Error; err != nil {
 		return err
 	}
 	return s.deleteFTS(tx, stale)

@@ -15,17 +15,17 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/flux-pkm/server/internal/api"
-	application "github.com/flux-pkm/server/internal/app"
-	"github.com/flux-pkm/server/internal/appdata"
-	"github.com/flux-pkm/server/internal/config"
-	"github.com/flux-pkm/server/internal/runtimecoord"
-	"github.com/flux-pkm/server/internal/vault"
+	"github.com/symtab-pkm/server/internal/api"
+	application "github.com/symtab-pkm/server/internal/app"
+	"github.com/symtab-pkm/server/internal/appdata"
+	"github.com/symtab-pkm/server/internal/config"
+	"github.com/symtab-pkm/server/internal/runtimecoord"
+	"github.com/symtab-pkm/server/internal/vault"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	if version := os.Getenv("FLUX_VERSION"); version != "" {
+	if version := os.Getenv("SYMTAB_VERSION"); version != "" {
 		application.Version = version
 	}
 
@@ -81,7 +81,7 @@ func main() {
 	// Setup CORS for the browser shell. Electron uses its preload bridge.
 	router.Use(func(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", cfg.AllowedOrigin)
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, X-Flux-Desktop-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, X-Symtab-Desktop-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, PATCH, DELETE")
 		c.Writer.Header().Set("Vary", "Origin")
 
@@ -125,7 +125,7 @@ func main() {
 	}()
 	shutdownSignal, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
-	idle := daemonIdleChannel(os.Getenv("FLUX_DAEMON_IDLE_TIMEOUT"), &lastActivity)
+	idle := daemonIdleChannel(os.Getenv("SYMTAB_DAEMON_IDLE_TIMEOUT"), &lastActivity)
 	select {
 	case err := <-failed:
 		if err != nil {

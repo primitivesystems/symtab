@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/flux-pkm/server/internal/domain"
-	"github.com/flux-pkm/server/internal/files"
-	"github.com/flux-pkm/server/internal/vault"
+	"github.com/symtab-pkm/server/internal/domain"
+	"github.com/symtab-pkm/server/internal/files"
+	"github.com/symtab-pkm/server/internal/vault"
 )
 
 func TestVaultFileLifecycle(t *testing.T) {
@@ -25,7 +25,7 @@ func TestVaultFileLifecycle(t *testing.T) {
 	if service.Status().OpenVault != nil {
 		t.Fatal("server opened the configured vault during startup")
 	}
-	if _, err := os.Stat(filepath.Join(root, ".flux")); !os.IsNotExist(err) {
+	if _, err := os.Stat(filepath.Join(root, ".symtab")); !os.IsNotExist(err) {
 		t.Fatalf("vault was mutated before OpenVault: %v", err)
 	}
 
@@ -67,7 +67,7 @@ func TestVaultFileLifecycle(t *testing.T) {
 		t.Fatalf("canonical file was not updated: %q", content)
 	}
 	for _, derivedPath := range []string{"vault.json", "index.db"} {
-		if _, err := os.Stat(filepath.Join(root, ".flux", derivedPath)); err != nil {
+		if _, err := os.Stat(filepath.Join(root, ".symtab", derivedPath)); err != nil {
 			t.Fatalf("missing derived vault state %s: %v", derivedPath, err)
 		}
 	}
@@ -92,7 +92,7 @@ func TestVaultConfigUsesProtectedAtomicStorage(t *testing.T) {
 	if string(config) != `{"dailyFolder":"Journal"}` {
 		t.Fatalf("unexpected config: %s", config)
 	}
-	if _, err := service.ReadFile(info.ID, ".flux/config.json"); err == nil {
+	if _, err := service.ReadFile(info.ID, ".symtab/config.json"); err == nil {
 		t.Fatal("generic file API exposed protected vault metadata")
 	}
 	if err := service.SaveVaultConfig(info.ID, []byte(`{"dailyFolder":"../outside"}`)); err == nil {
@@ -219,7 +219,7 @@ func TestIndexFailureDoesNotBlockVaultFiles(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(root, "Welcome.md"), []byte("# Welcome\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.MkdirAll(filepath.Join(root, ".flux", "index.db"), 0o700); err != nil {
+	if err := os.MkdirAll(filepath.Join(root, ".symtab", "index.db"), 0o700); err != nil {
 		t.Fatal(err)
 	}
 

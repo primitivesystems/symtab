@@ -51,8 +51,8 @@ import {
   MenuSub as CossMenuSub,
   MenuSubPopup,
   MenuSubTrigger,
-} from "@flux/shared-ui/components/ui/menu";
-import { Spinner } from "@flux/shared-ui/components/spinner";
+} from "@symtab/shared-ui/components/ui/menu";
+import { Spinner } from "@symtab/shared-ui/components/spinner";
 import { splitFrontmatter } from "./frontmatter";
 import { markdownAssist } from "./editor-assist";
 import { livePreview } from "./live-preview";
@@ -380,10 +380,10 @@ function MarkdownSource({
       }
     };
 
-    window.addEventListener("flux-navigate-editor", handleNavigate as EventListener);
+    window.addEventListener("symtab-navigate-editor", handleNavigate as EventListener);
     return () => {
       active = false;
-      window.removeEventListener("flux-navigate-editor", handleNavigate as EventListener);
+      window.removeEventListener("symtab-navigate-editor", handleNavigate as EventListener);
     };
   }, []);
 
@@ -445,7 +445,7 @@ function MarkdownSource({
               const pos = view.posAtCoords({ x: event.clientX, y: event.clientY });
               if (pos !== null) {
                 const tree = syntaxTree(view.state);
-                let extractedUrl: string | null = null;
+                const result: { url: string | null } = { url: null };
                 tree.iterate({
                   from: pos,
                   to: pos,
@@ -454,20 +454,20 @@ function MarkdownSource({
                       const linkText = view.state.doc.sliceString(node.from, node.to);
                       const urlMatch = linkText.match(/\[([^\]]*)\]\(([^)]+)\)/);
                       if (urlMatch && urlMatch[2]) {
-                        extractedUrl = urlMatch[2] as string;
+                        result.url = urlMatch[2];
                       }
                       return false;
                     }
                     if (node.type.name === "URL") {
-                      extractedUrl = view.state.doc.sliceString(node.from, node.to);
+                      result.url = view.state.doc.sliceString(node.from, node.to);
                       return false;
                     }
                     return true;
                   },
                 });
-                if (extractedUrl && (extractedUrl.startsWith("http://") || extractedUrl.startsWith("https://"))) {
+                if (result.url && (result.url.startsWith("http://") || result.url.startsWith("https://"))) {
                   event.preventDefault();
-                  onOpenUrlRef.current?.(extractedUrl);
+                  onOpenUrlRef.current?.(result.url);
                   return true;
                 }
               }
@@ -918,7 +918,7 @@ export function MarkdownEditor({
   document: DemoDocument;
   mode: MarkdownMode;
   onChange: (value: string) => void;
-  onTitleChange: (title: string) => void;
+  onTitleChange?: (title: string) => void;
   onTitleCommit?: (title: string) => void;
   showBacklinks: boolean;
   findRequest: number;
@@ -1068,7 +1068,7 @@ export function MarkdownEditor({
                       onOpenDocument?.(source);
                       const detail = { path: source, line: mention.line, excerpt: mention.excerpt };
                       const dispatch = () =>
-                        window.dispatchEvent(new CustomEvent("flux-navigate-editor", { detail }));
+                        window.dispatchEvent(new CustomEvent("symtab-navigate-editor", { detail }));
                       dispatch();
                       setTimeout(dispatch, 30);
                       setTimeout(dispatch, 100);
@@ -1110,7 +1110,7 @@ export function MarkdownEditor({
   return (
     <div
       ref={editorRootRef}
-      className="flux-editor-scroll h-full min-h-0 overflow-y-auto overscroll-contain"
+      className="symtab-editor-scroll h-full min-h-0 overflow-y-auto overscroll-contain"
       onDragOver={(event) => event.preventDefault()}
       onDrop={(event) => {
         event.preventDefault();
@@ -1118,18 +1118,24 @@ export function MarkdownEditor({
         if (title) onDropDocument?.(title);
       }}
     >
-      <div className="mx-auto flex w-full max-w-[760px] items-start px-9 pb-3 pt-6">
-        <input
-          aria-label="Document title"
-          value={document.title}
-          onChange={(event) => onTitleChange(event.target.value)}
-          onBlur={(event) => onTitleCommit?.(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === "Enter") event.currentTarget.blur();
-          }}
-          className="min-w-0 flex-1 bg-transparent text-[1.75rem] font-semibold leading-tight tracking-[-0.025em] outline-none placeholder:text-muted-foreground"
-          placeholder="Untitled"
-        />
+      <div className="mx-auto flex w-full max-w-[760px] items-start px-9 pb-3 pt-7">
+        {onTitleChange ? (
+          <input
+            aria-label="Document title"
+            value={document.title}
+            onChange={(event) => onTitleChange(event.target.value)}
+            onBlur={(event) => onTitleCommit?.(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") event.currentTarget.blur();
+            }}
+            className="min-w-0 flex-1 bg-transparent text-[1.75rem] font-semibold leading-tight tracking-[-0.025em] outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+            placeholder="Untitled"
+          />
+        ) : (
+          <h1 className="min-w-0 flex-1 truncate text-[1.75rem] font-semibold leading-tight tracking-[-0.025em]">
+            {document.title || "Untitled"}
+          </h1>
+        )}
       </div>
       {mode !== "read" ? (
         <MarkdownSource
@@ -1368,7 +1374,7 @@ export function MarkdownDocumentMenu({
       <MenuSub label="Copy path" icon={<Copy className="size-4 text-muted-foreground" />}>
         <MenuItem
           className={menuItemClassName}
-          onClick={() => copy(`flux://open?file=${encodeURIComponent(fileName)}`)}
+          onClick={() => copy(`symtab://open?file=${encodeURIComponent(fileName)}`)}
         >
           as Symtab URL
         </MenuItem>

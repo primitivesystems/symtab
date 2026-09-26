@@ -1,11 +1,11 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
-import type { FluxClient, VaultGraph } from "@flux/bridge-contract";
+import type { SymtabClient, VaultGraph } from "@symtab/bridge-contract";
 import type { DemoDocument } from "../editor/markdown-editor";
 const emptyDocuments: DemoDocument[] = [];
 const GraphView = lazy(() => import("../workspace/graph-view").then((module) => ({ default: module.GraphView })));
 
 export function WorkbenchGraph({ client, vaultId, onOpenDocument, onSplit, onSearchTag }: {
-  client: FluxClient;
+  client: SymtabClient;
   vaultId: string;
   onOpenDocument: (path: string) => void;
   onSplit: (placement: "right" | "bottom") => void;

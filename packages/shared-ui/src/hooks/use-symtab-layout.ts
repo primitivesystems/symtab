@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-export type FluxSidebarSide = "left" | "right";
+export type SymtabSidebarSide = "left" | "right";
 
-export interface FluxSidebarOptions {
+export interface SymtabSidebarOptions {
   defaultWidth?: number;
   minWidth?: number;
   maxWidth?: number;
@@ -10,14 +10,14 @@ export interface FluxSidebarOptions {
   defaultCollapsed?: boolean;
 }
 
-export interface FluxSidebarState {
+export interface SymtabSidebarState {
   width: number;
   collapsed: boolean;
 }
 
-export interface FluxLayoutState {
-  left: FluxSidebarState;
-  right: FluxSidebarState;
+export interface SymtabLayoutState {
+  left: SymtabSidebarState;
+  right: SymtabSidebarState;
 }
 
 interface ResolvedSidebarOptions {
@@ -28,11 +28,11 @@ interface ResolvedSidebarOptions {
   defaultCollapsed: boolean;
 }
 
-interface UseFluxLayoutOptions {
-  left?: FluxSidebarOptions;
-  right?: FluxSidebarOptions;
-  onStateChange?: (state: FluxLayoutState) => void;
-  initialState?: FluxLayoutState;
+interface UseSymtabLayoutOptions {
+  left?: SymtabSidebarOptions;
+  right?: SymtabSidebarOptions;
+  onStateChange?: (state: SymtabLayoutState) => void;
+  initialState?: SymtabLayoutState;
 }
 
 const DEFAULT_SIDEBAR: ResolvedSidebarOptions = {
@@ -47,7 +47,7 @@ function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
 }
 
-function resolveOptions(options?: FluxSidebarOptions): ResolvedSidebarOptions {
+function resolveOptions(options?: SymtabSidebarOptions): ResolvedSidebarOptions {
   const minWidth = Math.max(120, options?.minWidth ?? DEFAULT_SIDEBAR.minWidth);
   const maxWidth = Math.max(minWidth, options?.maxWidth ?? DEFAULT_SIDEBAR.maxWidth);
 
@@ -63,9 +63,9 @@ function resolveOptions(options?: FluxSidebarOptions): ResolvedSidebarOptions {
 function createInitialState(
   left: ResolvedSidebarOptions,
   right: ResolvedSidebarOptions,
-  initialState?: FluxLayoutState
-): FluxLayoutState {
-  const fallback: FluxLayoutState = {
+  initialState?: SymtabLayoutState
+): SymtabLayoutState {
+  const fallback: SymtabLayoutState = {
     left: { width: left.defaultWidth, collapsed: left.defaultCollapsed },
     right: { width: right.defaultWidth, collapsed: right.defaultCollapsed },
   };
@@ -85,15 +85,15 @@ function createInitialState(
   return fallback;
 }
 
-export function useFluxLayout({
+export function useSymtabLayout({
   left: leftOptions,
   right: rightOptions,
   onStateChange,
   initialState,
-}: UseFluxLayoutOptions = {}) {
+}: UseSymtabLayoutOptions = {}) {
   const left = useMemo(() => resolveOptions(leftOptions), [leftOptions]);
   const right = useMemo(() => resolveOptions(rightOptions), [rightOptions]);
-  const [state, setState] = useState<FluxLayoutState>(() =>
+  const [state, setState] = useState<SymtabLayoutState>(() =>
     createInitialState(left, right, initialState)
   );
 
@@ -101,7 +101,7 @@ export function useFluxLayout({
     onStateChange?.(state);
   }, [onStateChange, state]);
 
-  const toggle = useCallback((side: FluxSidebarSide) => {
+  const toggle = useCallback((side: SymtabSidebarSide) => {
     setState((current) => ({
       ...current,
       [side]: { ...current[side], collapsed: !current[side].collapsed },
@@ -109,7 +109,7 @@ export function useFluxLayout({
   }, []);
 
   const resize = useCallback(
-    (side: FluxSidebarSide, requestedWidth: number) => {
+    (side: SymtabSidebarSide, requestedWidth: number) => {
       const constraints = side === "left" ? left : right;
       setState((current) => {
         if (requestedWidth <= constraints.minWidth - constraints.collapsePressure) {
