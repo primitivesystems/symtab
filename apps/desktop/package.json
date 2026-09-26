@@ -84,7 +84,7 @@
       "releaseType": "release"
     },
     "mac": {
-      "icon": "public/logo.png",
+      "icon": "assets/icon.icns",
       "category": "public.app-category.productivity",
       "identity": null,
       "hardenedRuntime": false,

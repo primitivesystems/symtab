@@ -38,7 +38,7 @@ test("desktop releases ship DMGs and expose a verified install path", () => {
     repo: "symtab",
   });
   expect(packageJson.build.productName).toBe("Symtab");
-  expect(packageJson.build.mac.icon).toBe("public/logo.png");
+  expect(packageJson.build.mac.icon).toBe("assets/icon.icns");
   expect(packageJson.build.win.icon).toBe("assets/icon.ico");
   expect(packageJson.build.linux.icon).toBe("assets/icon.png");
   expect(packageJson.build.mac.target).toEqual(["dmg"]);
