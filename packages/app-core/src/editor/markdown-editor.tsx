@@ -38,7 +38,7 @@ import {
   markdown,
 } from "@codemirror/lang-markdown";
 import { GFM } from "@lezer/markdown";
-import { bracketMatching, indentOnInput, indentUnit } from "@codemirror/language";
+import { bracketMatching, indentOnInput, indentUnit, syntaxTree } from "@codemirror/language";
 import { highlightSelectionMatches, openSearchPanel, searchKeymap } from "@codemirror/search";
 import { EditorState, StateField, StateEffect } from "@codemirror/state";
 import { EditorView, keymap, type Command, Decoration, type DecorationSet } from "@codemirror/view";
@@ -299,6 +299,7 @@ function MarkdownSource({
   onChange,
   documentPath,
   frontmatterLines = 0,
+  onOpenUrl,
 }: {
   value: string;
   live: boolean;
@@ -308,6 +309,7 @@ function MarkdownSource({
   onChange: (value: string) => void;
   documentPath?: string;
   frontmatterLines?: number;
+  onOpenUrl?: (url: string) => void;
 }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
@@ -316,6 +318,7 @@ function MarkdownSource({
   const initialValueRef = useRef(value);
   const initialLiveRef = useRef(live);
   const initialDocumentsRef = useRef(documents);
+  const onOpenUrlRef = useRef(onOpenUrl);
 
   const frontmatterLinesRef = useRef(frontmatterLines);
   useEffect(() => {
@@ -389,6 +392,10 @@ function MarkdownSource({
   }, [onChange]);
 
   useEffect(() => {
+    onOpenUrlRef.current = onOpenUrl;
+  }, [onOpenUrl]);
+
+  useEffect(() => {
     documentsRef.current = documents;
   }, [documents]);
 
@@ -432,6 +439,50 @@ function MarkdownSource({
               window.requestAnimationFrame(() => startCompletion(update.view));
             }
           }),
+          EditorView.domEventHandlers({
+            click: (event, view) => {
+              const target = event.target as HTMLElement;
+              const pos = view.posAtCoords({ x: event.clientX, y: event.clientY });
+              if (pos !== null) {
+                const tree = syntaxTree(view.state);
+                const result: { url: string | null } = { url: null };
+                tree.iterate({
+                  from: pos,
+                  to: pos,
+                  enter: (node: any) => {
+                    if (node.type.name === "Link") {
+                      const linkText = view.state.doc.sliceString(node.from, node.to);
+                      const urlMatch = linkText.match(/\[([^\]]*)\]\(([^)]+)\)/);
+                      if (urlMatch && urlMatch[2]) {
+                        result.url = urlMatch[2];
+                      }
+                      return false;
+                    }
+                    if (node.type.name === "URL") {
+                      result.url = view.state.doc.sliceString(node.from, node.to);
+                      return false;
+                    }
+                    return true;
+                  },
+                });
+                if (result.url && (result.url.startsWith("http://") || result.url.startsWith("https://"))) {
+                  event.preventDefault();
+                  onOpenUrlRef.current?.(result.url);
+                  return true;
+                }
+              }
+              const link = target.closest("a");
+              if (link) {
+                const href = link.getAttribute("href");
+                if (href && (href.startsWith("http://") || href.startsWith("https://"))) {
+                  event.preventDefault();
+                  onOpenUrlRef.current?.(href);
+                  return true;
+                }
+              }
+              return false;
+            },
+          }),
           EditorView.theme({
             "&": { height: "auto", backgroundColor: "transparent", color: "var(--foreground)" },
             ".cm-scroller": {
@@ -471,7 +522,8 @@ function MarkdownSource({
               borderRadius: "0.3rem",
               padding: "0 0.2em",
             },
-            ".cm-live-link": { textDecoration: "underline", textUnderlineOffset: "3px" },
+            ".cm-live-link": { textDecoration: "underline", textUnderlineOffset: "3px", cursor: "pointer" },
+            ".tok-link, .tok-url": { cursor: "pointer" },
             ".cm-live-strike": { textDecoration: "line-through" },
             ".cm-live-highlight": {
               borderRadius: "0.15rem",
@@ -860,6 +912,7 @@ export function MarkdownEditor({
   revealRequest,
   onDropDocument,
   onOpenDocument,
+  onOpenUrl,
   documents = [],
 }: {
   document: DemoDocument;
@@ -877,6 +930,7 @@ export function MarkdownEditor({
   };
   onDropDocument?: (title: string) => void;
   onOpenDocument?: (identifier: string, inPlace?: boolean) => void;
+  onOpenUrl?: (url: string) => void;
   documents?: DemoDocument[];
 }) {
   const editorRootRef = useRef<HTMLDivElement>(null);
@@ -1103,11 +1157,12 @@ export function MarkdownEditor({
           onChange={(value) => onChange(frontmatter + strippedPrefix + value)}
           documentPath={document.path ?? document.title}
           frontmatterLines={frontmatter ? frontmatter.split("\n").length - 1 : 0}
+          onOpenUrl={onOpenUrl}
         />
       ) : (
         <ReadingViewBoundary key={`${document.title}:${body}`}>
           <Suspense fallback={<RenderingState />}>
-            <ReadingView value={body} documents={documents} onNavigate={handleNavigate} />
+            <ReadingView value={body} documents={documents} onNavigate={handleNavigate} onOpenUrl={onOpenUrl} />
           </Suspense>
         </ReadingViewBoundary>
       )}

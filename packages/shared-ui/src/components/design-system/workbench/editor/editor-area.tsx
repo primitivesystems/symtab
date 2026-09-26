@@ -100,6 +100,23 @@ export const EditorArea = React.forwardRef<EditorAreaHandle, EditorAreaProps>(fu
     notifyActiveTabChange(group?.activeTabId ? model.documents[group.activeTabId] : undefined);
   }, [model]);
 
+  // Handle opening external URLs in new tabs
+  React.useEffect(() => {
+    const handleOpenUrl = (event: CustomEvent<{ url: string }>) => {
+      const { url } = event.detail;
+      const tabId = `url:${url}`;
+      const urlObj = new URL(url);
+      const title = urlObj.hostname;
+      dispatch({
+        type: "open",
+        tab: { id: tabId, title },
+      });
+    };
+
+    window.addEventListener("flux-open-url", handleOpenUrl as EventListener);
+    return () => window.removeEventListener("flux-open-url", handleOpenUrl as EventListener);
+  }, []);
+
   function splitEditor(groupId: EditorGroupId, placement: SplitPlacement) {
     const group = getGroup(model, groupId);
     const tab = group?.activeTabId ? model.documents[group.activeTabId] : undefined;

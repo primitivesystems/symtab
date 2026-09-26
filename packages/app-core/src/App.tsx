@@ -10,6 +10,7 @@ import type {
 import type { SymtabClient } from "@symtab/bridge-contract";
 import { browserStatePersistence, type SymtabStatePersistence } from "./app/state";
 import { MarkdownEditor, type DemoDocument } from "./editor/markdown-editor";
+import { WebViewEditor } from "@flux/shared-ui/components/design-system/workbench/editor/webview-editor";
 import { PdfExportDialog } from "./pdf/export";
 import { ConfirmDialog, TrashManager, VaultManager } from "./workspace/dialogs";
 import { useWorkbenchVault } from "./workbench/use-workbench-vault";
@@ -297,6 +298,10 @@ export function SymtabApp({ runtime, windowControlsInset = 0 }: SymtabAppProps) 
       update: (changes: { title?: string; content?: string; dirty?: boolean }) => void,
       onOpenDocument?: (path: string) => void
     ) => {
+      if (tab.id.startsWith("url:")) {
+        const url = tab.id.slice(4);
+        return <WebViewEditor url={url} />;
+      }
       if (!tab.title.toLowerCase().endsWith(".md")) return null;
       const path = tab.id.startsWith("file:") ? tab.id.slice(5) : undefined;
       return (
@@ -310,6 +315,9 @@ export function SymtabApp({ runtime, windowControlsInset = 0 }: SymtabAppProps) 
           showBacklinks={false}
           documents={documentLocations}
           onOpenDocument={onOpenDocument}
+          onOpenUrl={(url) => {
+            window.dispatchEvent(new CustomEvent("flux-open-url", { detail: { url } }));
+          }}
           findRequest={findRequest}
         />
       );

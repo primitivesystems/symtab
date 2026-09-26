@@ -191,6 +191,74 @@
   background: var(--workbench-scrollbar-thumb-hover);
 }
 
+/* Base styles for HTML elements in Reading View to undo Tailwind resets */
+.symtab-reading-view {
+  font-size: 1rem;
+  line-height: 1.6;
+  white-space: pre-wrap; /* Preserve spaces everywhere */
+}
+
+/* Make typical block elements inline-block so they flow flexibly */
+.symtab-reading-view :where(h1, h2, h3, h4, h5, h6, p, ul, ol, blockquote, pre, table) {
+  display: inline-block;
+  vertical-align: top;
+  margin: 0; /* Remove default margins since they are now inline-flexible */
+}
+
+.symtab-reading-view :where(h1, h2, h3, h4, h5, h6) {
+  font-weight: 650;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+}
+
+.symtab-reading-view h1 { font-size: 1.7rem; }
+.symtab-reading-view h2 { font-size: 1.35rem; }
+.symtab-reading-view h3 { font-size: 1.1rem; }
+.symtab-reading-view :where(h4, h5, h6) { font-size: 1rem; }
+
+.symtab-reading-view :where(ul, ol) {
+  padding-left: 1.5em;
+  display: inline-block; /* Lists should also flow flexibly if needed */
+}
+
+.symtab-reading-view ul {
+  list-style-type: disc;
+}
+
+.symtab-reading-view ol {
+  list-style-type: decimal;
+}
+
+.symtab-reading-view a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.symtab-reading-view blockquote {
+  border-left: 3px solid var(--border);
+  padding-left: 1em;
+  color: var(--muted-foreground);
+}
+
+.symtab-reading-view pre {
+  background: var(--muted);
+  padding: 1em;
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+}
+
+.symtab-reading-view code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.9em;
+}
+
+.symtab-reading-view :not(pre) > code {
+  background: var(--muted);
+  padding: 0.2em 0.4em;
+  border-radius: var(--radius-sm);
+}
+
 .symtab-print-document {
   display: none;
 }

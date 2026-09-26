@@ -127,6 +127,7 @@ const md: MarkdownIt = new MarkdownIt({
   html: true,
   linkify: true,
   typographer: true,
+  breaks: true,
   highlight(code, language) {
     const grammar = Prism.languages[language];
     return grammar ? Prism.highlight(code, grammar, language) : escapeHtml(code);
@@ -184,10 +185,12 @@ function ReadingView({
   value,
   documents,
   onNavigate,
+  onOpenUrl,
 }: {
   value: string;
   documents: DemoDocument[];
   onNavigate?: (target: string) => void;
+  onOpenUrl?: (url: string) => void;
 }) {
   const { theme } = useTheme();
   const resolvedTheme = document.documentElement.classList.contains("dark") ? "dark" : "light";
@@ -255,14 +258,23 @@ function ReadingView({
       className="symtab-reading-view mx-auto max-w-[760px] px-9 pb-24 pt-2"
       onClick={(event) => {
         const link = (event.target as HTMLElement).closest<HTMLAnchorElement>("a");
-        if (link && onNavigate) {
+        if (link) {
           const href = link.getAttribute("href");
-          if (href && !href.startsWith("http")) {
-            event.preventDefault();
-            let target = href;
-            if (href.startsWith("#")) target = decodeURIComponent(href.slice(1));
-            onNavigate(target);
-            return;
+          if (href) {
+            // Handle external URLs
+            if (href.startsWith("http://") || href.startsWith("https://")) {
+              event.preventDefault();
+              onOpenUrl?.(href);
+              return;
+            }
+            // Handle internal links
+            if (onNavigate && !href.startsWith("http")) {
+              event.preventDefault();
+              let target = href;
+              if (href.startsWith("#")) target = decodeURIComponent(href.slice(1));
+              onNavigate(target);
+              return;
+            }
           }
         }
 
