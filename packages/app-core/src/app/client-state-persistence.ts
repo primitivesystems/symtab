@@ -20,15 +20,17 @@ function persistedWorkspace(value: unknown): PersistedWorkspaceSession | null {
 /** Persists UI snapshots through Symtab backend global app storage. */
 export function createClientStatePersistence(client: SymtabClient): SymtabStatePersistence {
   let lastVaultId: string | null = null;
+  let lastVaultRevision = 0;
   let settingWrites = Promise.resolve();
 
   return {
     async loadBootstrap(windowId) {
+      const revision = lastVaultRevision;
       const bootstrap = await client.getBootstrap(windowId);
       const recent = bootstrap.workspace
         ? bootstrap.recentVaults.find((vault) => vault.vaultId === bootstrap.workspace?.vaultId)
         : bootstrap.recentVaults[0];
-      lastVaultId = recent?.vaultId ?? null;
+      if (revision === lastVaultRevision) lastVaultId = recent?.vaultId ?? null;
       return { lastVaultPath: recent?.path ?? null };
     },
     async loadWorkspaceSession(windowId, vaultId) {
@@ -50,6 +52,7 @@ export function createClientStatePersistence(client: SymtabClient): SymtabStateP
       return write;
     },
     async rememberVault(vault: RememberedVault) {
+      lastVaultRevision++;
       lastVaultId = vault.id;
       await client.rememberVault({
         vaultId: vault.id,
@@ -59,6 +62,7 @@ export function createClientStatePersistence(client: SymtabClient): SymtabStateP
     },
     async forgetLastVault() {
       if (!lastVaultId) return;
+      lastVaultRevision++;
       const vaultId = lastVaultId;
       lastVaultId = null;
       await client.forgetVault(vaultId);

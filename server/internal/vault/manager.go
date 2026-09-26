@@ -15,12 +15,12 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/symtab-pkm/server/internal/domain"
 	"github.com/symtab-pkm/server/internal/files"
 	"github.com/symtab-pkm/server/internal/index"
 	"github.com/symtab-pkm/server/internal/runtimecoord"
 	watcherRuntime "github.com/symtab-pkm/server/internal/watcher"
-	"github.com/google/uuid"
 )
 
 var (
@@ -190,6 +190,7 @@ type Manager struct {
 	configuredPath string
 	storageRoot    string
 	allowAnyPath   bool
+	createMu       sync.Mutex
 	mu             sync.RWMutex
 	contexts       map[string]*Context
 	currentID      string
@@ -346,6 +347,8 @@ func (m *Manager) Open(requestedPath string) (*Context, error) {
 }
 
 func (m *Manager) Create(requestedPath string) (*Context, error) {
+	m.createMu.Lock()
+	defer m.createMu.Unlock()
 	if requestedPath == "" {
 		return nil, ErrPathRequired
 	}
@@ -386,10 +389,46 @@ func (m *Manager) Create(requestedPath string) (*Context, error) {
 	} else if !errors.Is(err, os.ErrNotExist) {
 		return nil, err
 	}
+	containsVault, err := containsNestedVault(absolute)
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return nil, err
+	}
+	if containsVault {
+		return nil, ErrNestedVault
+	}
 	if err := os.MkdirAll(absolute, 0o755); err != nil {
 		return nil, err
 	}
 	return m.Open(absolute)
+}
+
+func containsNestedVault(root string) (bool, error) {
+	found := false
+	err := filepath.WalkDir(root, func(current string, entry fs.DirEntry, walkErr error) error {
+		if walkErr != nil {
+			return walkErr
+		}
+		if current == root {
+			return nil
+		}
+		if entry.Type()&os.ModeSymlink != 0 {
+			if entry.IsDir() {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+		if !entry.IsDir() || entry.Name() != ".symtab" {
+			return nil
+		}
+		if _, err := os.Stat(filepath.Join(current, "vault.json")); err == nil {
+			found = true
+			return filepath.SkipAll
+		} else if !errors.Is(err, os.ErrNotExist) {
+			return err
+		}
+		return filepath.SkipDir
+	})
+	return found, err
 }
 
 func nestedInVault(root string) bool {
