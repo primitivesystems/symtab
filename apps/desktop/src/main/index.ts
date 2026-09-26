@@ -56,9 +56,7 @@ function applicationIconPath() {
 }
 
 function dockIconPath() {
-  return app.isPackaged
-    ? path.join(process.resourcesPath, "icon.icns")
-    : path.join(currentDirectory, "../assets/icon.icns");
+  return path.join(currentDirectory, "../assets/icon.icns");
 }
 
 function menuBarIconPath() {
@@ -617,7 +615,7 @@ function installApplicationMenu() {
 }
 
 app.whenReady().then(async () => {
-  if (process.platform === "darwin") {
+  if (process.platform === "darwin" && !app.isPackaged) {
     app.dock?.setIcon(nativeImage.createFromPath(dockIconPath()));
   }
   const openedAtLogin =

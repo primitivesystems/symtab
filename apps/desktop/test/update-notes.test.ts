@@ -48,7 +48,7 @@ test("desktop releases ship DMGs and expose a verified install path", () => {
   expect(main).toContain("SYMTAB_VERSION: app.getVersion()");
   expect(main).toContain("existsSync(current) || !existsSync(legacy) ? current : legacy");
   expect(main).toContain('app.setName("Symtab")');
-  expect(main).toContain('"icon.icns"');
+  expect(main).toContain('process.platform === "darwin" && !app.isPackaged');
   expect(main).toContain("app.dock?.setIcon(nativeImage.createFromPath(dockIconPath()))");
   expect(main).toContain("nativeImage.createFromPath(menuBarIconPath())");
   expect(main).toContain('menuBarTray.on("click", () => menuBarTray?.popUpContextMenu(menu))');
