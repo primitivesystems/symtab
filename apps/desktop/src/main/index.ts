@@ -57,8 +57,8 @@ function applicationIconPath() {
 
 function dockIconPath() {
   return app.isPackaged
-    ? path.join(process.resourcesPath, "dock-icon-light.png")
-    : path.join(currentDirectory, "../assets/dock-icon-light.png");
+    ? path.join(process.resourcesPath, "icon.icns")
+    : path.join(currentDirectory, "../assets/icon.icns");
 }
 
 function menuBarIconPath() {
