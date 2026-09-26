@@ -42,8 +42,6 @@ const activityItems: readonly ActivityBarItem[] = [
   { id: "search", label: "Search", icon: "search" },
   { id: "journal", label: "Journal", icon: "calendar" },
   { id: "graph", label: "Graph", icon: "type-hierarchy" },
-  { id: "backlinks", label: "Backlinks", icon: "references" },
-  { id: "tags", label: "Tags", icon: "tag" },
 ];
 
 const activityCopy: Record<string, { title: string; description: string }> = {

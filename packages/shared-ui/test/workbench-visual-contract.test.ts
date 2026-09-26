@@ -13,6 +13,14 @@ describe("workbench visual contract", () => {
       expect(source).toContain(`<WorkbenchPanel aria-label="${label}"`);
     }
   });
+  test("activity bar ends at graph", () => {
+    const source = readFileSync(
+      new URL("../src/components/design-system/workbench.tsx", import.meta.url),
+      "utf8"
+    );
+    expect(source).not.toContain('{ id: "backlinks", label: "Backlinks", icon: "references" }');
+    expect(source).not.toContain('{ id: "tags", label: "Tags", icon: "tag" }');
+  });
   test("standalone windows and portals inherit a semantic separator", () => {
     const css = readFileSync(new URL("../src/styles/globals.css", import.meta.url), "utf8");
     expect(css).toMatch(/:root\s*\{[^}]*--layout-separator:\s*var\(--border\)/);
