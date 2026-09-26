@@ -33,8 +33,8 @@ Do not change:
 | Priority | File                                                  | Responsibility                    | Planned appearance work                                        |
 | -------- | ----------------------------------------------------- | --------------------------------- | -------------------------------------------------------------- |
 | P0       | `packages/shared-ui/src/styles/globals.css`           | tokens, base, editor, print       | split ownership; install new light/dark role tokens            |
-| P0       | `packages/shared-ui/src/components/flux-layout.tsx`   | shell grid and pane wrappers      | preserve geometry; add window-well and inset-surface classes   |
-| P0       | `packages/shared-ui/src/components/flux-tabs.tsx`     | titlebar tabs                     | contained active tab; zero-bounce motion; shared state styling |
+| P0       | `packages/shared-ui/src/components/symtab-layout.tsx`   | shell grid and pane wrappers      | preserve geometry; add window-well and inset-surface classes   |
+| P0       | `packages/shared-ui/src/components/symtab-tabs.tsx`     | titlebar tabs                     | contained active tab; zero-bounce motion; shared state styling |
 | P0       | `packages/shared-ui/src/components/workspace-tab.tsx` | editor pane header and tab menus  | header polish; migrate repeated menu styling                   |
 | P0       | `packages/app-core/src/workspace-sidebars.tsx`        | ribbon and sidebars               | selected/hover states, toolbars, row density, icon stroke      |
 | P0       | `packages/app-core/src/vault-explorer.tsx`            | file tree                         | row states, guides, toolbar, preview surface                   |
@@ -54,9 +54,9 @@ Do not change:
 
 Implementation must preserve:
 
-- `flux-layout-root` grid rows: `44px minmax(0,1fr) 28px`
+- `symtab-layout-root` grid rows: `44px minmax(0,1fr) 28px`
 - sticky rail column
-- left and right grid tracks calculated in `FluxLayout`
+- left and right grid tracks calculated in `SymtabLayout`
 - zero-width resize-track math
 - `leftSidebarOptions`: 260 default, 200 min, 480 max
 - `rightSidebarOptions`: 280 default, 220 min, 480 max
@@ -94,7 +94,7 @@ Needed variants:
 
 Repeated class constants exist in:
 
-- `flux-tabs.tsx`
+- `symtab-tabs.tsx`
 - `workspace-tab.tsx`
 - `vault-explorer.tsx`
 - `markdown-editor.tsx`

@@ -212,17 +212,17 @@ export interface PluginContext {
   on(event: string, listener: (payload: unknown) => void | Promise<void>): () => void;
 }
 
-export interface FluxPlugin {
+export interface SymtabPlugin {
   activate(context: PluginContext): void | Promise<void>;
   deactivate?(): void | Promise<void>;
 }
 
-export function definePlugin<T extends FluxPlugin>(plugin: T): T {
+export function definePlugin<T extends SymtabPlugin>(plugin: T): T {
   const register = (
     globalThis as typeof globalThis & {
-      __fluxRegisterPlugin?: (candidate: FluxPlugin) => void;
+      __symtabRegisterPlugin?: (candidate: SymtabPlugin) => void;
     }
-  ).__fluxRegisterPlugin;
+  ).__symtabRegisterPlugin;
   if (typeof register === "function") register(plugin);
   return plugin;
 }

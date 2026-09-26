@@ -111,8 +111,8 @@ npm run dev
 
 # Terminal 2: Simulate update downloaded
 # Manually place a DMG in the electron cache:
-mkdir -p ~/Library/Caches/flux/electron-updater/
-cp ~/Downloads/FLUX-0.0.2-arm64.dmg ~/Library/Caches/flux/electron-updater/
+mkdir -p ~/Library/Caches/symtab/electron-updater/
+cp ~/Downloads/SYMTAB-0.0.2-arm64.dmg ~/Library/Caches/symtab/electron-updater/
 
 # Then in Symtab: Click Settings → Check for Updates → Install
 ```
@@ -144,7 +144,7 @@ cp ~/Downloads/FLUX-0.0.2-arm64.dmg ~/Library/Caches/flux/electron-updater/
 
 #### Setup
 ```bash
-npm run build  # Builds FLUX-0.0.2-Setup.exe
+npm run build  # Builds SYMTAB-0.0.2-Setup.exe
 npm run release  # Publishes to GitHub Releases
 ```
 
@@ -301,14 +301,14 @@ The installer verifies SHA256 checksums from one of these sources:
 
 Example blockmap location:
 ```
-release/FLUX-0.0.2-arm64.dmg.blockmap
+release/SYMTAB-0.0.2-arm64.dmg.blockmap
 ```
 
 Contains:
 ```json
 {
   "checksums": {
-    "FLUX-0.0.2-arm64.dmg": "abc123def456..."
+    "SYMTAB-0.0.2-arm64.dmg": "abc123def456..."
   }
 }
 ```

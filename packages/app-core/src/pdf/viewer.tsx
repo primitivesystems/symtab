@@ -238,7 +238,7 @@ export function PdfViewer({
       </div>
       <div className="flex h-0 min-h-0 min-w-0 flex-1 overflow-hidden">
         {sidebar && document ? (
-          <aside className="flux-editor-scroll h-full min-h-0 w-36 shrink-0 overflow-y-auto border-r bg-sidebar p-2 [border-color:var(--layout-separator)]">
+          <aside className="symtab-editor-scroll h-full min-h-0 w-36 shrink-0 overflow-y-auto border-r bg-sidebar p-2 [border-color:var(--layout-separator)]">
             {Array.from({ length: document.numPages }, (_, index) => (
               <PdfThumbnail
                 key={index + 1}
@@ -250,13 +250,13 @@ export function PdfViewer({
             ))}
           </aside>
         ) : null}
-        <div className="flux-editor-scroll h-full min-h-0 min-w-0 flex-1 overflow-auto overscroll-contain bg-muted/30 p-5">
+        <div className="symtab-editor-scroll h-full min-h-0 min-w-0 flex-1 overflow-auto overscroll-contain bg-muted/30 p-5">
           {error ? (
             <p className="text-sm text-destructive">{error}</p>
           ) : (
             <div ref={pageRef} className="relative mx-auto bg-white shadow-md">
               <canvas ref={canvasRef} className="absolute inset-0 block bg-white" />
-              <div ref={textLayerRef} className="flux-pdf-text-layer textLayer" />
+              <div ref={textLayerRef} className="symtab-pdf-text-layer textLayer" />
             </div>
           )}
         </div>

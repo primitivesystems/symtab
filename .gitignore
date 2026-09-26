@@ -62,8 +62,8 @@ release
 bin/
 *.test
 
-# Flux derived vault state
-**/.flux/
+# Symtab derived vault state
+**/.symtab/
 
 # Docker
 docker-compose.override.yml

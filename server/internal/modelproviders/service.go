@@ -17,7 +17,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/flux-pkm/server/internal/domain"
+	"github.com/symtab-pkm/server/internal/domain"
 )
 
 var (
@@ -515,7 +515,7 @@ func chatWithCLI(ctx context.Context, workspace, providerID, model string, messa
 		}
 		return reply, nil
 	}
-	outputFile, err := os.CreateTemp("", "flux-codex-response-*.txt")
+	outputFile, err := os.CreateTemp("", "symtab-codex-response-*.txt")
 	if err != nil {
 		return "", err
 	}

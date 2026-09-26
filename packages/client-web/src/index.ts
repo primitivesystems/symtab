@@ -10,7 +10,7 @@ import type {
   FileDocument,
   FileEntry,
   FilePage,
-  FluxClient,
+  SymtabClient,
   MarketplaceIndex,
   MoveFileRequest,
   OpenVaultRequest,
@@ -33,25 +33,25 @@ import type {
   VaultLocation,
   VaultFacets,
   WorkspaceSession,
-} from "@flux/bridge-contract";
+} from "@symtab/bridge-contract";
 
-export class FluxClientError extends Error {
+export class SymtabClientError extends Error {
   constructor(
     message: string,
     readonly status: number,
     readonly code?: string
   ) {
     super(message);
-    this.name = "FluxClientError";
+    this.name = "SymtabClientError";
   }
 }
 
-export type FluxFetch = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+export type SymtabFetch = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
 
-export class WebFluxClient implements FluxClient {
+export class WebSymtabClient implements SymtabClient {
   constructor(
     private readonly baseURL = "/api/v1",
-    private readonly fetcher: FluxFetch = (input, init) => globalThis.fetch(input, init)
+    private readonly fetcher: SymtabFetch = (input, init) => globalThis.fetch(input, init)
   ) {}
 
   getStatus() {
@@ -92,7 +92,7 @@ export class WebFluxClient implements FluxClient {
         `/workspace-sessions/${encodeURIComponent(windowId)}${query.size ? `?${query}` : ""}`
       );
     } catch (error) {
-      if (error instanceof FluxClientError && error.status === 404) return null;
+      if (error instanceof SymtabClientError && error.status === 404) return null;
       throw error;
     }
   }
@@ -127,15 +127,15 @@ export class WebFluxClient implements FluxClient {
   }
 
   listMCPConnections() {
-    return this.request<import("@flux/bridge-contract").MCPConnection[]>("/mcp-connections");
+    return this.request<import("@symtab/bridge-contract").MCPConnection[]>("/mcp-connections");
   }
 
   createMCPConnection(request: {
     name: string;
-    mode: import("@flux/bridge-contract").MCPConnection["mode"];
+    mode: import("@symtab/bridge-contract").MCPConnection["mode"];
     vaultIds: string[];
   }) {
-    return this.request<import("@flux/bridge-contract").MCPConnectionCredential>(
+    return this.request<import("@symtab/bridge-contract").MCPConnectionCredential>(
       "/mcp-connections",
       { method: "POST", body: JSON.stringify(request) }
     );
@@ -148,11 +148,11 @@ export class WebFluxClient implements FluxClient {
   }
 
   listModelProviders() {
-    return this.request<import("@flux/bridge-contract").ModelProvider[]>("/model-providers");
+    return this.request<import("@symtab/bridge-contract").ModelProvider[]>("/model-providers");
   }
 
   getModelProvider(providerId: string) {
-    return this.request<import("@flux/bridge-contract").ModelProvider>(
+    return this.request<import("@symtab/bridge-contract").ModelProvider>(
       `/model-providers/${encodeURIComponent(providerId)}`
     );
   }
@@ -165,11 +165,11 @@ export class WebFluxClient implements FluxClient {
   }
 
   listAIRuntimes() {
-    return this.request<import("@flux/bridge-contract").AIRuntime[]>("/ai-runtimes");
+    return this.request<import("@symtab/bridge-contract").AIRuntime[]>("/ai-runtimes");
   }
 
   getAIRuntime(runtimeId: string) {
-    return this.request<import("@flux/bridge-contract").AIRuntime>(
+    return this.request<import("@symtab/bridge-contract").AIRuntime>(
       `/ai-runtimes/${encodeURIComponent(runtimeId)}`
     );
   }
@@ -322,7 +322,7 @@ export class WebFluxClient implements FluxClient {
   }
 
   listVaultPlugins(vaultId: string) {
-    return this.request<import("@flux/bridge-contract").VaultPlugin[]>(
+    return this.request<import("@symtab/bridge-contract").VaultPlugin[]>(
       `/vaults/${encodeURIComponent(vaultId)}/plugins`
     );
   }
@@ -472,7 +472,7 @@ export class WebFluxClient implements FluxClient {
         `/vaults/${encodeURIComponent(vaultId)}/files/metadata?${query.toString()}`
       );
     } catch (error) {
-      if (error instanceof FluxClientError && error.status === 404) return null;
+      if (error instanceof SymtabClientError && error.status === 404) return null;
       throw error;
     }
   }
@@ -515,7 +515,7 @@ export class WebFluxClient implements FluxClient {
         error?: string;
         code?: string;
       } | null;
-      throw new FluxClientError(
+      throw new SymtabClientError(
         body?.error ?? `Symtab request failed with status ${response.status}`,
         response.status,
         body?.code
@@ -600,7 +600,7 @@ export class WebFluxClient implements FluxClient {
         error?: string;
         code?: string;
       } | null;
-      throw new FluxClientError(
+      throw new SymtabClientError(
         body?.error ?? `Symtab request failed with status ${response.status}`,
         response.status,
         body?.code

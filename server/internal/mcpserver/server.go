@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/flux-pkm/server/internal/capability"
-	"github.com/flux-pkm/server/internal/domain"
+	"github.com/symtab-pkm/server/internal/capability"
+	"github.com/symtab-pkm/server/internal/domain"
 	"github.com/google/jsonschema-go/jsonschema"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
@@ -80,20 +80,20 @@ type saveInput struct {
 	VaultID      string `json:"vaultId" jsonschema:"vault identifier"`
 	Path         string `json:"path" jsonschema:"vault-relative file path"`
 	Content      string `json:"content" jsonschema:"replacement file content"`
-	ExpectedHash string `json:"expectedHash" jsonschema:"content hash returned by flux_read_file"`
+	ExpectedHash string `json:"expectedHash" jsonschema:"content hash returned by symtab_read_file"`
 }
 
 type moveInput struct {
 	VaultID         string `json:"vaultId" jsonschema:"vault identifier"`
 	SourcePath      string `json:"sourcePath" jsonschema:"existing vault-relative file path"`
 	DestinationPath string `json:"destinationPath" jsonschema:"new vault-relative file path"`
-	ExpectedHash    string `json:"expectedHash" jsonschema:"source content hash returned by flux_read_file"`
+	ExpectedHash    string `json:"expectedHash" jsonschema:"source content hash returned by symtab_read_file"`
 }
 
 type deleteInput struct {
 	VaultID      string `json:"vaultId" jsonschema:"vault identifier"`
 	Path         string `json:"path" jsonschema:"vault-relative file path"`
-	ExpectedHash string `json:"expectedHash" jsonschema:"content hash returned by flux_read_file"`
+	ExpectedHash string `json:"expectedHash" jsonschema:"content hash returned by symtab_read_file"`
 }
 
 type vaultPlanInput struct {
@@ -103,22 +103,22 @@ type vaultPlanInput struct {
 
 func (h *Server) addReadTools(server *mcp.Server) {
 	readOnly := &mcp.ToolAnnotations{ReadOnlyHint: true}
-	mcp.AddTool(server, &mcp.Tool{Name: "flux_list_vaults", Description: "List vault identifiers authorized for this MCP connection.", Annotations: readOnly}, h.listVaults)
-	mcp.AddTool(server, &mcp.Tool{Name: "flux_list_files", Description: "List files in an authorized Symtab vault.", Annotations: readOnly}, h.listFiles)
-	mcp.AddTool(server, &mcp.Tool{Name: "flux_read_file", Description: "Read one vault file with content hash for conflict-safe writes.", Annotations: readOnly}, h.readFile)
-	mcp.AddTool(server, &mcp.Tool{Name: "flux_get_graph", Description: "Read complete indexed vault graph. Prefer focused graph tools for large vaults.", Annotations: readOnly}, h.graph)
-	mcp.AddTool(server, &mcp.Tool{Name: "flux_get_graph_neighbors", Description: "Read bounded graph neighborhood around one path.", Annotations: readOnly}, h.neighbors)
-	mcp.AddTool(server, &mcp.Tool{Name: "flux_get_backlinks", Description: "Read notes linking to one path.", Annotations: readOnly}, h.backlinks)
-	mcp.AddTool(server, &mcp.Tool{Name: "flux_get_outgoing_links", Description: "Read notes linked from one path.", Annotations: readOnly}, h.outgoing)
-	mcp.AddTool(server, &mcp.Tool{Name: "flux_get_broken_links", Description: "Read unresolved graph links.", Annotations: readOnly}, h.brokenLinks)
+	mcp.AddTool(server, &mcp.Tool{Name: "symtab_list_vaults", Description: "List vault identifiers authorized for this MCP connection.", Annotations: readOnly}, h.listVaults)
+	mcp.AddTool(server, &mcp.Tool{Name: "symtab_list_files", Description: "List files in an authorized Symtab vault.", Annotations: readOnly}, h.listFiles)
+	mcp.AddTool(server, &mcp.Tool{Name: "symtab_read_file", Description: "Read one vault file with content hash for conflict-safe writes.", Annotations: readOnly}, h.readFile)
+	mcp.AddTool(server, &mcp.Tool{Name: "symtab_get_graph", Description: "Read complete indexed vault graph. Prefer focused graph tools for large vaults.", Annotations: readOnly}, h.graph)
+	mcp.AddTool(server, &mcp.Tool{Name: "symtab_get_graph_neighbors", Description: "Read bounded graph neighborhood around one path.", Annotations: readOnly}, h.neighbors)
+	mcp.AddTool(server, &mcp.Tool{Name: "symtab_get_backlinks", Description: "Read notes linking to one path.", Annotations: readOnly}, h.backlinks)
+	mcp.AddTool(server, &mcp.Tool{Name: "symtab_get_outgoing_links", Description: "Read notes linked from one path.", Annotations: readOnly}, h.outgoing)
+	mcp.AddTool(server, &mcp.Tool{Name: "symtab_get_broken_links", Description: "Read unresolved graph links.", Annotations: readOnly}, h.brokenLinks)
 }
 
 func (h *Server) addWriteTools(server *mcp.Server) {
-	mcp.AddTool(server, &mcp.Tool{Name: "flux_create_file", Description: "Create one file after policy approval."}, h.createFile)
-	mcp.AddTool(server, &mcp.Tool{Name: "flux_save_file", Description: "Replace one file when expected content hash still matches."}, h.saveFile)
-	mcp.AddTool(server, &mcp.Tool{Name: "flux_apply_vault_plan", Description: "Apply up to 100 preflighted create/update operations with conflict checks and crash-recovery rollback journal."}, h.applyVaultPlan)
-	mcp.AddTool(server, &mcp.Tool{Name: "flux_move_file", Description: "Move one file when expected source content hash still matches."}, h.moveFile)
-	mcp.AddTool(server, &mcp.Tool{Name: "flux_delete_file", Description: "Move one file to Symtab trash when expected content hash still matches."}, h.deleteFile)
+	mcp.AddTool(server, &mcp.Tool{Name: "symtab_create_file", Description: "Create one file after policy approval."}, h.createFile)
+	mcp.AddTool(server, &mcp.Tool{Name: "symtab_save_file", Description: "Replace one file when expected content hash still matches."}, h.saveFile)
+	mcp.AddTool(server, &mcp.Tool{Name: "symtab_apply_vault_plan", Description: "Apply up to 100 preflighted create/update operations with conflict checks and crash-recovery rollback journal."}, h.applyVaultPlan)
+	mcp.AddTool(server, &mcp.Tool{Name: "symtab_move_file", Description: "Move one file when expected source content hash still matches."}, h.moveFile)
+	mcp.AddTool(server, &mcp.Tool{Name: "symtab_delete_file", Description: "Move one file to Symtab trash when expected content hash still matches."}, h.deleteFile)
 }
 
 func (h *Server) listVaults(ctx context.Context, _ *mcp.CallToolRequest, _ struct{}) (*mcp.CallToolResult, vaultListOutput, error) {

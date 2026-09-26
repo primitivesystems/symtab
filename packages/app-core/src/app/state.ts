@@ -4,7 +4,7 @@ import type { MarkdownMode } from "../editor/markdown-editor";
 import type { BookmarkItem } from "../bookmarks/store";
 import type { WorkspaceNode } from "../workspace/tree";
 import type { LeftPane, RightPane } from "../workspace/sidebars";
-import type { FluxLayoutState } from "@flux/shared-ui/hooks/use-flux-layout";
+import type { SymtabLayoutState } from "@symtab/shared-ui/hooks/use-symtab-layout";
 
 export type VaultLifecycleState =
   "initializing" | "read_only_ready" | "writable" | "indexing" | "active" | "degraded";
@@ -35,7 +35,7 @@ export interface PersistedWorkspaceSession {
   activeLeafId: number;
   leftSidebarPane: LeftPane;
   rightSidebarPane: RightPane;
-  layout?: FluxLayoutState;
+  layout?: SymtabLayoutState;
   expandedFolders?: string[];
 }
 
@@ -49,7 +49,7 @@ export interface RememberedVault {
   path: string;
 }
 
-export interface FluxStatePersistence {
+export interface SymtabStatePersistence {
   loadBootstrap(windowId: string): Promise<AppBootstrapState>;
   loadWorkspaceSession(
     windowId: string,
@@ -131,7 +131,7 @@ const volatileWorkspaces = new Map<string, Map<string, PersistedWorkspaceSession
 const volatileSettings: Record<string, unknown> = {};
 
 /** In-memory fallback used only when a shell has no backend persistence adapter. */
-export const browserStatePersistence: FluxStatePersistence = {
+export const browserStatePersistence: SymtabStatePersistence = {
   async loadBootstrap() {
     return { lastVaultPath: volatileLastVaultPath };
   },

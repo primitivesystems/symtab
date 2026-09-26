@@ -13,7 +13,7 @@ import {
 const roots: string[] = [];
 
 function temporary(): string {
-  const root = mkdtempSync(join(tmpdir(), "flux-plugin-"));
+  const root = mkdtempSync(join(tmpdir(), "symtab-plugin-"));
   roots.push(root);
   return root;
 }
@@ -24,9 +24,9 @@ afterEach(() => {
 
 describe("plugin tooling", () => {
   test("scaffolds a valid external plugin", () => {
-    const root = join(temporary(), "hello-flux");
+    const root = join(temporary(), "hello-symtab");
     createPlugin(root);
-    expect(readManifest(root).id).toBe("hello-flux");
+    expect(readManifest(root).id).toBe("hello-symtab");
     const source = readFileSync(join(root, "src/main.ts"), "utf8");
     expect(source).toContain("definePlugin");
     expect(source).not.toContain("console.");

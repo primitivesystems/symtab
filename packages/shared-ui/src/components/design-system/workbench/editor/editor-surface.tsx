@@ -156,7 +156,7 @@ function CodeEditor({
     if (active) viewRef.current?.requestMeasure();
   }, [active]);
 
-  return <div ref={hostRef} className="flux-code-editor min-h-0 min-w-0 flex-1 overflow-hidden" />;
+  return <div ref={hostRef} className="symtab-code-editor min-h-0 min-w-0 flex-1 overflow-hidden" />;
 }
 
 function languageFor(title: string): Extension {

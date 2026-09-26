@@ -10,36 +10,36 @@
 #   docker compose -f docker-compose.selfhost.yml up -d --build
 #
 # Backup vault data:
-#   docker run --rm -v flux-vaults:/data -v $(pwd):/backup \
-#     alpine tar czf /backup/flux-vaults-backup.tar.gz /data
+#   docker run --rm -v symtab-vaults:/data -v $(pwd):/backup \
+#     alpine tar czf /backup/symtab-vaults-backup.tar.gz /data
 
-name: flux-selfhost
+name: symtab-selfhost
 
 services:
   # ── Go API backend ─────────────────────────────────────────────────────────
-  flux-server:
+  symtab-server:
     build:
       context: ./server
       dockerfile: Dockerfile
-    container_name: flux-server
+    container_name: symtab-server
     restart: unless-stopped
     environment:
       ENVIRONMENT: production
       HOST: 0.0.0.0
       PORT: 8080
-      FLUX_VAULT_ROOT: /data/vaults
-      FLUX_APP_DATA_DIR: /data/appdata
+      SYMTAB_VAULT_ROOT: /data/vaults
+      SYMTAB_APP_DATA_DIR: /data/appdata
       # Set CORS to the public URL so the Nginx container can call the API
       CORS_ALLOWED_ORIGIN: ${PUBLIC_URL:-http://localhost:3000}
       # Plugin registry (optional — leave blank to disable marketplace)
-      FLUX_PLUGIN_REGISTRY_URL: ${FLUX_PLUGIN_REGISTRY_URL:-}
-      FLUX_PLUGIN_REGISTRY_SIGNATURE_URL: ${FLUX_PLUGIN_REGISTRY_SIGNATURE_URL:-}
-      FLUX_PLUGIN_REGISTRY_PUBLIC_KEY: ${FLUX_PLUGIN_REGISTRY_PUBLIC_KEY:-}
+      SYMTAB_PLUGIN_REGISTRY_URL: ${SYMTAB_PLUGIN_REGISTRY_URL:-}
+      SYMTAB_PLUGIN_REGISTRY_SIGNATURE_URL: ${SYMTAB_PLUGIN_REGISTRY_SIGNATURE_URL:-}
+      SYMTAB_PLUGIN_REGISTRY_PUBLIC_KEY: ${SYMTAB_PLUGIN_REGISTRY_PUBLIC_KEY:-}
     volumes:
-      - flux-vaults:/data/vaults
-      - flux-appdata:/data/appdata
+      - symtab-vaults:/data/vaults
+      - symtab-appdata:/data/appdata
     networks:
-      - flux-internal
+      - symtab-internal
     # Not exposed to the host directly — Nginx proxies /api/* to it
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:8080/health"]
@@ -49,18 +49,18 @@ services:
       retries: 5
 
   # ── React/Vite web frontend served by Nginx ────────────────────────────────
-  flux-web:
+  symtab-web:
     build:
       context: .
       dockerfile: Dockerfile.web
-    container_name: flux-web
+    container_name: symtab-web
     restart: unless-stopped
     ports:
       - "${WEB_PORT:-3000}:80"
     networks:
-      - flux-internal
+      - symtab-internal
     depends_on:
-      flux-server:
+      symtab-server:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:80/"]
@@ -71,12 +71,12 @@ services:
 
 # ── Named volumes ─────────────────────────────────────────────────────────────
 volumes:
-  flux-vaults:
+  symtab-vaults:
     driver: local
-  flux-appdata:
+  symtab-appdata:
     driver: local
 
 # ── Internal bridge network ────────────────────────────────────────────────────
 networks:
-  flux-internal:
+  symtab-internal:
     driver: bridge

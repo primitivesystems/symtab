@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { FileEntry } from "@flux/bridge-contract";
+import type { FileEntry } from "@symtab/bridge-contract";
 import {
   Archive,
   ChevronRight,
@@ -18,18 +18,18 @@ import {
   ContextMenuContent,
   ContextMenuSeparator,
   ContextMenuTrigger,
-} from "@flux/shared-ui/components/ui/context-menu";
+} from "@symtab/shared-ui/components/ui/context-menu";
 import {
   Dialog,
   DialogDescription,
   DialogContent,
   DialogTitle,
-} from "@flux/shared-ui/components/ui/dialog";
+} from "@symtab/shared-ui/components/ui/dialog";
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
-} from "@flux/shared-ui/components/ui/hover-card";
+} from "@symtab/shared-ui/components/ui/hover-card";
 import ReadingView from "../editor/reading-view";
 import { splitFrontmatter } from "../editor/frontmatter";
 import type { DemoDocument } from "../editor/markdown-editor";
@@ -302,7 +302,7 @@ export function VaultExplorer({
         ref={entry.path === activePath ? activeRef : entry.path === revealPath ? revealRef : undefined}
         type="button"
         role="treeitem"
-        data-flux-drop-folder={directory ? entry.path : undefined}
+        data-symtab-drop-folder={directory ? entry.path : undefined}
         aria-expanded={directory ? expanded : undefined}
         aria-selected={entry.path === activePath}
         aria-label={`${presentation.label}, ${metadata}`}
@@ -331,7 +331,7 @@ export function VaultExplorer({
         onDragStart={(event) => {
           dragSourceRef.current = entry.path;
           event.dataTransfer.effectAllowed = "move";
-          event.dataTransfer.setData("application/x-flux-path", entry.path);
+          event.dataTransfer.setData("application/x-symtab-path", entry.path);
           event.dataTransfer.setData("text/plain", entry.path);
         }}
         onPointerEnter={(event) => {
@@ -345,7 +345,7 @@ export function VaultExplorer({
           if (!directory) return;
           const source =
             dragSourceRef.current ??
-            event.dataTransfer.getData("application/x-flux-path");
+            event.dataTransfer.getData("application/x-symtab-path");
           if (!source || !canMoveTo(source, entry.path)) return;
           event.preventDefault();
           event.dataTransfer.dropEffect = "move";
@@ -355,7 +355,7 @@ export function VaultExplorer({
           if (!directory) return;
           const source =
             dragSourceRef.current ??
-            event.dataTransfer.getData("application/x-flux-path");
+            event.dataTransfer.getData("application/x-symtab-path");
           if (!source || !canMoveTo(source, entry.path)) return;
           event.preventDefault();
           event.stopPropagation();
@@ -435,7 +435,7 @@ export function VaultExplorer({
                       Loading preview…
                     </div>
                   ) : preview?.content?.trim() ? (
-                    <div className="[&_.flux-reading-view]:max-w-none [&_.flux-reading-view]:px-5 [&_.flux-reading-view]:pb-8 [&_.flux-reading-view]:pt-4 [&_.flux-reading-view]:text-sm">
+                    <div className="[&_.symtab-reading-view]:max-w-none [&_.symtab-reading-view]:px-5 [&_.symtab-reading-view]:pb-8 [&_.symtab-reading-view]:pt-4 [&_.symtab-reading-view]:text-sm">
                       <ReadingView
                         value={splitFrontmatter(preview.content).body}
                         documents={documents}
@@ -583,14 +583,14 @@ export function VaultExplorer({
         </button>
       </div>
       <div
-        data-flux-drop-folder=""
-        className={`flux-editor-scroll flux-sidebar-scroll min-h-0 min-w-0 flex-1 overflow-x-clip overflow-y-auto p-1.5 ${dropTarget === "" ? "bg-primary/5 ring-1 ring-inset ring-primary/40" : ""}`}
+        data-symtab-drop-folder=""
+        className={`symtab-editor-scroll symtab-sidebar-scroll min-h-0 min-w-0 flex-1 overflow-x-clip overflow-y-auto p-1.5 ${dropTarget === "" ? "bg-primary/5 ring-1 ring-inset ring-primary/40" : ""}`}
         role="tree"
         aria-label="Files"
         onDragOver={(event) => {
           const source =
             dragSourceRef.current ??
-            event.dataTransfer.getData("application/x-flux-path");
+            event.dataTransfer.getData("application/x-symtab-path");
           if (!source || !canMoveTo(source, "")) return;
           event.preventDefault();
           event.dataTransfer.dropEffect = "move";
@@ -599,7 +599,7 @@ export function VaultExplorer({
         onDrop={(event) => {
           const source =
             dragSourceRef.current ??
-            event.dataTransfer.getData("application/x-flux-path");
+            event.dataTransfer.getData("application/x-symtab-path");
           if (!source || !canMoveTo(source, "")) return;
           event.preventDefault();
           const name = source.slice(source.lastIndexOf("/") + 1);

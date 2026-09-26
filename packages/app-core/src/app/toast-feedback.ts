@@ -1,4 +1,4 @@
-import { toast } from "@flux/shared-ui/components/sonner";
+import { toast } from "@symtab/shared-ui/components/sonner";
 import { errorMessage } from "./helpers";
 
 export interface AsyncFeedback {

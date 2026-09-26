@@ -12,7 +12,7 @@ Archived notes remain ordinary vault files and can still participate in indexing
 
 ## Trash
 
-Deleting an item moves it into protected `.flux/trash/` storage with its original path and deletion time. It is removed from the normal file tree but remains recoverable.
+Deleting an item moves it into protected `.symtab/trash/` storage with its original path and deletion time. It is removed from the normal file tree but remains recoverable.
 
 Open Explorer’s `…` menu and select **Open Trash…**. In Trash you can:
 

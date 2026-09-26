@@ -15,11 +15,11 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/flux-pkm/server/internal/domain"
-	"github.com/flux-pkm/server/internal/files"
-	"github.com/flux-pkm/server/internal/index"
-	"github.com/flux-pkm/server/internal/runtimecoord"
-	watcherRuntime "github.com/flux-pkm/server/internal/watcher"
+	"github.com/symtab-pkm/server/internal/domain"
+	"github.com/symtab-pkm/server/internal/files"
+	"github.com/symtab-pkm/server/internal/index"
+	"github.com/symtab-pkm/server/internal/runtimecoord"
+	watcherRuntime "github.com/symtab-pkm/server/internal/watcher"
 	"github.com/google/uuid"
 )
 
@@ -241,7 +241,7 @@ func (m *Manager) Available() ([]domain.VaultLocation, error) {
 			continue
 		}
 		location := domain.VaultLocation{Name: entry.Name(), Path: filepath.Join(root, entry.Name())}
-		content, readErr := os.ReadFile(filepath.Join(location.Path, ".flux", "vault.json"))
+		content, readErr := os.ReadFile(filepath.Join(location.Path, ".symtab", "vault.json"))
 		if readErr == nil {
 			var existing identity
 			if json.Unmarshal(content, &existing) == nil && existing.VaultFormatVersion == 1 {
@@ -273,11 +273,11 @@ func (m *Manager) Open(requestedPath string) (*Context, error) {
 		}
 	}
 
-	fluxDirectory := filepath.Join(root, ".flux")
-	if err := os.MkdirAll(fluxDirectory, 0o700); err != nil {
+	symtabDirectory := filepath.Join(root, ".symtab")
+	if err := os.MkdirAll(symtabDirectory, 0o700); err != nil {
 		return nil, err
 	}
-	lease, err := runtimecoord.Acquire(filepath.Join(fluxDirectory, "runtime.lock"))
+	lease, err := runtimecoord.Acquire(filepath.Join(symtabDirectory, "runtime.lock"))
 	if errors.Is(err, runtimecoord.ErrLocked) {
 		return nil, ErrVaultInUse
 	}
@@ -290,7 +290,7 @@ func (m *Manager) Open(requestedPath string) (*Context, error) {
 			_ = lease.Close()
 		}
 	}()
-	vaultIdentity, err := loadOrCreateIdentity(filepath.Join(fluxDirectory, "vault.json"))
+	vaultIdentity, err := loadOrCreateIdentity(filepath.Join(symtabDirectory, "vault.json"))
 	if err != nil {
 		return nil, err
 	}
@@ -302,7 +302,7 @@ func (m *Manager) Open(requestedPath string) (*Context, error) {
 	if _, purgeErr := fileService.PurgeTrash(30*24*time.Hour, time.Now().UTC()); purgeErr != nil {
 		state = domain.VaultStateDegraded
 	}
-	indexStore, indexErr := index.Open(filepath.Join(fluxDirectory, "index.db"))
+	indexStore, indexErr := index.Open(filepath.Join(symtabDirectory, "index.db"))
 	if indexErr != nil {
 		state = domain.VaultStateDegraded
 	}
@@ -381,7 +381,7 @@ func (m *Manager) Create(requestedPath string) (*Context, error) {
 	if nestedInVault(absolute) {
 		return nil, ErrNestedVault
 	}
-	if _, err := os.Stat(filepath.Join(absolute, ".flux", "vault.json")); err == nil {
+	if _, err := os.Stat(filepath.Join(absolute, ".symtab", "vault.json")); err == nil {
 		return nil, os.ErrExist
 	} else if !errors.Is(err, os.ErrNotExist) {
 		return nil, err
@@ -394,7 +394,7 @@ func (m *Manager) Create(requestedPath string) (*Context, error) {
 
 func nestedInVault(root string) bool {
 	for current := filepath.Dir(root); ; current = filepath.Dir(current) {
-		if _, err := os.Stat(filepath.Join(current, ".flux", "vault.json")); err == nil {
+		if _, err := os.Stat(filepath.Join(current, ".symtab", "vault.json")); err == nil {
 			return true
 		}
 		parent := filepath.Dir(current)

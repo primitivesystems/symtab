@@ -2,15 +2,15 @@
 
 import type {
   CapabilityDefinitions,
-  FluxPlugin,
+  SymtabPlugin,
   PluginCapability,
   PluginContext,
-} from "@flux/plugin-sdk";
+} from "@symtab/plugin-sdk";
 import { loadPlugin } from "./sandbox";
 import type { HostMessage, HostRequest, WorkerMessage } from "./protocol";
 
 interface ActivePlugin {
-  instance: FluxPlugin;
+  instance: SymtabPlugin;
   listeners: Map<string, Set<(payload: unknown) => void | Promise<void>>>;
   abort: AbortController;
 }

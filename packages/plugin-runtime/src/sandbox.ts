@@ -1,5 +1,5 @@
 import "ses";
-import type { FluxPlugin } from "@flux/plugin-sdk";
+import type { SymtabPlugin } from "@symtab/plugin-sdk";
 
 let locked = false;
 
@@ -9,14 +9,14 @@ function lockRealm(): void {
   locked = true;
 }
 
-function isPlugin(value: unknown): value is FluxPlugin {
-  return !!value && typeof value === "object" && typeof (value as FluxPlugin).activate === "function";
+function isPlugin(value: unknown): value is SymtabPlugin {
+  return !!value && typeof value === "object" && typeof (value as SymtabPlugin).activate === "function";
 }
 
 /** Loads a self-contained registration bundle in its own hardened JavaScript compartment. */
-export async function loadPlugin(source: string, pluginId: string): Promise<FluxPlugin> {
+export async function loadPlugin(source: string, pluginId: string): Promise<SymtabPlugin> {
   lockRealm();
-  let plugin: FluxPlugin | undefined;
+  let plugin: SymtabPlugin | undefined;
   const pluginConsole = harden({
     debug: console.debug.bind(console),
     error: console.error.bind(console),
@@ -30,9 +30,9 @@ export async function loadPlugin(source: string, pluginId: string): Promise<Flux
     plugin = candidate;
   });
   const compartment = new Compartment(
-    { __fluxRegisterPlugin: register, console: pluginConsole },
+    { __symtabRegisterPlugin: register, console: pluginConsole },
     {},
-    { name: `flux-plugin:${pluginId}` }
+    { name: `symtab-plugin:${pluginId}` }
   );
   try {
     compartment.evaluate(source);

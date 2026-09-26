@@ -14,10 +14,10 @@ afterEach(() => {
 });
 
 test("recognizes a linked executable as the CLI entrypoint", () => {
-  const root = mkdtempSync(join(tmpdir(), "flux-plugin-cli-"));
+  const root = mkdtempSync(join(tmpdir(), "symtab-plugin-cli-"));
   roots.push(root);
   const target = join(root, "cli.js");
-  const link = join(root, "flux-plugin");
+  const link = join(root, "symtab-plugin");
   writeFileSync(target, "#!/usr/bin/env node\n");
   symlinkSync(target, link);
 
@@ -25,5 +25,5 @@ test("recognizes a linked executable as the CLI entrypoint", () => {
 });
 
 test("uses explicit app data for the daemon descriptor", () => {
-  expect(daemonDescriptorPath("/tmp/flux-test")).toBe("/tmp/flux-test/runtime/daemon.json");
+  expect(daemonDescriptorPath("/tmp/symtab-test")).toBe("/tmp/symtab-test/runtime/daemon.json");
 });

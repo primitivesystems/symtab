@@ -6,7 +6,7 @@ import {
   DialogDescription,
   DialogContent,
   DialogTitle,
-} from "@flux/shared-ui/components/ui/dialog";
+} from "@symtab/shared-ui/components/ui/dialog";
 import type { BookmarkItem } from "./store";
 
 export interface AddBookmarkDialogProps {

@@ -11,10 +11,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/flux-pkm/server/internal/domain"
-	"github.com/flux-pkm/server/internal/files"
-	gitadapter "github.com/flux-pkm/server/internal/git"
-	"github.com/flux-pkm/server/internal/vault"
+	"github.com/symtab-pkm/server/internal/domain"
+	"github.com/symtab-pkm/server/internal/files"
+	gitadapter "github.com/symtab-pkm/server/internal/git"
+	"github.com/symtab-pkm/server/internal/vault"
 )
 
 var Version = "0.0.1"
@@ -308,7 +308,7 @@ func (s *Service) VaultConfig(vaultID string) (json.RawMessage, error) {
 	if err != nil {
 		return nil, err
 	}
-	content, err := os.ReadFile(filepath.Join(context.RootPath(), ".flux", "config.json"))
+	content, err := os.ReadFile(filepath.Join(context.RootPath(), ".symtab", "config.json"))
 	if errors.Is(err, os.ErrNotExist) {
 		return json.RawMessage(`{}`), nil
 	}
@@ -316,7 +316,7 @@ func (s *Service) VaultConfig(vaultID string) (json.RawMessage, error) {
 		return nil, err
 	}
 	if !json.Valid(content) {
-		return nil, errors.New("invalid .flux/config.json")
+		return nil, errors.New("invalid .symtab/config.json")
 	}
 	return content, nil
 }
@@ -363,7 +363,7 @@ func (s *Service) SaveVaultConfig(vaultID string, content json.RawMessage) error
 		return err
 	}
 	return context.Mutate(func() error {
-		directory := filepath.Join(context.RootPath(), ".flux")
+		directory := filepath.Join(context.RootPath(), ".symtab")
 		if err := os.MkdirAll(directory, 0o700); err != nil {
 			return err
 		}

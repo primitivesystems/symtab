@@ -21,7 +21,7 @@ import {
   MenuTrigger,
 } from "./ui/menu";
 
-export interface FluxTabProps extends Omit<HTMLMotionProps<"div">, "title"> {
+export interface SymtabTabProps extends Omit<HTMLMotionProps<"div">, "title"> {
   active?: boolean;
   closeable?: boolean;
   pinned?: boolean;
@@ -32,28 +32,28 @@ export interface FluxTabProps extends Omit<HTMLMotionProps<"div">, "title"> {
   children: ReactNode;
 }
 
-export type FluxTabAddButtonProps = ButtonHTMLAttributes<HTMLButtonElement>;
+export type SymtabTabAddButtonProps = ButtonHTMLAttributes<HTMLButtonElement>;
 
-export interface FluxTabBarProps extends HTMLAttributes<HTMLDivElement> {
+export interface SymtabTabBarProps extends HTMLAttributes<HTMLDivElement> {
   inlineAction?: ReactNode;
   actions?: ReactNode;
 }
 
-export interface FluxTabMenuEntry {
+export interface SymtabTabMenuEntry {
   id: string | number;
   label: string;
   active?: boolean;
 }
 
-export interface FluxTabMenuProps {
-  tabs: FluxTabMenuEntry[];
+export interface SymtabTabMenuProps {
+  tabs: SymtabTabMenuEntry[];
   stacked: boolean;
   onStackedChange: (stacked: boolean) => void;
   onCloseAll: () => void;
   onSelect: (id: string | number) => void;
 }
 
-export type FluxStackedTabProps = FluxTabProps;
+export type SymtabStackedTabProps = SymtabTabProps;
 
 const TAB_LAYOUT_SPRING = {
   type: "spring" as const,
@@ -61,7 +61,7 @@ const TAB_LAYOUT_SPRING = {
   bounce: 0,
 };
 
-export function FluxTab({
+export function SymtabTab({
   active = false,
   closeable = false,
   pinned = false,
@@ -73,7 +73,7 @@ export function FluxTab({
   className,
   onKeyDown,
   ...props
-}: FluxTabProps) {
+}: SymtabTabProps) {
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     onKeyDown?.(event);
     if (event.defaultPrevented) return;
@@ -111,7 +111,7 @@ export function FluxTab({
           data-active={active}
           data-pinned={pinned}
           className={cn(
-            "flux-tab flux-window-no-drag group/tab relative flex h-9 w-52 min-w-2 shrink items-center px-1 text-xs outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring/70",
+            "symtab-tab symtab-window-no-drag group/tab relative flex h-9 w-52 min-w-2 shrink items-center px-1 text-xs outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring/70",
             active
               ? "z-10 min-w-12 max-w-52 text-foreground"
               : "max-w-52 text-muted-foreground hover:text-foreground",
@@ -158,7 +158,7 @@ export function FluxTab({
         >
           <div
             className={cn(
-              "flux-tab-content relative flex h-8 min-w-0 flex-1 items-center gap-1 rounded-md px-2",
+              "symtab-tab-content relative flex h-8 min-w-0 flex-1 items-center gap-1 rounded-md px-2",
               !active && "group-hover/tab:bg-[var(--tab-hover)]",
               active &&
                 "mx-0.5 bg-[var(--tab-active)] font-medium ring-1 ring-[var(--surface-ring)]",
@@ -191,7 +191,7 @@ export function FluxTab({
           {!active ? (
             <span
               aria-hidden="true"
-              className="flux-tab-separator pointer-events-none absolute top-1/2 -right-0.5 h-4 w-px -translate-y-1/2 bg-[var(--layout-separator)]"
+              className="symtab-tab-separator pointer-events-none absolute top-1/2 -right-0.5 h-4 w-px -translate-y-1/2 bg-[var(--layout-separator)]"
             />
           ) : null}
           </m.div>
@@ -204,7 +204,7 @@ export function FluxTab({
   );
 }
 
-export function FluxStackedTab({
+export function SymtabStackedTab({
   active = false,
   closeable = false,
   pinned = false,
@@ -214,7 +214,7 @@ export function FluxStackedTab({
   children,
   className,
   ...props
-}: FluxStackedTabProps) {
+}: SymtabStackedTabProps) {
   return (
     <m.div
       role="tab"
@@ -222,7 +222,7 @@ export function FluxStackedTab({
       aria-selected={active}
       data-pinned={pinned}
       className={cn(
-        "flux-window-no-drag group/stacked-tab relative flex h-full w-8 shrink-0 flex-col items-center gap-1 border-r bg-sidebar py-1 text-xs text-muted-foreground outline-none [border-color:var(--layout-separator)] focus-visible:bg-accent/50",
+        "symtab-window-no-drag group/stacked-tab relative flex h-full w-8 shrink-0 flex-col items-center gap-1 border-r bg-sidebar py-1 text-xs text-muted-foreground outline-none [border-color:var(--layout-separator)] focus-visible:bg-accent/50",
         active && "bg-[var(--tab-active)] text-foreground",
         className
       )}
@@ -252,27 +252,27 @@ export function FluxStackedTab({
   );
 }
 
-export function FluxTabBar({
+export function SymtabTabBar({
   children,
   inlineAction,
   actions,
   className,
   ...props
-}: FluxTabBarProps) {
+}: SymtabTabBarProps) {
   return (
     <div
       role="tablist"
       className={cn(
-        "flux-window-drag flex h-full min-w-0 items-center overflow-hidden px-2 [&:has(.flux-tab-strip:empty)>.flux-tab-inline-action]:ml-0",
+        "symtab-window-drag flex h-full min-w-0 items-center overflow-hidden px-2 [&:has(.symtab-tab-strip:empty)>.symtab-tab-inline-action]:ml-0",
         className
       )}
       {...props}
     >
-      <div className="flux-tab-strip flex h-full w-max min-w-0 max-w-full shrink items-center overflow-visible">
+      <div className="symtab-tab-strip flex h-full w-max min-w-0 max-w-full shrink items-center overflow-visible">
         {children}
       </div>
       {inlineAction ? (
-        <div className="flux-tab-inline-action ml-1 flex shrink-0 items-center">{inlineAction}</div>
+        <div className="symtab-tab-inline-action ml-1 flex shrink-0 items-center">{inlineAction}</div>
       ) : null}
       <div className="min-w-0 flex-1" />
       {actions ? <div className="ml-1 flex shrink-0 items-center">{actions}</div> : null}
@@ -280,18 +280,18 @@ export function FluxTabBar({
   );
 }
 
-export function FluxTabAddButton({
+export function SymtabTabAddButton({
   className,
   "aria-label": ariaLabel = "New tab",
   ...props
-}: FluxTabAddButtonProps) {
+}: SymtabTabAddButtonProps) {
   return (
     <button
       type="button"
       aria-label={ariaLabel}
       title={ariaLabel}
       className={cn(
-        "flux-window-no-drag grid size-8 shrink-0 place-items-center rounded-md text-muted-foreground outline-none hover:bg-accent/60 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/70",
+        "symtab-window-no-drag grid size-8 shrink-0 place-items-center rounded-md text-muted-foreground outline-none hover:bg-accent/60 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/70",
         className
       )}
       {...props}
@@ -301,13 +301,13 @@ export function FluxTabAddButton({
   );
 }
 
-export function FluxTabMenu({
+export function SymtabTabMenu({
   tabs,
   stacked,
   onStackedChange,
   onCloseAll,
   onSelect,
-}: FluxTabMenuProps) {
+}: SymtabTabMenuProps) {
   return (
     <Menu>
       <MenuTrigger
@@ -315,7 +315,7 @@ export function FluxTabMenu({
           type="button"
           aria-label="Tab options"
           title="Tab options"
-          className="flux-window-no-drag grid size-7 shrink-0 place-items-center rounded-md text-muted-foreground outline-none hover:bg-accent/60 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/70 data-popup-open:bg-accent/60 data-popup-open:text-foreground"
+          className="symtab-window-no-drag grid size-7 shrink-0 place-items-center rounded-md text-muted-foreground outline-none hover:bg-accent/60 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/70 data-popup-open:bg-accent/60 data-popup-open:text-foreground"
         />}
       >
         <ChevronDown className="size-4" />

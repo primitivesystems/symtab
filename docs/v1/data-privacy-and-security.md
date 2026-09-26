@@ -4,7 +4,7 @@
 
 Vault notes and attachments are ordinary files in the folder you selected. Symtab does not place them in a proprietary document database. Back up that folder with a tool you trust.
 
-Each vault contains a protected `.flux/` directory used for:
+Each vault contains a protected `.symtab/` directory used for:
 
 - `vault.json` — stable vault identity;
 - `config.json` — per-vault settings, including journal configuration;
@@ -12,7 +12,7 @@ Each vault contains a protected `.flux/` directory used for:
 - `trash/` — recoverable deleted items;
 - runtime coordination data.
 
-Do not edit `.flux/` while Symtab is running. The explorer and index intentionally hide it. Deleting `index.db` discards derived search data, not note contents, but should be reserved for troubleshooting with Symtab closed.
+Do not edit `.symtab/` while Symtab is running. The explorer and index intentionally hide it. Deleting `index.db` discards derived search data, not note contents, but should be reserved for troubleshooting with Symtab closed.
 
 ## App data
 

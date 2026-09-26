@@ -20,6 +20,6 @@ Symtab creates a new folder with the workspace name inside the selected parent f
 
 ### Open an existing vault
 
-Select **Open existing vault**, then choose the folder containing your notes. Symtab initializes its protected `.flux` metadata directory without changing the content of your existing notes.
+Select **Open existing vault**, then choose the folder containing your notes. Symtab initializes its protected `.symtab` metadata directory without changing the content of your existing notes.
 
 Large vaults may show indexing progress after opening. Editing remains available while the index is built.

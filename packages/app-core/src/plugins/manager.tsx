@@ -1,13 +1,13 @@
 import type { ChangeEvent, RefObject } from "react";
 import type {
-  FluxClient,
+  SymtabClient,
   MarketplacePlugin,
   PluginCatalogEntry,
   VaultInfo,
   VaultPlugin,
-} from "@flux/bridge-contract";
-import { toast } from "@flux/shared-ui/components/sonner";
-import type { VaultPluginHost } from "@flux/plugin-runtime";
+} from "@symtab/bridge-contract";
+import { toast } from "@symtab/shared-ui/components/sonner";
+import type { VaultPluginHost } from "@symtab/plugin-runtime";
 import type { PluginViewLocation } from "./surface";
 
 interface PluginManagerProps {
@@ -21,7 +21,7 @@ interface PluginManagerProps {
   pluginSettings: Record<string, Record<string, unknown>>;
   vault: VaultInfo | null;
   vaultPlugins: VaultPlugin[];
-  client: FluxClient | null;
+  client: SymtabClient | null;
   pluginHostRef: RefObject<VaultPluginHost | null>;
   onClose: () => void;
   setPluginSection: (section: "marketplace" | "installed") => void;
@@ -130,7 +130,7 @@ export function PluginManager({ open, client, onClose, ...props }: PluginManager
                 {pluginBusy ? "Working…" : "Install from file…"}
                 <input
                   type="file"
-                  accept=".flux-plugin,.zip"
+                  accept=".symtab-plugin,.zip"
                   disabled={pluginBusy}
                   onChange={(event) => void installPlugin(event)}
                   className="sr-only"
@@ -153,7 +153,7 @@ export function PluginManager({ open, client, onClose, ...props }: PluginManager
                 />
               </label>
             </div>
-            <div className="flux-editor-scroll min-h-0 flex-1 space-y-2 overflow-y-auto p-4">
+            <div className="symtab-editor-scroll min-h-0 flex-1 space-y-2 overflow-y-auto p-4">
               {pluginSection === "marketplace" ? (
                 filteredMarketplacePlugins.length ? (
                   filteredMarketplacePlugins.map((plugin) => {
@@ -474,7 +474,7 @@ export function PluginManager({ open, client, onClose, ...props }: PluginManager
                   <div>
                     <p className="text-sm font-medium">No plugins installed</p>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      Install a verified .flux-plugin package to begin.
+                      Install a verified .symtab-plugin package to begin.
                     </p>
                   </div>
                 </div>

@@ -10,27 +10,27 @@ package watcher
 #include <stdint.h>
 #include <stdlib.h>
 
-extern void fluxFSEvent(uintptr_t handle, char *path, FSEventStreamEventFlags flags);
+extern void symtabFSEvent(uintptr_t handle, char *path, FSEventStreamEventFlags flags);
 
 typedef struct {
     FSEventStreamRef stream;
     dispatch_queue_t queue;
-} FluxFSEvents;
+} SymtabFSEvents;
 
-static void fluxDrainQueue(void *unused) { (void)unused; }
+static void symtabDrainQueue(void *unused) { (void)unused; }
 
-static void fluxCallback(ConstFSEventStreamRef streamRef, void *clientCallBackInfo,
+static void symtabCallback(ConstFSEventStreamRef streamRef, void *clientCallBackInfo,
                          size_t count, void *eventPaths,
                          const FSEventStreamEventFlags flags[],
                          const FSEventStreamEventId ids[]) {
     char **paths = eventPaths;
     uintptr_t handle = (uintptr_t)clientCallBackInfo;
     for (size_t i = 0; i < count; i++) {
-        fluxFSEvent(handle, paths[i], flags[i]);
+        symtabFSEvent(handle, paths[i], flags[i]);
     }
 }
 
-static FluxFSEvents *fluxStartFSEvents(const char *path, uintptr_t handle) {
+static SymtabFSEvents *symtabStartFSEvents(const char *path, uintptr_t handle) {
     CFStringRef pathString = CFStringCreateWithCString(NULL, path, kCFStringEncodingUTF8);
     if (pathString == NULL) return NULL;
     const void *values[] = { pathString };
@@ -40,13 +40,13 @@ static FluxFSEvents *fluxStartFSEvents(const char *path, uintptr_t handle) {
 
     FSEventStreamContext context = {0, (void *)handle, NULL, NULL, NULL};
     FSEventStreamRef stream = FSEventStreamCreate(
-        NULL, fluxCallback, &context, paths, kFSEventStreamEventIdSinceNow, 0.15,
+        NULL, symtabCallback, &context, paths, kFSEventStreamEventIdSinceNow, 0.15,
         kFSEventStreamCreateFlagFileEvents | kFSEventStreamCreateFlagNoDefer |
         kFSEventStreamCreateFlagWatchRoot
     );
     CFRelease(paths);
     if (stream == NULL) return NULL;
-    dispatch_queue_t queue = dispatch_queue_create("app.flux.fsevents", DISPATCH_QUEUE_SERIAL);
+    dispatch_queue_t queue = dispatch_queue_create("app.symtab.fsevents", DISPATCH_QUEUE_SERIAL);
     if (queue == NULL) {
         FSEventStreamInvalidate(stream);
         FSEventStreamRelease(stream);
@@ -59,7 +59,7 @@ static FluxFSEvents *fluxStartFSEvents(const char *path, uintptr_t handle) {
         dispatch_release(queue);
         return NULL;
     }
-    FluxFSEvents *watcher = calloc(1, sizeof(FluxFSEvents));
+    SymtabFSEvents *watcher = calloc(1, sizeof(SymtabFSEvents));
     if (watcher == NULL) {
         FSEventStreamStop(stream);
         FSEventStreamInvalidate(stream);
@@ -72,13 +72,13 @@ static FluxFSEvents *fluxStartFSEvents(const char *path, uintptr_t handle) {
     return watcher;
 }
 
-static void fluxStopFSEvents(FluxFSEvents *watcher) {
+static void symtabStopFSEvents(SymtabFSEvents *watcher) {
     if (watcher == NULL) return;
     FSEventStreamStop(watcher->stream);
     FSEventStreamInvalidate(watcher->stream);
     // FSEvents dispatches asynchronously. Drain its private serial queue before
     // Go deletes the cgo handle referenced by callbacks already in flight.
-    dispatch_sync_f(watcher->queue, NULL, fluxDrainQueue);
+    dispatch_sync_f(watcher->queue, NULL, symtabDrainQueue);
     FSEventStreamRelease(watcher->stream);
     dispatch_release(watcher->queue);
     free(watcher);
@@ -97,7 +97,7 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/flux-pkm/server/internal/files"
+	"github.com/symtab-pkm/server/internal/files"
 )
 
 const debounce = 250 * time.Millisecond
@@ -112,7 +112,7 @@ type Watcher struct {
 	onChange func([]Event)
 	events   chan nativeEvent
 	done     chan struct{}
-	native   *C.FluxFSEvents
+	native   *C.SymtabFSEvents
 	handle   cgo.Handle
 	overflow atomic.Bool
 	close    sync.Once
@@ -130,7 +130,7 @@ func Start(root string, onChange func([]Event)) (*Watcher, error) {
 	}
 	watcher.handle = cgo.NewHandle(watcher)
 	cPath := C.CString(watcher.root)
-	watcher.native = C.fluxStartFSEvents(cPath, C.uintptr_t(watcher.handle))
+	watcher.native = C.symtabStartFSEvents(cPath, C.uintptr_t(watcher.handle))
 	C.free(unsafe.Pointer(cPath))
 	if watcher.native == nil {
 		watcher.handle.Delete()
@@ -144,7 +144,7 @@ func Start(root string, onChange func([]Event)) (*Watcher, error) {
 func (w *Watcher) Close() error {
 	w.close.Do(func() {
 		close(w.done)
-		C.fluxStopFSEvents(w.native)
+		C.symtabStopFSEvents(w.native)
 		w.wait.Wait()
 		w.handle.Delete()
 	})
@@ -223,15 +223,15 @@ func (w *Watcher) run() {
 
 func (w *Watcher) ignored(relative string) bool {
 	base := filepath.Base(relative)
-	if strings.HasPrefix(base, ".flux-write-") || strings.HasPrefix(base, ".flux-rename-") ||
+	if strings.HasPrefix(base, ".symtab-write-") || strings.HasPrefix(base, ".symtab-rename-") ||
 		strings.HasSuffix(base, ".swp") || strings.HasSuffix(base, "~") || base == ".DS_Store" {
 		return true
 	}
 	return files.IsIgnored(filepath.ToSlash(relative))
 }
 
-//export fluxFSEvent
-func fluxFSEvent(handle C.uintptr_t, path *C.char, flags C.FSEventStreamEventFlags) {
+//export symtabFSEvent
+func symtabFSEvent(handle C.uintptr_t, path *C.char, flags C.FSEventStreamEventFlags) {
 	watcher := cgo.Handle(handle).Value().(*Watcher)
 	event := nativeEvent{path: C.GoString(path), flags: flags}
 	select {

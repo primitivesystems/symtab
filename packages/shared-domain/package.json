@@ -1,5 +1,5 @@
 {
-  "name": "@flux/shared-domain",
+  "name": "@symtab/shared-domain",
   "version": "0.0.1",
   "private": true,
   "type": "module",

@@ -1,4 +1,4 @@
-import { toast } from "@flux/shared-ui/components/sonner";
+import { toast } from "@symtab/shared-ui/components/sonner";
 
 export function showRenderError(label: string, error: unknown) {
   const details = error instanceof Error ? (error.stack ?? error.message) : String(error);

@@ -25,6 +25,6 @@ Use the calendar filter to show journals, other dated notes, or a selected tag. 
 
 ## Configure journal paths
 
-Open **Settings → Daily Notes** to change daily and weekly folders, filename formats, templates, the Quick Capture folder, and the IANA time zone. These settings are stored per vault in `.flux/config.json`.
+Open **Settings → Daily Notes** to change daily and weekly folders, filename formats, templates, the Quick Capture folder, and the IANA time zone. These settings are stored per vault in `.symtab/config.json`.
 
 Templates can contain `{{date}}`; weekly templates can also contain `{{week}}`. A configured template must already exist in the vault.

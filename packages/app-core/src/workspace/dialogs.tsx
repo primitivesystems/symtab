@@ -1,11 +1,11 @@
-import type { TrashEntry } from "@flux/bridge-contract";
+import type { TrashEntry } from "@symtab/bridge-contract";
 import type { DailyNoteConfig } from "../daily-notes/config";
 import { dateFromKey, isoWeekKey, localDateKey, noteFileName } from "../daily-notes/config";
 
 export {
   VaultManager,
   type SelectableVault,
-} from "@flux/shared-ui/components/design-system/workbench/chrome/vault-manager";
+} from "@symtab/shared-ui/components/design-system/workbench/chrome/vault-manager";
 
 export function RenameDialog({
   request,
@@ -132,7 +132,7 @@ export function TrashManager({
             <span className="font-mono text-[9px] text-muted-foreground">{entries.length}</span>
           </label>
         </div>
-        <div className="flux-editor-scroll min-h-0 flex-1 overflow-y-auto p-3">
+        <div className="symtab-editor-scroll min-h-0 flex-1 overflow-y-auto p-3">
           {entries.length ? (
             <div className="space-y-1">
               {entries.map((entry) => (

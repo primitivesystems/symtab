@@ -11,7 +11,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/flux-pkm/server/internal/domain"
+	"github.com/symtab-pkm/server/internal/domain"
 )
 
 var (

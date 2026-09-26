@@ -13,7 +13,7 @@ import taskLists from "markdown-it-task-lists";
 import mermaid from "mermaid";
 import "katex/dist/katex.min.css";
 
-import { useTheme } from "@flux/shared-ui/components/theme-provider";
+import { useTheme } from "@symtab/shared-ui/components/theme-provider";
 import { splitFrontmatter } from "./frontmatter";
 import type { DemoDocument } from "./markdown-editor";
 import { calloutSymbols } from "./obsidian-markdown";
@@ -151,7 +151,7 @@ const defaultFence = md.renderer.rules.fence!;
 md.renderer.rules.fence = (tokens, index, options, env, self) => {
   const token = tokens[index];
   if (token.info.trim() === "mermaid") {
-    return `<div class="flux-mermaid" data-source="${encodeURIComponent(token.content)}"></div>`;
+    return `<div class="symtab-mermaid" data-source="${encodeURIComponent(token.content)}"></div>`;
   }
   return defaultFence(tokens, index, options, env, self);
 };
@@ -207,7 +207,7 @@ function ReadingView({
 
     void (async () => {
       const parsed = new DOMParser().parseFromString(sourceHtml, "text/html");
-      const diagrams = parsed.querySelectorAll<HTMLElement>(".flux-mermaid");
+      const diagrams = parsed.querySelectorAll<HTMLElement>(".symtab-mermaid");
       if (!diagrams.length) {
         hydratedCache = { source: sourceHtml, theme: resolvedTheme, html: sourceHtml };
         if (!cancelled) setHtml(sourceHtml);
@@ -229,7 +229,7 @@ function ReadingView({
       for (const [index, diagram] of [...diagrams].entries()) {
         try {
           const source = decodeURIComponent(diagram.dataset.source ?? "");
-          const { svg } = await mermaid.render(`flux-mermaid-${Date.now()}-${index}`, source);
+          const { svg } = await mermaid.render(`symtab-mermaid-${Date.now()}-${index}`, source);
           diagram.innerHTML = svg;
         } catch (error) {
           failures.push(error);
@@ -252,7 +252,7 @@ function ReadingView({
 
   return (
     <article
-      className="flux-reading-view mx-auto max-w-[760px] px-9 pb-24 pt-2"
+      className="symtab-reading-view mx-auto max-w-[760px] px-9 pb-24 pt-2"
       onClick={(event) => {
         const link = (event.target as HTMLElement).closest<HTMLAnchorElement>("a");
         if (link && onNavigate) {

@@ -191,7 +191,7 @@
   background: var(--workbench-scrollbar-thumb-hover);
 }
 
-.flux-print-document {
+.symtab-print-document {
   display: none;
 }
 
@@ -202,11 +202,11 @@
     margin: 0 !important;
   }
 
-  body > :not(.flux-print-document) {
+  body > :not(.symtab-print-document) {
     display: none !important;
   }
 
-  .flux-print-document {
+  .symtab-print-document {
     --background: oklch(1 0 0);
     --foreground: oklch(0.145 0 0);
     --card: oklch(1 0 0);
@@ -218,20 +218,20 @@
     display: block !important;
     position: static;
     box-sizing: border-box;
-    width: calc(100% - (2 * var(--flux-print-margin, 18mm)));
-    margin: var(--flux-print-margin, 18mm);
+    width: calc(100% - (2 * var(--symtab-print-margin, 18mm)));
+    margin: var(--symtab-print-margin, 18mm);
     overflow: visible !important;
     background: white !important;
     color: oklch(0.145 0 0) !important;
-    transform: scale(var(--flux-print-scale, 1));
+    transform: scale(var(--symtab-print-scale, 1));
     transform-origin: top left;
   }
 
-  .flux-print-document button {
+  .symtab-print-document button {
     display: none !important;
   }
 
-  .flux-print-document .flux-reading-view {
+  .symtab-print-document .symtab-reading-view {
     box-sizing: border-box;
     max-width: none;
     padding: 0;
@@ -240,37 +240,37 @@
     line-height: 1.55;
   }
 
-  .flux-print-document .flux-print-title {
+  .symtab-print-document .symtab-print-title {
     margin: 0 0 0.8em;
     font-size: 24pt;
     font-weight: 700;
     line-height: 1.15;
   }
 
-  .flux-print-document :where(h1, h2, h3, h4, h5, h6) {
+  .symtab-print-document :where(h1, h2, h3, h4, h5, h6) {
     margin: 1.4em 0 0.45em;
     font-weight: 650;
     line-height: 1.2;
     break-after: avoid;
   }
 
-  .flux-print-document h1 { font-size: 22pt; }
-  .flux-print-document h2 { font-size: 17pt; }
-  .flux-print-document h3 { font-size: 14pt; }
+  .symtab-print-document h1 { font-size: 22pt; }
+  .symtab-print-document h2 { font-size: 17pt; }
+  .symtab-print-document h3 { font-size: 14pt; }
 
-  .flux-print-document :where(p, ul, ol, pre, blockquote, table) {
+  .symtab-print-document :where(p, ul, ol, pre, blockquote, table) {
     margin: 0.65em 0;
   }
 
-  .flux-print-document :where(p, li) {
+  .symtab-print-document :where(p, li) {
     white-space: pre-wrap;
   }
 
-  .flux-print-document :where(ul, ol) {
+  .symtab-print-document :where(ul, ol) {
     padding-left: 1.5em;
   }
 
-  .flux-print-document pre {
+  .symtab-print-document pre {
     overflow: visible;
     border: 1px solid oklch(0.88 0 0);
     border-radius: 5px;
@@ -279,34 +279,34 @@
     white-space: pre-wrap;
   }
 
-  .flux-print-document :where(code, pre) {
+  .symtab-print-document :where(code, pre) {
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     font-size: 9.5pt;
   }
 
-  .flux-print-document blockquote {
+  .symtab-print-document blockquote {
     border-left: 3px solid oklch(0.72 0 0);
     padding-left: 1em;
     color: oklch(0.35 0 0);
   }
 
-  .flux-print-document table {
+  .symtab-print-document table {
     width: 100%;
     border-collapse: collapse;
   }
 
-  .flux-print-document :where(th, td) {
+  .symtab-print-document :where(th, td) {
     border: 1px solid oklch(0.82 0 0);
     padding: 0.4em 0.55em;
     text-align: left;
   }
 
-  .flux-print-document a {
+  .symtab-print-document a {
     color: inherit;
     text-decoration: underline;
   }
 
-  .flux-print-document :where(pre, blockquote, table, img) {
+  .symtab-print-document :where(pre, blockquote, table, img) {
     break-inside: avoid;
   }
 }

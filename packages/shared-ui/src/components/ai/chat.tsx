@@ -221,14 +221,14 @@ function ChatRuntime({
     <div
       className="flex h-full min-h-0 flex-col"
       onDragOver={(event) => {
-        if (event.dataTransfer.types.some((type) => type === "Files" || type.startsWith("application/x-flux-"))) {
+        if (event.dataTransfer.types.some((type) => type === "Files" || type.startsWith("application/x-symtab-"))) {
           event.preventDefault();
           event.dataTransfer.dropEffect = "copy";
         }
       }}
       onDrop={(event) => {
         const files = Array.from(event.dataTransfer.files);
-        const internal = event.dataTransfer.types.some((type) => type.startsWith("application/x-flux-"));
+        const internal = event.dataTransfer.types.some((type) => type.startsWith("application/x-symtab-"));
         if (!files.length && !internal) return;
         event.preventDefault();
         event.stopPropagation();

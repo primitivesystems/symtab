@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/flux-pkm/server/internal/agent"
+	"github.com/symtab-pkm/server/internal/agent"
 	"github.com/gin-gonic/gin"
 )
 

@@ -31,7 +31,7 @@ func TestDevelopmentManagerOpensAndSwitchesRequestedVaults(t *testing.T) {
 		t.Fatalf("first vault was closed after opening second: %v", err)
 	}
 	for _, root := range []string{firstRoot, secondRoot} {
-		if _, err := os.Stat(filepath.Join(root, ".flux", "vault.json")); err != nil {
+		if _, err := os.Stat(filepath.Join(root, ".symtab", "vault.json")); err != nil {
 			t.Fatalf("vault was not initialized at %s: %v", root, err)
 		}
 	}
@@ -60,14 +60,14 @@ func TestDuplicateIdentityDoesNotReplaceOpenContext(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	identity, err := os.ReadFile(filepath.Join(firstRoot, ".flux", "vault.json"))
+	identity, err := os.ReadFile(filepath.Join(firstRoot, ".symtab", "vault.json"))
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := os.MkdirAll(filepath.Join(secondRoot, ".flux"), 0o700); err != nil {
+	if err := os.MkdirAll(filepath.Join(secondRoot, ".symtab"), 0o700); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(secondRoot, ".flux", "vault.json"), identity, 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(secondRoot, ".symtab", "vault.json"), identity, 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := manager.Open(secondRoot); !errors.Is(err, ErrDuplicateID) {
@@ -266,7 +266,7 @@ func TestCreateInitializesVaultAndRejectsNestedVault(t *testing.T) {
 		t.Fatal("created vault has no identity")
 	}
 	for _, name := range []string{"vault.json", "index.db"} {
-		if _, err := os.Stat(filepath.Join(root, ".flux", name)); err != nil {
+		if _, err := os.Stat(filepath.Join(root, ".symtab", name)); err != nil {
 			t.Fatalf("vault metadata %s was not created: %v", name, err)
 		}
 	}

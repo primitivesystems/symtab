@@ -18,7 +18,7 @@ A cross-platform Personal Knowledge Management (PKM) tool designed to compete wi
 - **Language**: Go
 - **Web Framework**: Gin
 - **ORM**: GORM
-- **Database**: Per-vault SQLite (derived state under `.flux/index.db`)
+- **Database**: Per-vault SQLite (derived state under `.symtab/index.db`)
 - **Deployment**: Docker
 
 ## Monorepo Architecture
@@ -26,7 +26,7 @@ A cross-platform Personal Knowledge Management (PKM) tool designed to compete wi
 Symtab uses a single monorepo with one shared product UI and multiple thin runtime shells:
 
 ```
-flux/
+symtab/
 ├── apps/
 │   ├── desktop/           # Electron shell, preload, updater, packaging
 │   ├── web/               # Vite/PWA shell and HTTP bridge
@@ -72,10 +72,10 @@ Symtab ships as:
 
 ### Installation
 
-1. **Navigate to the flux directory**
+1. **Navigate to the symtab directory**
 
    ```bash
-   cd flux
+   cd symtab
    ```
 
 2. **Install dependencies**
@@ -95,14 +95,14 @@ Symtab ships as:
 #### Desktop Application (Development)
 
 ```bash
-# From flux root (the default development target)
+# From symtab root (the default development target)
 bun run dev
 ```
 
 #### Web Application (Development)
 
 ```bash
-# From flux root
+# From symtab root
 bun run dev:web
 ```
 
@@ -111,8 +111,8 @@ The web app will be available at `http://localhost:3000`
 #### Backend Server (Local)
 
 ```bash
-# Optionally select the vault whose derived index is stored in <vault>/.flux/index.db.
-export FLUX_VAULT_PATH="/path/to/your/vault"
+# Optionally select the vault whose derived index is stored in <vault>/.symtab/index.db.
+export SYMTAB_VAULT_PATH="/path/to/your/vault"
 bun run dev:server
 ```
 
@@ -134,7 +134,7 @@ The backend will be available at `http://localhost:8080`
 #### Desktop Application
 
 ```bash
-bun run build --filter=@flux/desktop
+bun run build --filter=@symtab/desktop
 ```
 
 The desktop build compiles the Go backend and ships it as one app-scoped sidecar process.
@@ -142,7 +142,7 @@ The desktop build compiles the Go backend and ships it as one app-scoped sidecar
 #### Web Application
 
 ```bash
-bun run build --filter=@flux/web
+bun run build --filter=@symtab/web
 ```
 
 ## Development

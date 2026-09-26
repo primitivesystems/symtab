@@ -1,5 +1,5 @@
 import { expect, mock, test } from "bun:test";
-import { WebFluxClient } from "../src";
+import { WebSymtabClient } from "../src";
 
 test("uses canonical status route", async () => {
   const originalFetch = globalThis.fetch;
@@ -14,7 +14,7 @@ test("uses canonical status route", async () => {
   globalThis.fetch = fetchMock as typeof fetch;
 
   try {
-    const client = new WebFluxClient();
+    const client = new WebSymtabClient();
     await client.getStatus();
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(fetchMock).toHaveBeenCalledWith("/api/v1/status", {
@@ -31,7 +31,7 @@ test("handles confirmed permanent deletion with an empty response", async () => 
   globalThis.fetch = fetchMock as typeof fetch;
 
   try {
-    const client = new WebFluxClient();
+    const client = new WebSymtabClient();
     await expect(client.permanentlyDelete("vault/id", "trash/id")).resolves.toBeUndefined();
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/v1/vaults/vault%2Fid/trash/trash%2Fid?confirm=true",
@@ -47,7 +47,7 @@ test("handles confirmed permanent deletion with an empty response", async () => 
 
 test("reads watcher revision", async () => {
   const fetchMock = mock(async () => Response.json({ revision: 7 }));
-  const client = new WebFluxClient("/api/v1", fetchMock as typeof fetch);
+  const client = new WebSymtabClient("/api/v1", fetchMock as typeof fetch);
 
   await expect(client.getVaultRevision("vault/id")).resolves.toBe(7);
   expect(fetchMock).toHaveBeenCalledWith("/api/v1/vaults/vault%2Fid/revision", {
@@ -58,7 +58,7 @@ test("reads watcher revision", async () => {
 test("reads raw binary file", async () => {
   const bytes = new Uint8Array([0x25, 0x50, 0x44, 0x46]);
   const fetchMock = mock(async () => new Response(bytes));
-  const client = new WebFluxClient("/api/v1", fetchMock as typeof fetch);
+  const client = new WebSymtabClient("/api/v1", fetchMock as typeof fetch);
 
   const result = new Uint8Array(await client.readBinaryFile("vault/id", "folder/test.pdf"));
   expect(result).toEqual(bytes);
@@ -77,7 +77,7 @@ test("loads and saves durable workspace state", async () => {
       updatedAt: "2026-07-21T00:00:00Z",
     });
   });
-  const client = new WebFluxClient("/api/v1", fetchMock as typeof fetch);
+  const client = new WebSymtabClient("/api/v1", fetchMock as typeof fetch);
 
   await expect(client.getWorkspace("main", "vault/id")).resolves.toMatchObject({
     vaultId: "vault/id",
@@ -102,7 +102,7 @@ test("loads and saves protected per-vault config", async () => {
       ? new Response(null, { status: 204 })
       : Response.json({ dailyFolder: "Journal" })
   );
-  const client = new WebFluxClient("/api/v1", fetchMock as typeof fetch);
+  const client = new WebSymtabClient("/api/v1", fetchMock as typeof fetch);
 
   await expect(client.getVaultConfig("vault/id")).resolves.toEqual({ dailyFolder: "Journal" });
   await client.putVaultConfig("vault/id", { dailyFolder: "Daily" });
@@ -117,7 +117,7 @@ test("discovers vaults registered inside the server storage root", async () => {
   const fetchMock = mock(async () =>
     Response.json([{ vaultId: "vault/id", name: "Notes", path: "Notes" }])
   );
-  const client = new WebFluxClient("/api/v1", fetchMock as typeof fetch);
+  const client = new WebSymtabClient("/api/v1", fetchMock as typeof fetch);
 
   await expect(client.listAvailableVaults()).resolves.toEqual([
     { vaultId: "vault/id", name: "Notes", path: "Notes" },
@@ -129,7 +129,7 @@ test("discovers vaults registered inside the server storage root", async () => {
 
 test("requests an explicit derived-index rebuild", async () => {
   const fetchMock = mock(async () => Response.json({ accepted: true }, { status: 202 }));
-  const client = new WebFluxClient("/api/v1", fetchMock as typeof fetch);
+  const client = new WebSymtabClient("/api/v1", fetchMock as typeof fetch);
 
   await client.rebuildIndex("vault/id");
   expect(fetchMock).toHaveBeenCalledWith("/api/v1/vaults/vault%2Fid/index/rebuild", {
@@ -144,7 +144,7 @@ test("loads path-keyed vault graph", async () => {
     edges: [],
   };
   const fetchMock = mock(async () => Response.json(graph));
-  const client = new WebFluxClient("/api/v1", fetchMock as typeof fetch);
+  const client = new WebSymtabClient("/api/v1", fetchMock as typeof fetch);
 
   await expect(client.getGraph("vault/id")).resolves.toEqual(graph);
   expect(fetchMock).toHaveBeenCalledWith("/api/v1/vaults/vault%2Fid/graph", {
@@ -161,18 +161,18 @@ test("queries indexed sidebar data", async () => {
     if (url.includes("/references?")) {
       return Response.json({ linked: [], unlinked: [], outgoing: ["notes/b.md"] });
     }
-    return Response.json({ tags: [{ name: "flux", count: 2 }], properties: [] });
+    return Response.json({ tags: [{ name: "symtab", count: 2 }], properties: [] });
   });
-  const client = new WebFluxClient("/api/v1", fetchMock as typeof fetch);
+  const client = new WebSymtabClient("/api/v1", fetchMock as typeof fetch);
 
-  await client.searchVault("vault/id", "tag:flux", 25);
+  await client.searchVault("vault/id", "tag:symtab", 25);
   await client.getDocumentReferences("vault/id", "notes/a.md");
   await client.getDocumentReferences("vault/id", "notes/a.md", true);
   await client.getVaultFacets("vault/id");
 
   expect(fetchMock).toHaveBeenNthCalledWith(
     1,
-    "/api/v1/vaults/vault%2Fid/search?q=tag%3Aflux&limit=25&offset=0&matchCase=false",
+    "/api/v1/vaults/vault%2Fid/search?q=tag%3Asymtab&limit=25&offset=0&matchCase=false",
     { headers: { "Content-Type": "application/json" } }
   );
   expect(fetchMock).toHaveBeenNthCalledWith(

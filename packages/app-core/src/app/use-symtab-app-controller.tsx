@@ -9,8 +9,8 @@ import {
   useState,
   type DragEvent,
 } from "react";
-import type { FluxLayoutState } from "@flux/shared-ui/hooks/use-flux-layout";
-import { toast } from "@flux/shared-ui/components/sonner";
+import type { SymtabLayoutState } from "@symtab/shared-ui/hooks/use-symtab-layout";
+import { toast } from "@symtab/shared-ui/components/sonner";
 import { Bookmark } from "lucide-react";
 import type {
   DocumentReferences,
@@ -20,8 +20,8 @@ import type {
   VaultInfo,
   VaultLocation,
   VaultGraph,
-} from "@flux/bridge-contract";
-import { FluxEditorPane, type FluxTabCommands } from "@flux/shared-ui/components/workspace-tab";
+} from "@symtab/bridge-contract";
+import { SymtabEditorPane, type SymtabTabCommands } from "@symtab/shared-ui/components/workspace-tab";
 import {
   DEMO_DOCUMENT,
   MarkdownDocumentMenu,
@@ -33,7 +33,7 @@ import {
 import { setFrontmatterProperty } from "../editor/frontmatter";
 import { isIgnoredPath } from "../editor/link-index";
 import type { LeftPane, RightPane } from "../workspace/sidebars";
-import { APP_STATE_KEY, useFluxSettings } from "./settings-store";
+import { APP_STATE_KEY, useSymtabSettings } from "./settings-store";
 import { FilePreview } from "../workspace/file-preview";
 import {
   closeOtherWorkspaceTabs,
@@ -91,7 +91,7 @@ import { useDailyNotes } from "../daily-notes/use-daily-notes";
 import { runWithToast, type AsyncFeedback } from "./toast-feedback";
 import type { WorkspaceLeafContext } from "../workspace/leaf";
 
-import type { FluxAppProps, FluxPerformanceStats } from "../App";
+import type { SymtabAppProps, SymtabPerformanceStats } from "../App";
 
 const DOCUMENT_LIBRARY = [DEMO_DOCUMENT, ...REFERENCE_DOCUMENTS];
 interface IndexedVaultInfo extends VaultInfo {
@@ -109,8 +109,8 @@ const PdfViewer = lazy(() =>
   import("../pdf/viewer").then((module) => ({ default: module.PdfViewer }))
 );
 
-export function useFluxAppController({ runtime }: Pick<FluxAppProps, "runtime">) {
-  const { settings } = useFluxSettings();
+export function useSymtabAppController({ runtime }: Pick<SymtabAppProps, "runtime">) {
+  const { settings } = useSymtabSettings();
   const { plugins, general } = settings;
   const lifecycle = useAppStore((state) => state.lifecycle);
   const indexing = useAppStore((state) => state.indexing);
@@ -122,7 +122,7 @@ export function useFluxAppController({ runtime }: Pick<FluxAppProps, "runtime">)
   const [status, setStatus] = useState("Connecting…");
   const [initializationPhase, setInitializationPhase] = useState<InitializationPhase>("starting");
   const [settingsHydrated, setSettingsHydrated] = useState(false);
-  const [performanceStats, setPerformanceStats] = useState<FluxPerformanceStats | null>(null);
+  const [performanceStats, setPerformanceStats] = useState<SymtabPerformanceStats | null>(null);
 
   useEffect(() => {
     if (!settingsHydrated) return;
@@ -171,7 +171,7 @@ export function useFluxAppController({ runtime }: Pick<FluxAppProps, "runtime">)
         : plugins.search !== false
           ? "search"
           : "bookmarks";
-  const [layoutState, setLayoutState] = useState<FluxLayoutState>();
+  const [layoutState, setLayoutState] = useState<SymtabLayoutState>();
   const [expandedFolders, setExpandedFolders] = useState<string[]>([]);
   const [workspaceFileDrop, setWorkspaceFileDrop] = useState<{
     leafId: number;
@@ -1847,7 +1847,7 @@ export function useFluxAppController({ runtime }: Pick<FluxAppProps, "runtime">)
     return () => document.removeEventListener("click", handleGlobalClick, { capture: true });
   }, [openBrowserTab]);
 
-  const commandsFor = (tab: WorkspaceTab, leafId = activeLeafId): FluxTabCommands => {
+  const commandsFor = (tab: WorkspaceTab, leafId = activeLeafId): SymtabTabCommands => {
     const leaf = findWorkspaceLeaf(workspaceRoot, leafId);
     const tabIndex = leaf?.tabIds.indexOf(tab.id) ?? -1;
     const protectedNewTab = isProtectedNewTab(tab, leafId);
@@ -1874,7 +1874,7 @@ export function useFluxAppController({ runtime }: Pick<FluxAppProps, "runtime">)
     leafId: number
   ) => {
     event.dataTransfer.setData("text/plain", title);
-    event.dataTransfer.setData("application/x-flux-tab", JSON.stringify({ tabId, leafId }));
+    event.dataTransfer.setData("application/x-symtab-tab", JSON.stringify({ tabId, leafId }));
     event.dataTransfer.effectAllowed = "move";
   };
 
@@ -2042,7 +2042,7 @@ export function useFluxAppController({ runtime }: Pick<FluxAppProps, "runtime">)
 
   const moveTabToLeaf = (event: DragEvent, targetLeafId: number) => {
     event.preventDefault();
-    const payload = event.dataTransfer.getData("application/x-flux-tab");
+    const payload = event.dataTransfer.getData("application/x-symtab-tab");
     if (!payload) return;
     let parsed: { tabId: number; leafId: number };
     try {
@@ -2067,7 +2067,7 @@ export function useFluxAppController({ runtime }: Pick<FluxAppProps, "runtime">)
   const moveTabBefore = (event: DragEvent, targetLeafId: number, targetTabId: number) => {
     event.preventDefault();
     event.stopPropagation();
-    const payload = event.dataTransfer.getData("application/x-flux-tab");
+    const payload = event.dataTransfer.getData("application/x-symtab-tab");
     if (!payload) return;
     let parsed: { tabId: number; leafId: number };
     try {
@@ -2122,8 +2122,8 @@ export function useFluxAppController({ runtime }: Pick<FluxAppProps, "runtime">)
     leaf: Extract<WorkspaceNode, { kind: "leaf" }>
   ) => {
     const path =
-      event.dataTransfer.getData("application/x-flux-path") ||
-      event.dataTransfer.getData("application/x-flux-file") ||
+      event.dataTransfer.getData("application/x-symtab-path") ||
+      event.dataTransfer.getData("application/x-symtab-file") ||
       event.dataTransfer.getData("text/plain");
     if (!path.trim()) return;
     event.preventDefault();
@@ -2233,7 +2233,7 @@ export function useFluxAppController({ runtime }: Pick<FluxAppProps, "runtime">)
   };
 
   const paneFor = (tab: WorkspaceTab, leafId = activeLeafId) => (
-    <FluxEditorPane
+    <SymtabEditorPane
       title={
         tab.kind === "browser" ? (
           <span className="truncate">{tab.title}</span>
@@ -2385,7 +2385,7 @@ export function useFluxAppController({ runtime }: Pick<FluxAppProps, "runtime">)
           </div>
         </div>
       )}
-    </FluxEditorPane>
+    </SymtabEditorPane>
   );
 
   const [loadedBacklinksCount, setLoadedBacklinksCount] = useState(0);

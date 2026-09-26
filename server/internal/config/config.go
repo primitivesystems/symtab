@@ -21,30 +21,30 @@ type Config struct {
 
 func Load() *Config {
 	environment := getEnv("ENVIRONMENT", "development")
-	appDataDir := getEnv("FLUX_APP_DATA_DIR", defaultAppDataDir())
+	appDataDir := getEnv("SYMTAB_APP_DATA_DIR", defaultAppDataDir())
 	return &Config{
 		Environment:                environment,
 		Host:                       getEnv("HOST", defaultHost(environment)),
-		VaultPath:                  os.Getenv("FLUX_VAULT_PATH"),
+		VaultPath:                  os.Getenv("SYMTAB_VAULT_PATH"),
 		VaultRoot:                  defaultVaultRoot(environment, appDataDir),
 		AllowedOrigin:              getEnv("CORS_ALLOWED_ORIGIN", "http://localhost:3000"),
 		Port:                       getEnv("PORT", "8080"),
 		AppDataDir:                 appDataDir,
-		DesktopToken:               os.Getenv("FLUX_DESKTOP_TOKEN"),
-		PluginRegistryURL:          os.Getenv("FLUX_PLUGIN_REGISTRY_URL"),
-		PluginRegistrySignatureURL: os.Getenv("FLUX_PLUGIN_REGISTRY_SIGNATURE_URL"),
-		PluginRegistryPublicKey:    os.Getenv("FLUX_PLUGIN_REGISTRY_PUBLIC_KEY"),
+		DesktopToken:               os.Getenv("SYMTAB_DESKTOP_TOKEN"),
+		PluginRegistryURL:          os.Getenv("SYMTAB_PLUGIN_REGISTRY_URL"),
+		PluginRegistrySignatureURL: os.Getenv("SYMTAB_PLUGIN_REGISTRY_SIGNATURE_URL"),
+		PluginRegistryPublicKey:    os.Getenv("SYMTAB_PLUGIN_REGISTRY_PUBLIC_KEY"),
 	}
 }
 
 func defaultVaultRoot(environment, appDataDir string) string {
-	if configured := os.Getenv("FLUX_VAULT_ROOT"); configured != "" {
+	if configured := os.Getenv("SYMTAB_VAULT_ROOT"); configured != "" {
 		return configured
 	}
-	if environment == "production" && os.Getenv("FLUX_VAULT_PATH") == "" {
+	if environment == "production" && os.Getenv("SYMTAB_VAULT_PATH") == "" {
 		return "/data/vaults"
 	}
-	if environment == "development" && os.Getenv("FLUX_VAULT_PATH") == "" {
+	if environment == "development" && os.Getenv("SYMTAB_VAULT_PATH") == "" {
 		return filepath.Join(appDataDir, "vaults")
 	}
 	return ""
@@ -54,7 +54,7 @@ func defaultAppDataDir() string {
 	if directory, err := os.UserConfigDir(); err == nil {
 		return filepath.Join(directory, "Symtab")
 	}
-	return filepath.Join(os.TempDir(), "flux-app-data")
+	return filepath.Join(os.TempDir(), "symtab-app-data")
 }
 
 func defaultHost(environment string) string {

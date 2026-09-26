@@ -41,7 +41,7 @@ func (BundleRuntime) ValidatePackage(_ context.Context, plugin InstalledPlugin, 
 		return errors.New("plugin entry exceeds 20 MiB runtime limit")
 	}
 	source := string(data)
-	if ambientRuntimePattern.MatchString(source) || !strings.Contains(source, "__fluxRegisterPlugin") {
+	if ambientRuntimePattern.MatchString(source) || !strings.Contains(source, "__symtabRegisterPlugin") {
 		return errors.New("plugin entry is not a self-contained Symtab runtime bundle")
 	}
 	return nil

@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import type { AgentEvent, AgentThread } from "@flux/bridge-contract";
+import type { AgentEvent, AgentThread } from "@symtab/bridge-contract";
 import { projectAgentHistory } from "../src/agent/projection";
 import { lastUserText } from "../src/agent/use-agent-chat";
 

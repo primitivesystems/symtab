@@ -1,11 +1,11 @@
-export { FluxApp } from "./App";
+export { SymtabApp } from "./App";
 export { QuickCapture } from "./quick-capture/view";
-export type { FluxAppProps, FluxRuntime, UpdateRuntimeStatus } from "./App";
+export type { SymtabAppProps, SymtabRuntime, UpdateRuntimeStatus } from "./App";
 export { browserStatePersistence, useAppStore } from "./app/state";
 export { createClientStatePersistence } from "./app/client-state-persistence";
 export type {
   AppBootstrapState,
-  FluxStatePersistence,
+  SymtabStatePersistence,
   IndexingProgress,
   PersistedWorkspaceSession,
   PersistedWorkspaceTab,

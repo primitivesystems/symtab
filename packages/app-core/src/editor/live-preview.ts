@@ -301,7 +301,7 @@ class EmbedWidget extends WidgetType {
     embed.className = "cm-live-embed-block";
     embed.dataset.embedTitle = this.target;
     const content = window.document.createElement("div");
-    content.className = "flux-reading-view cm-live-embed-content";
+    content.className = "symtab-reading-view cm-live-embed-content";
     embed.append(content);
     void import("./reading-view").then(({ renderMarkdownHtml }) => {
       if (content.isConnected) {
@@ -369,7 +369,7 @@ class BlockWidget extends WidgetType {
         attributeFilter: ["class"],
       });
     } else if (this.kind === "html") {
-      element.classList.add("flux-reading-view");
+      element.classList.add("symtab-reading-view");
       element.innerHTML = DOMPurify.sanitize(this.source);
     } else {
       const pre = document.createElement("pre");
@@ -392,7 +392,7 @@ class BlockWidget extends WidgetType {
         theme: document.documentElement.classList.contains("dark") ? "dark" : "neutral",
         flowchart: { curve: "linear", htmlLabels: false, useMaxWidth: true },
       });
-      const { svg } = await mermaid.render(`flux-live-mermaid-${++mermaidId}`, this.source);
+      const { svg } = await mermaid.render(`symtab-live-mermaid-${++mermaidId}`, this.source);
       if (element.isConnected) element.innerHTML = svg;
     } catch {
       if (element.isConnected) element.textContent = "Unable to render this diagram.";

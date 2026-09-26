@@ -1,5 +1,5 @@
 import type { SimulationLinkDatum, SimulationNodeDatum } from "d3";
-import type { VaultGraph } from "@flux/bridge-contract";
+import type { VaultGraph } from "@symtab/bridge-contract";
 import type { DemoDocument } from "../../editor/markdown-editor";
 import { buildLinkIndex, linkedTitles } from "../../editor/link-index";
 

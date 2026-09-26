@@ -1,4 +1,4 @@
-import type { FluxClient, ServerStatus, VaultInfo } from "@flux/bridge-contract";
+import type { SymtabClient, ServerStatus, VaultInfo } from "@symtab/bridge-contract";
 import type { DemoDocument } from "../editor/markdown-editor";
 import type { VaultLifecycleState } from "./state";
 import type { WorkspaceTab } from "../workspace/tabs";
@@ -8,9 +8,9 @@ export function errorMessage(error: unknown) {
   return error instanceof Error ? error.message : "An unexpected error occurred.";
 }
 
-const bootstrapStatus = new WeakMap<FluxClient, Promise<ServerStatus>>();
+const bootstrapStatus = new WeakMap<SymtabClient, Promise<ServerStatus>>();
 
-export function getBootstrapStatus(client: FluxClient) {
+export function getBootstrapStatus(client: SymtabClient) {
   let pending = bootstrapStatus.get(client);
   if (!pending) {
     pending = client.getStatus().catch((error: unknown) => {
@@ -38,10 +38,10 @@ export function lifecycleFromVault(info: VaultInfo): VaultLifecycleState {
 }
 
 export const bookmarkItemsKey = (vaultId?: string) =>
-  `flux-bookmarks-items:${vaultId ?? "default"}`;
+  `symtab-bookmarks-items:${vaultId ?? "default"}`;
 
 export const bookmarkGroupsKey = (vaultId?: string) =>
-  `flux-bookmarks-groups:${vaultId ?? "default"}`;
+  `symtab-bookmarks-groups:${vaultId ?? "default"}`;
 
 export function restoreWorkspaceRoot(
   node: WorkspaceNode | undefined,

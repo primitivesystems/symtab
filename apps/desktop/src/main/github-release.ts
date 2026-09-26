@@ -1,4 +1,4 @@
-const repository = "primitivesystems/project-flux";
+const repository = "primitivesystems/symtab";
 
 export type MacRelease = {
   version: string;

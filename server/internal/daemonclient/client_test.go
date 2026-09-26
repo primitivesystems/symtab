@@ -7,12 +7,12 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/flux-pkm/server/internal/domain"
+	"github.com/symtab-pkm/server/internal/domain"
 )
 
 func TestClientAuthenticatesAndDecodesStatus(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, request *http.Request) {
-		if request.Header.Get("X-Flux-Desktop-Token") != "secret" {
+		if request.Header.Get("X-Symtab-Desktop-Token") != "secret" {
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}

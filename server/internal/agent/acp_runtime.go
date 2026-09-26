@@ -517,7 +517,7 @@ func (c *acpClient) WriteTextFile(_ context.Context, request acp.WriteTextFileRe
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return acp.WriteTextFileResponse{}, err
 	}
-	temporary, err := os.CreateTemp(filepath.Dir(path), ".flux-agent-*")
+	temporary, err := os.CreateTemp(filepath.Dir(path), ".symtab-agent-*")
 	if err != nil {
 		return acp.WriteTextFileResponse{}, err
 	}

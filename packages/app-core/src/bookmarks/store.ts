@@ -9,7 +9,7 @@ export interface BookmarkItem {
 export const DEFAULT_BOOKMARK_GROUPS = ["Writing", "Reference"];
 
 function getStorageKey(key: string, vaultId?: string): string {
-  return vaultId ? `flux-bookmarks-${key}:${vaultId}` : `flux-bookmarks-${key}`;
+  return vaultId ? `symtab-bookmarks-${key}:${vaultId}` : `symtab-bookmarks-${key}`;
 }
 
 const memoryStore = new Map<string, string>();

@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from "electron";
-import type { VaultChange } from "@flux/bridge-contract";
+import type { VaultChange } from "@symtab/bridge-contract";
 
 let nextWatcherId = 0;
 
@@ -8,8 +8,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
   getWindowId: () => ipcRenderer.invoke("get-window-id"),
   onCommand: (handler: (command: string) => void) => {
     const listener = (_event: Electron.IpcRendererEvent, command: string) => handler(command);
-    ipcRenderer.on("flux-command", listener);
-    return () => ipcRenderer.off("flux-command", listener);
+    ipcRenderer.on("symtab-command", listener);
+    return () => ipcRenderer.off("symtab-command", listener);
   },
   checkForUpdates: () => ipcRenderer.invoke("check-for-updates"),
   downloadUpdate: () => ipcRenderer.invoke("download-update"),
@@ -28,16 +28,16 @@ contextBridge.exposeInMainWorld("electronAPI", {
   onBeforeClose: (handler: () => Promise<void>) => {
     const listener = () => {
       void handler().then(
-        () => ipcRenderer.send("flux-close-ready"),
+        () => ipcRenderer.send("symtab-close-ready"),
         (error) =>
           ipcRenderer.send(
-            "flux-close-failed",
+            "symtab-close-failed",
             error instanceof Error ? error.message : "Could not save changes"
           )
       );
     };
-    ipcRenderer.on("flux-before-close", listener);
-    return () => ipcRenderer.off("flux-before-close", listener);
+    ipcRenderer.on("symtab-before-close", listener);
+    return () => ipcRenderer.off("symtab-before-close", listener);
   },
   exportPdf: (options: {
     title: string;
@@ -48,8 +48,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
   }) => ipcRenderer.invoke("export-pdf", options),
   selectVaultDirectory: (mode: "open" | "create" | "location") =>
     ipcRenderer.invoke("select-vault-directory", mode),
-  fluxFetch: (request: { url: string; method?: string; body?: string }) =>
-    ipcRenderer.invoke("flux-fetch", request),
+  symtabFetch: (request: { url: string; method?: string; body?: string }) =>
+    ipcRenderer.invoke("symtab-fetch", request),
   watchVaultRevision: (
     vaultId: string,
     onRevision: (revision: number) => void,

@@ -6,7 +6,7 @@
 >
 > Design branch: `codex/publishing`
 >
-> Repository: `wizaye/project-flux`
+> Repository: `wizaye/symtab`
 >
 > Scope: First-party Obsidian-Publish-class publishing, renderer-independent publishing,
 > Git-backed deployment, graph/backlinks/search, and integration with the existing Symtab
@@ -160,7 +160,7 @@ first-party renderer.
 The current branch uses this actual monorepo model:
 
 ```text
-project-flux/
+symtab/
 ├── apps/
 │   ├── desktop/                # Electron runtime
 │   └── web/                    # Vite/PWA runtime
@@ -169,14 +169,14 @@ project-flux/
 │
 ├── packages/
 │   ├── app-core/               # Shared Symtab product application
-│   ├── bridge-contract/        # Runtime-neutral FluxClient contract
+│   ├── bridge-contract/        # Runtime-neutral SymtabClient contract
 │   ├── client-desktop/         # Desktop transport implementation
 │   ├── client-web/             # HTTP/SSE implementation
 │   ├── shared-domain/
 │   ├── shared-ui/
 │   ├── plugin-runtime/
 │   ├── plugin-sdk/
-│   └── create-flux-plugin/
+│   └── create-symtab-plugin/
 │
 └── docs/
 ```
@@ -187,7 +187,7 @@ parallel backend.
 Target additions:
 
 ```text
-project-flux/
+symtab/
 ├── apps/
 │   ├── desktop/
 │   ├── web/
@@ -212,7 +212,7 @@ project-flux/
 │       └── index/
 │
 └── docs/
-    └── flux-publish-design.md
+    └── symtab-publish-design.md
 ```
 
 ---
@@ -252,8 +252,8 @@ Initial Symtab Publish does not require:
 - Arbitrary build scripts supplied through the Symtab UI.
 - Executing arbitrary JavaScript in Symtab-managed sites.
 - Runtime access from a public site into the private Symtab vault.
-- Publishing `.flux/index.db`.
-- Publishing `.flux/`.
+- Publishing `.symtab/index.db`.
+- Publishing `.symtab/`.
 - Publishing `.git/`.
 - Publishing `.obsidian/` metadata.
 - Requiring Git for local static export.
@@ -354,8 +354,8 @@ Do not model combinations such as:
 ```text
 QuartzVercelPublisher
 QuartzGitHubPublisher
-FluxVercelPublisher
-FluxCloudflarePublisher
+SymtabVercelPublisher
+SymtabCloudflarePublisher
 ```
 
 That creates an N × M explosion.
@@ -471,7 +471,7 @@ Publication IDs should use UUIDv7.
 Durable non-secret configuration can live in:
 
 ```text
-.flux/config.json
+.symtab/config.json
 ```
 
 Example:
@@ -496,7 +496,7 @@ Example:
           "frontmatterKey": "publish"
         },
         "renderer": {
-          "id": "flux"
+          "id": "symtab"
         },
         "site": {
           "title": "Engineering Garden",
@@ -597,7 +597,7 @@ flowchart TD
 Hard exclusions always include normalized vault-relative paths matching:
 
 ```text
-.flux/**
+.symtab/**
 .git/**
 .obsidian/**
 **/.DS_Store
@@ -609,7 +609,7 @@ Hard exclusions always include normalized vault-relative paths matching:
 
 Resolve symlinks before selection and reject any target outside the vault root. Directories
 named `trash` are not special unless configured; Symtab-managed trash is already covered by
-`.flux/**`.
+`.symtab/**`.
 
 Archive remains excluded by default but may be explicitly included.
 
@@ -710,7 +710,7 @@ PublicationSnapshot
 Example generated cache:
 
 ```text
-.flux/
+.symtab/
 └── cache/
     └── publish/
         └── <publication-id>/
@@ -1234,7 +1234,7 @@ No renderer should contain Vercel/GitHub/Cloudflare-specific logic.
 The default renderer ID:
 
 ```text
-flux
+symtab
 ```
 
 Implementation:
@@ -1372,10 +1372,10 @@ Concept:
 
 ```ts
 import { loader } from "fumadocs-core/source";
-import { fluxPublicationSource } from "@/lib/flux-publication-source";
+import { symtabPublicationSource } from "@/lib/symtab-publication-source";
 
 export const source = loader({
-  source: fluxPublicationSource(snapshot),
+  source: symtabPublicationSource(snapshot),
   baseUrl: "/"
 });
 ```
@@ -1478,7 +1478,7 @@ Consumers:
 
 ```mermaid
 flowchart TD
-    Engine["@flux/markdown-engine"]
+    Engine["@symtab/markdown-engine"]
 
     Desktop["Symtab Reading View"]
     Web["Symtab PWA"]
@@ -1681,7 +1681,7 @@ Do not include the entire graph JSON in every article page.
 Suggested:
 
 ```text
-/static/flux/graph.v1.json
+/static/symtab/graph.v1.json
 ```
 
 For small gardens:
@@ -1872,7 +1872,7 @@ Engineering
 ### Manual mode
 
 Manual navigation lives in the publication's `site.navigation` field in
-`.flux/config.json`; it is not inferred from an additional YAML file.
+`.symtab/config.json`; it is not inferred from an additional YAML file.
 
 ```json
 {
@@ -2064,13 +2064,13 @@ If a single site repository is used, generated files must be isolated.
 Example:
 
 ```text
-my-flux-site/
+my-symtab-site/
 ├── app/
 ├── components/
 ├── package.json
 ├── next.config.ts
 │
-└── .flux-content/
+└── .symtab-content/
     ├── manifest.json
     ├── graph.json
     ├── backlinks.json
@@ -2082,7 +2082,7 @@ my-flux-site/
 Symtab owns:
 
 ```text
-.flux-content/**
+.symtab-content/**
 ```
 
 User owns:
@@ -2152,8 +2152,8 @@ Advantages:
 A generated content repository might contain:
 
 ```text
-flux-publication/
-├── flux-publication.json
+symtab-publication/
+├── symtab-publication.json
 ├── manifest.json
 ├── graph.json
 ├── backlinks.json
@@ -2162,12 +2162,12 @@ flux-publication/
 └── assets/
 ```
 
-`flux-publication.json`:
+`symtab-publication.json`:
 
 ```json
 {
   "schemaVersion": 1,
-  "generator": "flux",
+  "generator": "symtab",
   "publicationId": "01991bb8-...",
   "snapshot": "sha256:..."
 }
@@ -2419,7 +2419,7 @@ inside:
 
 ```text
 vault
-.flux/config.json
+.symtab/config.json
 publication manifest
 site repository
 ```
@@ -2490,7 +2490,7 @@ Lifecycle semantics:
 
 ---
 
-# 55. FluxClient Extensions
+# 55. SymtabClient Extensions
 
 Extend:
 
@@ -2501,7 +2501,7 @@ packages/bridge-contract/src/index.ts
 Example:
 
 ```ts
-interface FluxClient {
+interface SymtabClient {
   // existing methods...
 
   listPublications(
@@ -2613,9 +2613,9 @@ Publish
 For the first-party renderer, preview should use the same:
 
 ```text
-@flux/publish-ui
-@flux/markdown-engine
-@flux/graph-ui
+@symtab/publish-ui
+@symtab/markdown-engine
+@symtab/graph-ui
 ```
 
 components used by the deployed site.
@@ -2755,7 +2755,7 @@ The graph UI should reuse Symtab graph behavior wherever sensible.
 The Fumadocs page layout should expose slots:
 
 ```tsx
-<FluxPublishLayout
+<SymtabPublishLayout
   explorer={<Explorer />}
   article={<Article />}
   rightRail={
@@ -2799,7 +2799,7 @@ Recommended:
 
 ```text
 Vault
-└── .flux/
+└── .symtab/
     ├── config.json
     └── cache/
         └── publish/
@@ -2829,7 +2829,7 @@ publish credentials
 Explicit deny list:
 
 ```text
-.flux/**
+.symtab/**
 .git/**
 .obsidian/**
 recovery/**
@@ -3248,7 +3248,7 @@ Published revisions
 1018    Aug 07 18:22    previous
 ```
 
-Do not duplicate entire deployment artifacts indefinitely in `.flux`.
+Do not duplicate entire deployment artifacts indefinitely in `.symtab`.
 
 Remote providers already retain their own deployment history.
 
@@ -3620,8 +3620,8 @@ unless separately granted.
 MCP agents may eventually invoke:
 
 ```text
-flux_list_publications
-flux_preview_publication
+symtab_list_publications
+symtab_preview_publication
 ```
 
 Publishing to the internet is a higher-risk side effect.
@@ -3774,7 +3774,7 @@ Publish logs:
 [10:02:13] included 23 assets
 [10:02:13] resolved 361 graph edges
 [10:02:14] snapshot sha256:...
-[10:02:14] rendering flux
+[10:02:14] rendering symtab
 [10:02:16] pushing publication repository
 [10:02:20] deployment queued
 [10:02:43] deployment ready
@@ -3993,7 +3993,7 @@ No Fumadocs deployment required yet.
 Acceptance:
 
 ```text
-flux publish export
+symtab publish export
 ```
 
 can produce a safe renderer-neutral bundle.
@@ -4125,7 +4125,7 @@ Same model.
 # 108. Proposed Repository Diff
 
 ```text
-project-flux/
+symtab/
 ├── apps/
 │   ├── desktop/
 │   ├── web/
@@ -4184,7 +4184,7 @@ project-flux/
             ├── secrets.go
             │
             ├── renderers/
-            │   ├── flux.go
+            │   ├── symtab.go
             │   ├── quartz.go
             │   ├── flowershow.go
             │   └── static.go
@@ -4513,7 +4513,7 @@ Symtab Publish architecture is considered correctly implemented when:
 8. Publishing does not block normal editing.
 9. Failed deployments do not destroy the currently published deployment.
 10. Re-running publish on unchanged content creates no unnecessary commit.
-11. Desktop and web use the same `FluxClient` publishing contract.
+11. Desktop and web use the same `SymtabClient` publishing contract.
 12. Renderer choice is independent from hosting provider choice.
 13. Provider credentials never enter the vault or publication repository.
 14. Public-site graph behavior derives from the Symtab knowledge model.
@@ -4527,10 +4527,10 @@ Symtab Publish architecture is considered correctly implemented when:
 flowchart TB
     User["Symtab User"]
 
-    subgraph FluxApp["Symtab"]
+    subgraph SymtabApp["Symtab"]
         UI["app-core Publish UI"]
 
-        Bridge["FluxClient"]
+        Bridge["SymtabClient"]
 
         subgraph Go["Go Modular Monolith"]
             Vault["Vault Manager"]
@@ -4554,7 +4554,7 @@ flowchart TB
     end
 
     subgraph Renderers["Renderer Layer"]
-        FluxRenderer["Symtab / Fumadocs"]
+        SymtabRenderer["Symtab / Fumadocs"]
         Quartz["Quartz"]
         Flowershow["Flowershow"]
         Custom["Custom"]
@@ -4585,21 +4585,21 @@ flowchart TB
     Snapshot --> Content
     Snapshot --> Assets
 
-    Manifest --> FluxRenderer
-    Graph --> FluxRenderer
-    Backlinks --> FluxRenderer
-    Content --> FluxRenderer
-    Assets --> FluxRenderer
+    Manifest --> SymtabRenderer
+    Graph --> SymtabRenderer
+    Backlinks --> SymtabRenderer
+    Content --> SymtabRenderer
+    Assets --> SymtabRenderer
 
     PublicIR --> Quartz
     PublicIR --> Flowershow
     PublicIR --> Custom
 
-    FluxRenderer --> GitHub
-    FluxRenderer --> Vercel
-    FluxRenderer --> Cloudflare
-    FluxRenderer --> Netlify
-    FluxRenderer --> Export
+    SymtabRenderer --> GitHub
+    SymtabRenderer --> Vercel
+    SymtabRenderer --> Cloudflare
+    SymtabRenderer --> Netlify
+    SymtabRenderer --> Export
 
     Quartz --> GitHub
     Quartz --> Vercel

@@ -4,7 +4,7 @@ import {
   DialogClose,
   DialogContent,
   DialogTitle,
-} from "@flux/shared-ui/components/ui/dialog";
+} from "@symtab/shared-ui/components/ui/dialog";
 import {
   Blocks,
   CalendarDays,
@@ -22,14 +22,14 @@ import {
   X,
 } from "lucide-react";
 import type {
-  FluxClient,
+  SymtabClient,
   MCPConnection,
   MCPConnectionCredential,
   RecentVault,
-} from "@flux/bridge-contract";
-import { useTheme } from "@flux/shared-ui/components/theme-provider";
+} from "@symtab/bridge-contract";
+import { useTheme } from "@symtab/shared-ui/components/theme-provider";
 import {
-  useFluxSettings,
+  useSymtabSettings,
   type KeychainEntry,
   type GeneralSettings,
   type EditorSettings,
@@ -51,7 +51,7 @@ interface SettingsDialogProps {
   onOpenChange: (open: boolean) => void;
   onOpenPlugins: () => void;
   vaultName?: string;
-  client?: FluxClient | null;
+  client?: SymtabClient | null;
   vaults?: RecentVault[];
   vaultId?: string;
   onVaultConfigChange?: () => void;
@@ -238,7 +238,7 @@ interface GeneralPageProps {
 }
 
 function GeneralPage({ vaultName, onMenuBarIconChange }: GeneralPageProps) {
-  const { settings, updateSettings } = useFluxSettings();
+  const { settings, updateSettings } = useSymtabSettings();
   const gen = settings.general;
 
   const updateGeneral = (field: keyof GeneralSettings, value: any) => {
@@ -374,7 +374,7 @@ function GeneralPage({ vaultName, onMenuBarIconChange }: GeneralPageProps) {
 /* ------------------------------------------------------------------ */
 
 function EditorPage() {
-  const { settings, updateSettings } = useFluxSettings();
+  const { settings, updateSettings } = useSymtabSettings();
   const ed = settings.editor;
 
   const updateEd = (field: keyof EditorSettings, value: any) => {
@@ -490,7 +490,7 @@ function EditorPage() {
 
 function AppearancePage() {
   const { theme, setTheme } = useTheme();
-  const { settings, updateSettings } = useFluxSettings();
+  const { settings, updateSettings } = useSymtabSettings();
   const app = settings.appearance;
 
   const updateApp = (field: keyof AppearanceSettings, value: any) => {
@@ -595,7 +595,7 @@ function AppearancePage() {
 /* ------------------------------------------------------------------ */
 
 function KeychainPage() {
-  const { settings, updateSettings } = useFluxSettings();
+  const { settings, updateSettings } = useSymtabSettings();
   const keychain = settings.keychain;
 
   const [newServiceName, setNewServiceName] = useState("");
@@ -857,7 +857,7 @@ const pluginRegistry: PluginRegistryItem[] = [
 ];
 
 function CorePluginsPage() {
-  const { settings, updateSettings } = useFluxSettings();
+  const { settings, updateSettings } = useSymtabSettings();
   const pluginsState = settings.plugins;
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -973,7 +973,7 @@ function DailyNotesPage({
   vaultId,
   onSaved,
 }: {
-  client: FluxClient | null;
+  client: SymtabClient | null;
   vaultId?: string;
   onSaved?: () => void;
 }) {
@@ -1008,7 +1008,7 @@ function DailyNotesPage({
     <div>
       <h2 className="text-xl font-semibold">Daily Notes</h2>
       <p className="mt-1 text-sm text-muted-foreground">
-        Stored per vault in protected <code>.flux/config.json</code>.
+        Stored per vault in protected <code>.symtab/config.json</code>.
       </p>
       <div className="mt-6 space-y-4">
         {fields.map(([key, label, placeholder]) => (
@@ -1055,7 +1055,7 @@ function MCPConnectionsPage({
   vaults,
   getMCPServerCommand,
 }: {
-  client: FluxClient | null;
+  client: SymtabClient | null;
   vaults: RecentVault[];
   getMCPServerCommand?: () => Promise<{ command: string; args: string[] }>;
 }) {
@@ -1093,9 +1093,9 @@ function MCPConnectionsPage({
       const executable = await getMCPServerCommand?.();
       const value = {
         servers: {
-          flux: {
+          symtab: {
             type: "stdio",
-            command: executable?.command ?? "flux-server",
+            command: executable?.command ?? "symtab-server",
             args: [
               ...(executable?.args ?? ["mcp"]),
               "--connection",
@@ -1261,7 +1261,7 @@ export function SettingsDialog({
         </div>
 
         {/* Right content panel */}
-        <div className="flux-editor-scroll flex-1 overflow-y-auto p-8">
+        <div className="symtab-editor-scroll flex-1 overflow-y-auto p-8">
           {activePage === "community-plugins" ? (
             <CommunityPluginsPage onOpenPlugins={onOpenPlugins} />
           ) : activePage === "mcp" ? (

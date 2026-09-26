@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import type { FileEntry, FluxClient, VaultInfo } from "@flux/bridge-contract";
+import type { FileEntry, SymtabClient, VaultInfo } from "@symtab/bridge-contract";
 import {
   calendarGrid,
   dateFromKey,
@@ -30,7 +30,7 @@ export function useDailyNotes<T>({
   openDocument,
   onStatus,
 }: {
-  client: FluxClient | null;
+  client: SymtabClient | null;
   vault: VaultInfo | null;
   files: readonly FileEntry[];
   refreshFiles: () => Promise<unknown>;

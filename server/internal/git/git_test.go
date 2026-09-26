@@ -7,7 +7,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/flux-pkm/server/internal/domain"
+	"github.com/symtab-pkm/server/internal/domain"
 )
 
 func TestRepositoryFlow(t *testing.T) {
@@ -19,10 +19,10 @@ func TestRepositoryFlow(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(root, "note.md"), []byte("hello"), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.MkdirAll(filepath.Join(root, ".flux"), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Join(root, ".symtab"), 0o755); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(root, ".flux", "index.db"), []byte("internal"), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(root, ".symtab", "index.db"), []byte("internal"), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	status, err := Status(ctx, root)
@@ -44,13 +44,13 @@ func TestRepositoryFlow(t *testing.T) {
 		t.Fatalf("file was not unstaged: %#v, %v", status, err)
 	}
 	ignored, err := os.ReadFile(filepath.Join(root, ".gitignore"))
-	if err != nil || string(ignored) != ".flux/\n" {
+	if err != nil || string(ignored) != ".symtab/\n" {
 		t.Fatalf("unexpected ignore file: %q, %v", ignored, err)
 	}
-	if _, err := run(ctx, root, "config", "user.email", "flux@example.invalid"); err != nil {
+	if _, err := run(ctx, root, "config", "user.email", "symtab@example.invalid"); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := run(ctx, root, "config", "user.name", "Flux Test"); err != nil {
+	if _, err := run(ctx, root, "config", "user.name", "Symtab Test"); err != nil {
 		t.Fatal(err)
 	}
 	if err := Stage(ctx, root, nil); err != nil {
@@ -123,7 +123,7 @@ func TestRejectsOutsidePath(t *testing.T) {
 	if _, err := pathArgs(nil, []string{"../outside"}); err != ErrInvalidPath {
 		t.Fatalf("expected invalid path, got %v", err)
 	}
-	if _, err := pathArgs(nil, []string{".flux/index.db"}); err != ErrInvalidPath {
+	if _, err := pathArgs(nil, []string{".symtab/index.db"}); err != ErrInvalidPath {
 		t.Fatalf("expected internal path rejection, got %v", err)
 	}
 }

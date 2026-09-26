@@ -1,7 +1,7 @@
 import { ArrowLeft, ArrowRight, RotateCw, Globe, X } from "lucide-react";
 import { useRef, useState, useEffect } from "react";
 import type { WorkspaceTab } from "./tabs";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@flux/shared-ui/components/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@symtab/shared-ui/components/tooltip";
 
 export function BrowserView({ tab, onClose }: { tab: WorkspaceTab; onClose: () => void }) {
   const webviewRef = useRef<any>(null);

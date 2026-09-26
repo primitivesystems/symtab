@@ -51,8 +51,8 @@ import {
   MenuSub as CossMenuSub,
   MenuSubPopup,
   MenuSubTrigger,
-} from "@flux/shared-ui/components/ui/menu";
-import { Spinner } from "@flux/shared-ui/components/spinner";
+} from "@symtab/shared-ui/components/ui/menu";
+import { Spinner } from "@symtab/shared-ui/components/spinner";
 import { splitFrontmatter } from "./frontmatter";
 import { markdownAssist } from "./editor-assist";
 import { livePreview } from "./live-preview";
@@ -377,10 +377,10 @@ function MarkdownSource({
       }
     };
 
-    window.addEventListener("flux-navigate-editor", handleNavigate as EventListener);
+    window.addEventListener("symtab-navigate-editor", handleNavigate as EventListener);
     return () => {
       active = false;
-      window.removeEventListener("flux-navigate-editor", handleNavigate as EventListener);
+      window.removeEventListener("symtab-navigate-editor", handleNavigate as EventListener);
     };
   }, []);
 
@@ -1014,7 +1014,7 @@ export function MarkdownEditor({
                       onOpenDocument?.(source);
                       const detail = { path: source, line: mention.line, excerpt: mention.excerpt };
                       const dispatch = () =>
-                        window.dispatchEvent(new CustomEvent("flux-navigate-editor", { detail }));
+                        window.dispatchEvent(new CustomEvent("symtab-navigate-editor", { detail }));
                       dispatch();
                       setTimeout(dispatch, 30);
                       setTimeout(dispatch, 100);
@@ -1056,7 +1056,7 @@ export function MarkdownEditor({
   return (
     <div
       ref={editorRootRef}
-      className="flux-editor-scroll h-full min-h-0 overflow-y-auto overscroll-contain"
+      className="symtab-editor-scroll h-full min-h-0 overflow-y-auto overscroll-contain"
       onDragOver={(event) => event.preventDefault()}
       onDrop={(event) => {
         event.preventDefault();
@@ -1319,7 +1319,7 @@ export function MarkdownDocumentMenu({
       <MenuSub label="Copy path" icon={<Copy className="size-4 text-muted-foreground" />}>
         <MenuItem
           className={menuItemClassName}
-          onClick={() => copy(`flux://open?file=${encodeURIComponent(fileName)}`)}
+          onClick={() => copy(`symtab://open?file=${encodeURIComponent(fileName)}`)}
         >
           as Symtab URL
         </MenuItem>

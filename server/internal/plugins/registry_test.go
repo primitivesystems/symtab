@@ -28,7 +28,7 @@ func TestRegistryVerifiesSignedMetadata(t *testing.T) {
 				APIVersion: "1", Entry: "dist/index.js", Publisher: "Example",
 			},
 			Publisher: "Example", Repository: "https://example.com/plugin",
-			DownloadURL: "https://example.com/plugin.flux-plugin",
+			DownloadURL: "https://example.com/plugin.symtab-plugin",
 			SHA256:      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 			PublishedAt: time.Now().UTC(),
 		}},
@@ -83,7 +83,7 @@ func TestMarketplaceInstallUsesSignedChecksumAndManifest(t *testing.T) {
 			_, _ = response.Write(payload)
 		case "/registry.json.sig":
 			_, _ = response.Write([]byte(signature))
-		case "/plugin.flux-plugin":
+		case "/plugin.symtab-plugin":
 			_, _ = response.Write(archive)
 		default:
 			http.NotFound(response, request)
@@ -94,7 +94,7 @@ func TestMarketplaceInstallUsesSignedChecksumAndManifest(t *testing.T) {
 		SchemaVersion: 1, UpdatedAt: time.Now().UTC(),
 		Plugins: []MarketplacePlugin{{
 			Manifest: manifest, Publisher: "Example", Repository: server.URL + "/source",
-			DownloadURL: server.URL + "/plugin.flux-plugin", SHA256: checksum,
+			DownloadURL: server.URL + "/plugin.symtab-plugin", SHA256: checksum,
 			PublishedAt: time.Now().UTC(),
 		}},
 	}

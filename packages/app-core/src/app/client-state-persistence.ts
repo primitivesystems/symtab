@@ -1,6 +1,6 @@
-import type { FluxClient } from "@flux/bridge-contract";
+import type { SymtabClient } from "@symtab/bridge-contract";
 
-import type { FluxStatePersistence, PersistedWorkspaceSession, RememberedVault } from "./state";
+import type { SymtabStatePersistence, PersistedWorkspaceSession, RememberedVault } from "./state";
 
 function persistedWorkspace(value: unknown): PersistedWorkspaceSession | null {
   if (!value || typeof value !== "object") return null;
@@ -18,7 +18,7 @@ function persistedWorkspace(value: unknown): PersistedWorkspaceSession | null {
 }
 
 /** Persists UI snapshots through Symtab backend global app storage. */
-export function createClientStatePersistence(client: FluxClient): FluxStatePersistence {
+export function createClientStatePersistence(client: SymtabClient): SymtabStatePersistence {
   let lastVaultId: string | null = null;
   let settingWrites = Promise.resolve();
 

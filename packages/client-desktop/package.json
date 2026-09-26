@@ -1,5 +1,5 @@
 {
-  "name": "@flux/client-desktop",
+  "name": "@symtab/client-desktop",
   "version": "0.0.1",
   "private": true,
   "type": "module",
@@ -11,7 +11,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@flux/client-web": "workspace:*"
+    "@symtab/client-web": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^6.0.2"

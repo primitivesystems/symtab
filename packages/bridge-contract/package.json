@@ -1,5 +1,5 @@
 {
-  "name": "@flux/bridge-contract",
+  "name": "@symtab/bridge-contract",
   "version": "0.0.1",
   "private": true,
   "type": "module",
@@ -13,7 +13,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@flux/shared-domain": "workspace:*"
+    "@symtab/shared-domain": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^6.0.2"

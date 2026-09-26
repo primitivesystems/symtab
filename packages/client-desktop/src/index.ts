@@ -1,8 +1,8 @@
-import { WebFluxClient } from "@flux/client-web";
-import type { VaultChange } from "@flux/bridge-contract";
+import { WebSymtabClient } from "@symtab/client-web";
+import type { VaultChange } from "@symtab/bridge-contract";
 
-export interface DesktopFluxBridge {
-  fluxFetch(request: {
+export interface DesktopSymtabBridge {
+  symtabFetch(request: {
     url: string;
     method?: string;
     body?: string;
@@ -19,11 +19,11 @@ export interface DesktopFluxBridge {
   ): () => void;
 }
 
-export class DesktopFluxClient extends WebFluxClient {
-  constructor(private readonly bridge: DesktopFluxBridge) {
+export class DesktopSymtabClient extends WebSymtabClient {
+  constructor(private readonly bridge: DesktopSymtabBridge) {
     super("/api/v1", async (input, init) => {
       if (typeof input !== "string") throw new TypeError("Desktop bridge requires a string URL");
-      const response = await bridge.fluxFetch({
+      const response = await bridge.symtabFetch({
         url: input,
         method: init?.method,
         body: typeof init?.body === "string" ? init.body : undefined,

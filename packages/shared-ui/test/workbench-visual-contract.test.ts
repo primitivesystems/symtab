@@ -74,12 +74,12 @@ describe("workbench visual contract", () => {
 
     expect(css).toContain("[data-workbench]");
     expect(css).toContain("--workbench-scrollbar-thumb");
-    expect(css).toContain(".flux-print-document");
+    expect(css).toContain(".symtab-print-document");
     expect(css).toContain("@media print");
     expect(css).toContain("white-space: pre-wrap");
-    expect(css).toContain("body > :not(.flux-print-document)");
+    expect(css).toContain("body > :not(.symtab-print-document)");
     expect(css).toContain("height: auto !important");
-    expect(css).toContain("var(--flux-print-margin, 18mm)");
+    expect(css).toContain("var(--symtab-print-margin, 18mm)");
   });
 
   test("updater keeps its blue staged-action treatment", () => {

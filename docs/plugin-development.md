@@ -1,13 +1,13 @@
 # Symtab plugin development
 
 Plugin source stays outside Symtab monorepo. Generator creates template; app installs packaged
-`.flux-plugin`.
+`.symtab-plugin`.
 
 ## Published toolchain
 
 ```sh
-bunx create-flux-plugin ~/Code/my-flux-plugin
-cd ~/Code/my-flux-plugin
+bunx create-symtab-plugin ~/Code/my-symtab-plugin
+cd ~/Code/my-symtab-plugin
 bun install
 bun run validate
 bun run pack
@@ -15,19 +15,19 @@ bun run pack
 
 ## Local monorepo toolchain
 
-Use this until `create-flux-plugin` and `@flux/plugin-sdk` are published:
+Use this until `create-symtab-plugin` and `@symtab/plugin-sdk` are published:
 
 ```sh
-cd /path/to/flux
-bun run --cwd packages/create-flux-plugin build
-cd packages/create-flux-plugin && bun link
+cd /path/to/symtab
+bun run --cwd packages/create-symtab-plugin build
+cd packages/create-symtab-plugin && bun link
 cd ../plugin-sdk && bun link
 
 cd ~/Code
-node /path/to/flux/packages/create-flux-plugin/dist/cli.js my-flux-plugin
-cd my-flux-plugin
-bun link create-flux-plugin
-bun link @flux/plugin-sdk
+node /path/to/symtab/packages/create-symtab-plugin/dist/cli.js my-symtab-plugin
+cd my-symtab-plugin
+bun link create-symtab-plugin
+bun link @symtab/plugin-sdk
 bun run validate
 bun run pack
 ```
@@ -41,7 +41,7 @@ Symtab does not poll locally installed plugins or infer development mode from th
 
 1. Open target vault in Symtab.
 2. Open Plugins → Manage plugins → Installed.
-3. Select **Install from file…** and choose generated `.flux-plugin`.
+3. Select **Install from file…** and choose generated `.symtab-plugin`.
 4. Review staged permissions, activate version, then enable it for current vault.
 5. Click **Run Search welcome notes**. Success toast proves worker activated, event handler ran,
    and declared `vault.search` capability completed.
@@ -56,7 +56,7 @@ are per vault. Installing does not silently enable plugin in every vault.
 bun run dev
 ```
 
-`dev` watches `src/` and `flux.plugin.json`, runs the plugin's `build` script, and uploads each
+`dev` watches `src/` and `symtab.plugin.json`, runs the plugin's `build` script, and uploads each
 successful build to the authenticated local Symtab desktop daemon. Open plugin views refresh while
 you edit; keeping Plugins or a plugin view open also reloads worker code. Keep Symtab desktop
 running and use a disposable test vault.

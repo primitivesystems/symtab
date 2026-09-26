@@ -61,7 +61,7 @@ type WorkbenchState = {
   dismissedNotifications: string[];
 };
 
-const LAYOUT_KEY = "flux-workbench-layout-v2";
+const LAYOUT_KEY = "symtab-workbench-layout-v2";
 
 function initialWorkbenchState(value?: unknown): WorkbenchState {
   const width = typeof window === "undefined" ? 1280 : window.innerWidth;

@@ -1,7 +1,7 @@
 import { AnimatePresence, LayoutGroup } from "motion/react";
 import * as m from "motion/react-m";
 import { useEffect, useRef, useState } from "react";
-import { Button } from "@flux/shared-ui/components/ui/button";
+import { Button } from "@symtab/shared-ui/components/ui/button";
 
 export type InitializationPhase = "starting" | "vault" | "cache" | "workspace";
 

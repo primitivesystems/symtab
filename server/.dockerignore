@@ -1,5 +1,5 @@
 # Binaries
-flux-server
+symtab-server
 *.exe
 *.exe~
 *.dll

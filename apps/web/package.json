@@ -1,5 +1,5 @@
 {
-  "name": "@flux/web",
+  "name": "@symtab/web",
   "version": "0.0.1",
   "private": true,
   "type": "module",
@@ -12,11 +12,11 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@flux/client-web": "workspace:*",
+    "@symtab/client-web": "workspace:*",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
-    "@flux/app-core": "workspace:*",
-    "@flux/shared-ui": "workspace:*"
+    "@symtab/app-core": "workspace:*",
+    "@symtab/shared-ui": "workspace:*"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.18",

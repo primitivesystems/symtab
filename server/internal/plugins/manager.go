@@ -497,8 +497,8 @@ func PathsForVault(vaultRoot, pluginID string) (VaultPaths, error) {
 		return VaultPaths{}, err
 	}
 	return VaultPaths{
-		State: filepath.Join(absolute, ".flux", "plugins", pluginID, "state"),
-		Cache: filepath.Join(absolute, ".flux", "cache", "plugins", pluginID),
+		State: filepath.Join(absolute, ".symtab", "plugins", pluginID, "state"),
+		Cache: filepath.Join(absolute, ".symtab", "cache", "plugins", pluginID),
 	}, nil
 }
 
@@ -565,7 +565,7 @@ func inspectArchive(archive *zip.Reader) (Manifest, []*zip.File, error) {
 		}
 	}
 	if manifestFile == nil || manifestFile.UncompressedSize64 > maxManifestBytes {
-		return Manifest{}, nil, errors.New("plugin package must contain a root flux.plugin.json")
+		return Manifest{}, nil, errors.New("plugin package must contain a root symtab.plugin.json")
 	}
 	reader, err := manifestFile.Open()
 	if err != nil {

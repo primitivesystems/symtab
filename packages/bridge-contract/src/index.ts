@@ -295,7 +295,7 @@ export interface MarketplaceIndex {
 }
 
 /** Transport-neutral boundary consumed by application features. */
-export interface FluxClient {
+export interface SymtabClient {
   getStatus(): Promise<ServerStatus>;
   getBootstrap(windowId: string): Promise<AppBootstrap>;
   listRecentVaults(): Promise<RecentVault[]>;

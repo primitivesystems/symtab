@@ -2,37 +2,37 @@ export { cn } from "./lib/utils";
 export { Button, buttonVariants } from "./components/ui/button";
 export { ModeToggle } from "./components/mode-toggle";
 export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./components/tooltip";
-export { FluxEditorPane, FluxTabContextMenu } from "./components/workspace-tab";
+export { SymtabEditorPane, SymtabTabContextMenu } from "./components/workspace-tab";
 export type {
-  FluxEditorPaneProps,
-  FluxTabCommands,
-  FluxTabContextMenuProps,
+  SymtabEditorPaneProps,
+  SymtabTabCommands,
+  SymtabTabContextMenuProps,
 } from "./components/workspace-tab";
-export { FluxStatusBar } from "./components/status-bar";
-export type { FluxStatusBarProps, FluxVaultOption } from "./components/status-bar";
-export { FluxLayout } from "./components/flux-layout";
-export type { FluxLayoutProps } from "./components/flux-layout";
+export { SymtabStatusBar } from "./components/status-bar";
+export type { SymtabStatusBarProps, SymtabVaultOption } from "./components/status-bar";
+export { SymtabLayout } from "./components/symtab-layout";
+export type { SymtabLayoutProps } from "./components/symtab-layout";
 export {
-  FluxStackedTab,
-  FluxTab,
-  FluxTabAddButton,
-  FluxTabBar,
-  FluxTabMenu,
-} from "./components/flux-tabs";
+  SymtabStackedTab,
+  SymtabTab,
+  SymtabTabAddButton,
+  SymtabTabBar,
+  SymtabTabMenu,
+} from "./components/symtab-tabs";
 export type {
-  FluxStackedTabProps,
-  FluxTabAddButtonProps,
-  FluxTabBarProps,
-  FluxTabMenuEntry,
-  FluxTabMenuProps,
-  FluxTabProps,
-} from "./components/flux-tabs";
-export { useFluxLayout } from "./hooks/use-flux-layout";
+  SymtabStackedTabProps,
+  SymtabTabAddButtonProps,
+  SymtabTabBarProps,
+  SymtabTabMenuEntry,
+  SymtabTabMenuProps,
+  SymtabTabProps,
+} from "./components/symtab-tabs";
+export { useSymtabLayout } from "./hooks/use-symtab-layout";
 export type {
-  FluxLayoutState,
-  FluxSidebarOptions,
-  FluxSidebarSide,
-  FluxSidebarState,
-} from "./hooks/use-flux-layout";
+  SymtabLayoutState,
+  SymtabSidebarOptions,
+  SymtabSidebarSide,
+  SymtabSidebarState,
+} from "./hooks/use-symtab-layout";
 export { ThemeProvider, useTheme } from "./components/theme-provider";
 export type { Theme } from "./components/theme-provider";

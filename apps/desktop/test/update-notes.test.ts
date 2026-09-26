@@ -35,17 +35,17 @@ test("desktop releases ship DMGs and expose a verified install path", () => {
   expect(packageJson.build.publish).toMatchObject({
     provider: "github",
     owner: "primitivesystems",
-    repo: "project-flux",
+    repo: "symtab",
   });
   expect(packageJson.build.productName).toBe("Symtab");
-  expect(packageJson.build.mac.icon).toBe("assets/icon.icns");
+  expect(packageJson.build.mac.icon).toBe("public/logo.png");
   expect(packageJson.build.win.icon).toBe("assets/icon.ico");
   expect(packageJson.build.linux.icon).toBe("assets/icon.png");
   expect(packageJson.build.mac.target).toEqual(["dmg"]);
   expect(packageJson.build.mac.identity).toBeNull();
   expect(main).toContain('ipcMain.handle("install-update"');
   expect(main).toContain("autoUpdater.quitAndInstall(false, true)");
-  expect(main).toContain("FLUX_VERSION: app.getVersion()");
+  expect(main).toContain("SYMTAB_VERSION: app.getVersion()");
   expect(main).toContain("existsSync(current) || !existsSync(legacy) ? current : legacy");
   expect(main).toContain('app.setName("Symtab")');
   expect(main).toContain('"icon.icns"');
@@ -59,5 +59,5 @@ test("desktop releases ship DMGs and expose a verified install path", () => {
   expect(installer).toContain('createHash("sha256")');
   expect(installer).toContain("transferred !== asset.size");
   expect(installer).toContain("openMacInstaller");
-  expect(serverMain).toContain('os.Getenv("FLUX_VERSION")');
+  expect(serverMain).toContain('os.Getenv("SYMTAB_VERSION")');
 });

@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-const ManifestFile = "flux.plugin.json"
+const ManifestFile = "symtab.plugin.json"
 
 var (
 	pluginIDPattern   = regexp.MustCompile(`^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)*$`)

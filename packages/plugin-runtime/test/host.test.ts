@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import type { PluginManifest } from "@flux/plugin-sdk";
+import type { PluginManifest } from "@symtab/plugin-sdk";
 import { VaultPluginHost, type RuntimeWorker } from "../src";
 import type { HostMessage, PluginBundle, WorkerMessage } from "../src/protocol";
 
@@ -14,7 +14,7 @@ const manifest: PluginManifest = {
 
 const bundle: PluginBundle = {
   manifest,
-  source: "__fluxRegisterPlugin({ activate() {} })",
+  source: "__symtabRegisterPlugin({ activate() {} })",
   grantedCapabilities: ["vault.read"],
   settings: {},
 };

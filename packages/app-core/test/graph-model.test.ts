@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 import { buildGraph, graphLabelBudget, graphNodeRadius } from "../src/workspace/graph/model";
-import type { VaultGraph } from "@flux/bridge-contract";
+import type { VaultGraph } from "@symtab/bridge-contract";
 
 test("backend graph includes indexed tags without loading document contents", () => {
   const graph: VaultGraph = {

@@ -23,8 +23,8 @@ Available modes:
 - `guided_write`: asks client approval before each write; client must support MCP elicitation.
 - `trusted_workspace`: permits conflict-checked writes inside selected vault.
 
-Tool names use MCP-safe underscores, for example `flux_read_file` and
-`flux_get_graph_neighbors`. Dotted names such as `flux.read_file` are invalid in VS Code.
+Tool names use MCP-safe underscores, for example `symtab_read_file` and
+`symtab_get_graph_neighbors`. Dotted names such as `symtab.read_file` are invalid in VS Code.
 
 ## Sharing desktop daemon
 
@@ -34,7 +34,7 @@ Desktop app and MCP bridge must use same app-data directory. Default macOS path 
 ~/Library/Application Support/Symtab
 ```
 
-When desktop app uses custom `FLUX_APP_DATA_DIR`, add matching MCP argument:
+When desktop app uses custom `SYMTAB_APP_DATA_DIR`, add matching MCP argument:
 
 ```sh
 --app-data "/absolute/shared/app-data"
@@ -47,10 +47,10 @@ correctly rejects it.
 ## Quick verification
 
 1. Open vault in Symtab.
-2. Start `flux` MCP server from VS Code.
-3. Confirm tools include `flux_list_vaults`, `flux_list_files`, `flux_read_file`, and graph tools.
-4. Call `flux_list_vaults`; use returned `vaultId` for later calls.
-5. Call `flux_list_files`, `flux_read_file`, then `flux_get_graph_neighbors`.
+2. Start `symtab` MCP server from VS Code.
+3. Confirm tools include `symtab_list_vaults`, `symtab_list_files`, `symtab_read_file`, and graph tools.
+4. Call `symtab_list_vaults`; use returned `vaultId` for later calls.
+5. Call `symtab_list_files`, `symtab_read_file`, then `symtab_get_graph_neighbors`.
 
 If bridge reports vault already open elsewhere, app-data paths differ. If tools are rejected as
 invalid names, stale server binary still advertises dotted names; restart MCP process.
@@ -70,7 +70,7 @@ Each connection has:
 - Revocation and rotation state in the global app database.
 
 Client ID alone is not authentication. Generated VS Code, Codex, and Claude configurations invoke
-the packaged `flux-server mcp` binary with connection credentials. `flux_list_vaults` lists saved
+the packaged `symtab-server mcp` binary with connection credentials. `symtab_list_vaults` lists saved
 grants, and every later tool call supplies an explicit `vaultId`; the bridge has no mutable global
 active vault.
 

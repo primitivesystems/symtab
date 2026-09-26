@@ -1,5 +1,5 @@
 import { describe, expect, mock, test } from "bun:test";
-import type { FluxClient } from "@flux/bridge-contract";
+import type { SymtabClient } from "@symtab/bridge-contract";
 
 import { createClientStatePersistence } from "../src/app/client-state-persistence";
 
@@ -35,7 +35,7 @@ describe("client state persistence", () => {
         state: { version: 999 },
         updatedAt: "2026-07-21T00:00:00Z",
       })),
-    } as unknown as FluxClient;
+    } as unknown as SymtabClient;
     const persistence = createClientStatePersistence(client);
 
     await expect(persistence.loadBootstrap("main")).resolves.toEqual({
@@ -56,7 +56,7 @@ describe("client state persistence", () => {
         if (value === "dark") await firstGate;
         calls.push(`finish:${String(value)}`);
       }),
-    } as unknown as FluxClient;
+    } as unknown as SymtabClient;
     const persistence = createClientStatePersistence(client);
 
     const first = persistence.saveAppSetting("theme", "dark");

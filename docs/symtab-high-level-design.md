@@ -4,7 +4,7 @@
 
 Symtab is a local-first, open-source personal knowledge management application for power users, product managers, developers, and teams that want an Obsidian-compatible vault with stronger workflows, extensibility, search, task management, Git integration, and self-hosting.
 
-Symtab treats the filesystem as the canonical source of truth. Notes, tasks, attachments, and durable configuration remain ordinary files inside the vault. Derived indexes, caches, crash recovery data, and plugin runtime state live under `.flux/`.
+Symtab treats the filesystem as the canonical source of truth. Notes, tasks, attachments, and durable configuration remain ordinary files inside the vault. Derived indexes, caches, crash recovery data, and plugin runtime state live under `.symtab/`.
 
 The same vault can be opened in Symtab, Obsidian, a text editor, Git, or another Markdown-compatible tool without conversion.
 
@@ -127,7 +127,7 @@ The vault is the source of truth. SQLite, plugin caches, and previews are rebuil
 ## 5. Monorepo Layout
 
 ```text
-flux/
+symtab/
 ├── apps/
 │   ├── desktop/                 # Electron application
 │   ├── web/                     # Web entrypoint
@@ -163,7 +163,7 @@ Turborepo manages JavaScript and TypeScript packages. Go modules remain independ
 The desktop and web applications use the same frontend packages and application state model.
 
 ```ts
-interface FluxClient {
+interface SymtabClient {
   openVault(request: OpenVaultRequest): Promise<VaultInfo>;
   readFile(path: string): Promise<FileDocument>;
   saveFile(request: SaveFileRequest): Promise<SaveResult>;
@@ -174,8 +174,8 @@ interface FluxClient {
 
 Implementations:
 
-- `DesktopFluxClient`: Electron IPC.
-- `WebFluxClient`: HTTP commands/queries plus WebSocket events.
+- `DesktopSymtabClient`: Electron IPC.
+- `WebSymtabClient`: HTTP commands/queries plus WebSocket events.
 
 Transport code must stay outside feature modules.
 
@@ -364,7 +364,7 @@ vault/
 ├── archive/
 ├── .obsidian/                   # External app metadata
 ├── .git/                        # Optional Git repository
-└── .flux/
+└── .symtab/
     ├── vault.json
     ├── config.json                # Durable per-vault Symtab feature settings
     ├── index.db
@@ -374,11 +374,11 @@ vault/
     └── cache/
 ```
 
-`.flux/` is hidden from application navigation and always Git-ignored.
+`.symtab/` is hidden from application navigation and always Git-ignored.
 
 ### 8.3 Vault Identity
 
-`.flux/vault.json`:
+`.symtab/vault.json`:
 
 ```json
 {
@@ -399,7 +399,7 @@ Moving a vault preserves identity. Copying a vault may produce duplicate IDs; Sy
 
 ### 8.4 Archive
 
-Archive is durable content outside `.flux/`.
+Archive is durable content outside `.symtab/`.
 
 Archived files:
 
@@ -410,7 +410,7 @@ Archived files:
 
 ### 8.5 Trash
 
-Trash lives under `.flux/trash/`.
+Trash lives under `.symtab/trash/`.
 
 Trash is excluded from:
 
@@ -452,9 +452,9 @@ stateDiagram-v2
 ### 9.1 Opening Sequence
 
 1. Validate the root path.
-2. Load or create `.flux/vault.json`.
+2. Load or create `.symtab/vault.json`.
 3. Open immediately in initialization/read-only mode.
-4. Create or open `.flux/index.db`.
+4. Create or open `.symtab/index.db`.
 5. Initialize write coordination.
 6. Start the filesystem watcher.
 7. Run lightweight reconciliation.
@@ -662,7 +662,7 @@ Support:
 - Automatic three-way merge where possible.
 - Manual merge editor.
 
-Large base snapshots may spill to `.flux/recovery/`.
+Large base snapshots may spill to `.symtab/recovery/`.
 
 ---
 
@@ -673,7 +673,7 @@ Recovery snapshots exist only for unsaved or failed writes.
 Location:
 
 ```text
-.flux/recovery/
+.symtab/recovery/
 ```
 
 Rules:
@@ -719,7 +719,7 @@ Rules:
 
 - Debounce duplicate path events.
 - Coalesce create/delete bursts into probable renames.
-- Ignore `.flux`, `.git`, temporary files, swap files, and configured exclusions.
+- Ignore `.symtab`, `.git`, temporary files, swap files, and configured exclusions.
 - Suppress self-generated events using expected path plus content hash.
 - Do not rely on timestamps alone.
 - Hash only when metadata indicates possible change.
@@ -737,7 +737,7 @@ Rules:
 
 Use:
 
-- One SQLite database per vault at `.flux/index.db`.
+- One SQLite database per vault at `.symtab/index.db`.
 - One small global database in OS app-data for recent vaults, window state, settings, and global plugin installation metadata.
 
 Per-vault databases improve isolation and rebuildability.
@@ -1092,7 +1092,7 @@ Rules:
 - Do not normalize or rewrite a file unless the user edits it or invokes a feature.
 - Keep `.obsidian/` hidden in normal navigation.
 - Read `.obsidian/` only for explicitly supported compatibility behavior.
-- Keep app-specific runtime state under `.flux/`.
+- Keep app-specific runtime state under `.symtab/`.
 - Do not implement an import/export workflow; a vault is already portable.
 
 ---
@@ -1189,7 +1189,7 @@ Rules:
 - Use collision-safe names.
 - Detect MIME type from bytes, not extension alone.
 - Stream large files.
-- Generate previews and thumbnails only in `.flux/cache/`.
+- Generate previews and thumbnails only in `.symtab/cache/`.
 - Missing attachments remain unresolved links.
 - Plugins may extract searchable text.
 - Original binary remains canonical.
@@ -1231,13 +1231,13 @@ app-data/plugins/<plugin-id>/<version>/
 Per-vault plugin state:
 
 ```text
-vault/.flux/plugins/<plugin-id>/state/
+vault/.symtab/plugins/<plugin-id>/state/
 ```
 
 Disposable cache:
 
 ```text
-vault/.flux/cache/plugins/<plugin-id>/
+vault/.symtab/cache/plugins/<plugin-id>/
 ```
 
 ### 21.2 Capability Model
@@ -1353,7 +1353,7 @@ Manifest-declared settings render through shared desktop/web UI. Values are vali
 declared type and stored per vault at:
 
 ```text
-.flux/plugins/<plugin-id>/state/settings.json
+.symtab/plugins/<plugin-id>/state/settings.json
 ```
 
 Plugin runtime receives an immutable settings snapshot at activation. Saving settings
@@ -1374,7 +1374,7 @@ Git is optional. Vaults work fully without Git.
 - Nested `.git` directories are ignored by Symtab Git operations.
 - Existing repositories are detected and adopted.
 - Enabling version control runs `git init`.
-- `.flux/` is always added to `.gitignore`.
+- `.symtab/` is always added to `.gitignore`.
 - No automatic commit by default.
 
 ### 22.2 Enable VCS Flow
@@ -1445,7 +1445,7 @@ Credentials:
 
 - Desktop: OS credential manager/keychain.
 - Self-hosted: mounted secrets, credential helper, or environment-backed configuration.
-- Never store tokens in the vault or `.flux/`.
+- Never store tokens in the vault or `.symtab/`.
 
 OAuth may be used to fetch tokens and create/manage repositories, but Git remains the transport mechanism.
 
@@ -1506,7 +1506,7 @@ The adapter must not receive arbitrary shell input.
 Use independent version numbers:
 
 ```text
-.flux/vault.json
+.symtab/vault.json
     vault_format_version
 
 SQLite PRAGMA user_version
@@ -1515,7 +1515,7 @@ SQLite PRAGMA user_version
 
 Rules:
 
-- `vault_format_version` changes only when durable `.flux` structure changes.
+- `vault_format_version` changes only when durable `.symtab` structure changes.
 - `index_schema_version` changes for SQLite schema changes.
 - Run migrations before enabling writes.
 - Back up `index.db` before destructive migrations.
@@ -1817,8 +1817,8 @@ Operational requirements:
 - Structured logs.
 - Resource limits.
 - Backup documentation focused on vault files first.
-- `.flux/index.db` may be omitted from backups if rebuild time is acceptable.
-- `.flux/recovery/` should usually be backed up only for short-term operational recovery.
+- `.symtab/index.db` may be omitted from backups if rebuild time is acceptable.
+- `.symtab/recovery/` should usually be backed up only for short-term operational recovery.
 
 ### 32.3 One-Click Hosting
 
@@ -1967,7 +1967,7 @@ Initial targets, to be validated with benchmarks:
 | Web auth | Single-admin password/session |
 | Cloud storage root | `/data/vaults` |
 | Telemetry | Optional, off by default |
-| Vault identity | UUIDv7 in `.flux/vault.json` |
+| Vault identity | UUIDv7 in `.symtab/vault.json` |
 | Migration policy | Rebuild disposable DB when safer |
 
 ---
@@ -2122,7 +2122,7 @@ flowchart TD
     Runtime{Runtime Type}
 
     Direct[Direct Model API]
-    FluxLoop[Symtab-managed Agent Loop]
+    SymtabLoop[Symtab-managed Agent Loop]
 
     Agent[External Agent Runtime]
     ProviderLoop[Provider-managed Agent Loop]
@@ -2131,7 +2131,7 @@ flowchart TD
     Vault[(Vault)]
 
     Chat --> Runtime
-    Runtime -- Ollama / LM Studio / API --> Direct --> FluxLoop --> MCP
+    Runtime -- Ollama / LM Studio / API --> Direct --> SymtabLoop --> MCP
     Runtime -- Codex / Claude / Copilot / Hermes --> Agent --> ProviderLoop --> MCP
     MCP --> Vault
 ```
@@ -2171,57 +2171,57 @@ The AI Chat plugin and external MCP clients share one tool registry.
 Representative tools:
 
 ```text
-flux_list_vaults
-flux_get_vault
-flux_get_vault_status
+symtab_list_vaults
+symtab_get_vault
+symtab_get_vault_status
 
-flux_list_files
-flux_read_file
-flux_create_directory
-flux_create_file
-flux_update_file
-flux_move_file
-flux_delete_file
-flux_restore_file
+symtab_list_files
+symtab_read_file
+symtab_create_directory
+symtab_create_file
+symtab_update_file
+symtab_move_file
+symtab_delete_file
+symtab_restore_file
 
-flux_search
-flux_get_backlinks
-flux_get_outgoing_links
-flux_get_broken_links
-flux_resolve_link
-flux_get_graph_neighbors
-flux_create_link
-flux_remove_link
+symtab_search
+symtab_get_backlinks
+symtab_get_outgoing_links
+symtab_get_broken_links
+symtab_resolve_link
+symtab_get_graph_neighbors
+symtab_create_link
+symtab_remove_link
 
-flux_list_tasks
-flux_create_task
-flux_update_task
-flux_complete_task
-flux_move_task
+symtab_list_tasks
+symtab_create_task
+symtab_update_task
+symtab_complete_task
+symtab_move_task
 
-flux_get_frontmatter
-flux_update_frontmatter
-flux_list_tags
-flux_add_tag
-flux_remove_tag
+symtab_get_frontmatter
+symtab_update_frontmatter
+symtab_list_tags
+symtab_add_tag
+symtab_remove_tag
 
-flux_git_status
-flux_git_diff
-flux_git_commit
-flux_git_pull
-flux_git_push
+symtab_git_status
+symtab_git_diff
+symtab_git_commit
+symtab_git_pull
+symtab_git_push
 ```
 
 For reliable multi-file changes, Symtab may expose:
 
 ```text
-flux_apply_vault_plan
+symtab_apply_vault_plan
 ```
 
-`flux_apply_vault_plan` validates the entire operation set before applying it through normal path validation, locking, atomic writes, conflict handling, indexing, and event emission.
+`symtab_apply_vault_plan` validates the entire operation set before applying it through normal path validation, locking, atomic writes, conflict handling, indexing, and event emission.
 
 Before its first canonical write, it persists a private write-ahead journal under
-`.flux/recovery/vault-plans/`. Journal contains normalized paths, original content hashes
+`.symtab/recovery/vault-plans/`. Journal contains normalized paths, original content hashes
 and content required for rollback, plus target hashes. A committed marker is flushed only
 after every file write succeeds. On next vault open, an uncommitted plan rolls back only
 files still matching recorded target hashes; unexpected external changes stop recovery and
@@ -2340,7 +2340,7 @@ Production-grade processing:
 5. Use OCR only when embedded text is unavailable or unusable.
 6. Detect chapters, headings, tables, and sections where possible.
 7. Create source-aware chunks.
-8. Cache extraction and embeddings under `.flux/`.
+8. Cache extraction and embeddings under `.symtab/`.
 9. Reprocess only when source hash or parser version changes.
 
 ```mermaid
@@ -2426,7 +2426,7 @@ Roadmap generation may consider exam date, available study time, source size, pr
 Flashcards and quizzes are ordinary Markdown. Operational spaced-repetition state may remain under:
 
 ```text
-.flux/plugins/ai-chat/state/
+.symtab/plugins/ai-chat/state/
 ```
 
 Mind maps are derived from links between generated concept notes. Possible renderings include Mermaid, a filtered Symtab graph, a canvas-style AI Chat view, or an exported image. Canonical relationships remain in note links.
@@ -2496,10 +2496,10 @@ Production MCP access is configured in **Settings → MCP connections**:
 3. User selects allowed vaults, capabilities, and approval mode.
 4. Global app DB stores connection metadata, a one-way secret hash, grants, creation time,
    last-used time, and revocation state.
-5. Generated client configuration contains the bundled `flux-server` path, connection ID,
+5. Generated client configuration contains the bundled `symtab-server` path, connection ID,
    and secret. Human-readable client name is display metadata, never authentication.
 6. MCP bridge attaches to the existing daemon or starts the same packaged binary in daemon mode.
-7. `flux_list_vaults` returns every vault granted to that connection.
+7. `symtab_list_vaults` returns every vault granted to that connection.
 8. Every vault tool receives an explicit `vaultId`; there is no mutable process-global active vault.
 
 Connection secrets are shown only when created or rotated. Revocation takes effect for new
@@ -2513,9 +2513,9 @@ conflict checks, watcher, and indexer.
 Packaged users do not install Go. Config generation resolves the installed sidecar path:
 
 ```text
-macOS:   /Applications/FLUX.app/Contents/Resources/flux-server
-Windows: <install directory>/resources/flux-server.exe
-Linux:   <install directory>/resources/flux-server
+macOS:   /Applications/SYMTAB.app/Contents/Resources/symtab-server
+Windows: <install directory>/resources/symtab-server.exe
+Linux:   <install directory>/resources/symtab-server
 ```
 
 Paths are discovered from the running application rather than assumed from these examples.
@@ -2537,7 +2537,7 @@ Inbox/
 ```
 
 Folder, filename format, template, week-start day, and capture target are configurable per vault
-in `.flux/config.json`. Date identity uses the user's configured IANA time zone; ISO week-year
+in `.symtab/config.json`. Date identity uses the user's configured IANA time zone; ISO week-year
 rules are used when the weekly format contains an ISO week token. Invalid or ambiguous formats
 are rejected before creating files.
 
@@ -2676,7 +2676,7 @@ and vault context. Menus contain no separate file, navigation, or capture busine
 
 These invariants must remain true throughout implementation:
 
-1. A user can delete `.flux/index.db` and rebuild it without losing notes.
+1. A user can delete `.symtab/index.db` and rebuild it without losing notes.
 2. A Git or plugin failure cannot prevent ordinary note editing.
 3. Symtab never silently chooses an ambiguous link target.
 4. A save never overwrites an externally modified file without conflict handling.

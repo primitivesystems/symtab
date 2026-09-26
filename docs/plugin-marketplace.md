@@ -5,7 +5,7 @@ Marketplace is separate repository. Plugin source and release artifacts remain i
 ## Registry repository
 
 ```text
-flux-plugin-registry/
+symtab-plugin-registry/
 ├── submissions/<plugin-id>.json
 ├── registry.json
 ├── registry.json.sig
@@ -14,9 +14,9 @@ flux-plugin-registry/
 
 Each submission names publisher repository and release asset. Registry build job:
 
-1. Downloads release `.flux-plugin`.
+1. Downloads release `.symtab-plugin`.
 2. Computes SHA-256.
-3. Opens archive and validates `flux.plugin.json`.
+3. Opens archive and validates `symtab.plugin.json`.
 4. Verifies submitted manifest matches packaged manifest.
 5. Fetches publisher `README.md` and stores a bounded snapshot in generated index.
 6. Emits deterministic `registry.json`.
@@ -38,8 +38,8 @@ Generated entry:
     "optionalPermissions": []
   },
   "publisher": "Acme",
-  "repository": "https://github.com/acme/flux-calendar",
-  "downloadUrl": "https://github.com/acme/flux-calendar/releases/download/v1.2.0/acme.calendar-1.2.0.flux-plugin",
+  "repository": "https://github.com/acme/symtab-calendar",
+  "downloadUrl": "https://github.com/acme/symtab-calendar/releases/download/v1.2.0/acme.calendar-1.2.0.symtab-plugin",
   "sha256": "<64 lowercase hex characters>",
   "readme": "# Calendar\n...",
   "changelog": "Added week view.",
@@ -76,9 +76,9 @@ openssl pkeyutl -sign -rawin \
 Private key must not enter registry repository. Use protected CI environment or offline release signing. Public key ships through deployment configuration:
 
 ```text
-FLUX_PLUGIN_REGISTRY_URL=https://plugins.flux.example/registry.json
-FLUX_PLUGIN_REGISTRY_SIGNATURE_URL=https://plugins.flux.example/registry.json.sig
-FLUX_PLUGIN_REGISTRY_PUBLIC_KEY=<public-key.txt contents>
+SYMTAB_PLUGIN_REGISTRY_URL=https://plugins.symtab.example/registry.json
+SYMTAB_PLUGIN_REGISTRY_SIGNATURE_URL=https://plugins.symtab.example/registry.json.sig
+SYMTAB_PLUGIN_REGISTRY_PUBLIC_KEY=<public-key.txt contents>
 ```
 
 Symtab verifies signature before showing marketplace, then verifies downloaded package SHA-256 and packaged manifest before staging installation. Marketplace remains disabled when these variables are absent.
@@ -90,7 +90,7 @@ Landing page may fetch `registry.json` directly for public listings. Install sec
 Publisher works entirely outside Symtab monorepo:
 
 ```sh
-bunx create-flux-plugin my-plugin
+bunx create-symtab-plugin my-plugin
 cd my-plugin
 bun install
 bun run validate

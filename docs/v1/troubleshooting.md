@@ -34,4 +34,4 @@ Confirm that GitHub is reachable, then retry **Check for Updates…**. Symtab re
 
 ## Before reporting a data-loss issue
 
-Do not empty Trash, delete `.flux/`, or overwrite the vault. Copy the entire vault to a safe location first, including hidden files, then record the failing path and the last action taken.
+Do not empty Trash, delete `.symtab/`, or overwrite the vault. Copy the entire vault to a safe location first, including hidden files, then record the failing path and the last action taken.

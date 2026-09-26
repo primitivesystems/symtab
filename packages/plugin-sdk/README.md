@@ -3,7 +3,7 @@
 Typed manifest and capability API for sandboxed Symtab plugins.
 
 ```ts
-import { definePlugin } from "@flux/plugin-sdk";
+import { definePlugin } from "@symtab/plugin-sdk";
 
 export default definePlugin({
   async activate(context) {
@@ -13,7 +13,7 @@ export default definePlugin({
 });
 ```
 
-Declare every used capability in `flux.plugin.json`. Runtime approval remains authoritative.
+Declare every used capability in `symtab.plugin.json`. Runtime approval remains authoritative.
 
 Views can request one safe host surface and either a built-in icon or packaged SVG:
 

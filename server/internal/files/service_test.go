@@ -9,12 +9,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/flux-pkm/server/internal/domain"
+	"github.com/symtab-pkm/server/internal/domain"
 )
 
 func TestServiceRejectsPathsOutsideVault(t *testing.T) {
 	service := New(t.TempDir())
-	for _, candidate := range []string{"../secret.md", ".flux/index.db", "/tmp/secret.md"} {
+	for _, candidate := range []string{"../secret.md", ".symtab/index.db", "/tmp/secret.md"} {
 		if _, err := service.Read(candidate); !errors.Is(err, ErrInvalidPath) {
 			t.Fatalf("expected %q to be rejected, got %v", candidate, err)
 		}
@@ -182,7 +182,7 @@ func TestMutationLifecycle(t *testing.T) {
 	patched, _, err := service.Patch("notes/inbox/Draft.md", document.ContentHash, []domain.TextEdit{{
 		StartByte: 6,
 		EndByte:   11,
-		Text:      "Flux",
+		Text:      "Symtab",
 	}})
 	if err != nil {
 		t.Fatal(err)
@@ -204,7 +204,7 @@ func TestMutationLifecycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if restored.Content != "hello Flux" || restored.ContentHash != patched.ContentHash {
+	if restored.Content != "hello Symtab" || restored.ContentHash != patched.ContentHash {
 		t.Fatalf("unexpected restored document: %#v", restored)
 	}
 }
@@ -238,7 +238,7 @@ func TestTrashListPurgeAndPermanentDelete(t *testing.T) {
 	}
 	old.DeletedAt = time.Now().UTC().Add(-31 * 24 * time.Hour)
 	metadata, _ := json.Marshal(old)
-	if err := os.WriteFile(filepath.Join(root, ".flux", "trash", old.ID, "metadata.json"), metadata, 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(root, ".symtab", "trash", old.ID, "metadata.json"), metadata, 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if _, _, err := service.Create("recent.md", "recent"); err != nil {

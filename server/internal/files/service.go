@@ -17,7 +17,7 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/flux-pkm/server/internal/domain"
+	"github.com/symtab-pkm/server/internal/domain"
 	"github.com/google/uuid"
 )
 
@@ -403,7 +403,7 @@ func (s *Service) move(
 }
 
 func renameCaseOnly(source, destination string) error {
-	temporary, err := os.CreateTemp(filepath.Dir(source), ".flux-rename-*")
+	temporary, err := os.CreateTemp(filepath.Dir(source), ".symtab-rename-*")
 	if err != nil {
 		return err
 	}
@@ -448,7 +448,7 @@ func (s *Service) Delete(relativePath string) (domain.TrashEntry, error) {
 		return domain.TrashEntry{}, err
 	}
 	entry := domain.TrashEntry{ID: id.String(), OriginalPath: normalizedPath, DeletedAt: time.Now().UTC(), SizeBytes: size}
-	itemDirectory := filepath.Join(s.root, ".flux", "trash", entry.ID)
+	itemDirectory := filepath.Join(s.root, ".symtab", "trash", entry.ID)
 	if err := os.MkdirAll(itemDirectory, 0o700); err != nil {
 		return domain.TrashEntry{}, err
 	}
@@ -520,7 +520,7 @@ func (s *Service) PurgeTrash(retention time.Duration, now time.Time) (int, error
 }
 
 func (s *Service) listTrash() ([]domain.TrashEntry, error) {
-	trashDirectory := filepath.Join(s.root, ".flux", "trash")
+	trashDirectory := filepath.Join(s.root, ".symtab", "trash")
 	items, err := os.ReadDir(trashDirectory)
 	if errors.Is(err, os.ErrNotExist) {
 		return []domain.TrashEntry{}, nil
@@ -552,7 +552,7 @@ func (s *Service) trashItemDirectory(trashID string) (string, error) {
 	if err != nil || parsed.String() != trashID {
 		return "", ErrInvalidPath
 	}
-	return filepath.Join(s.root, ".flux", "trash", trashID), nil
+	return filepath.Join(s.root, ".symtab", "trash", trashID), nil
 }
 
 func (s *Service) Restore(trashID string) (domain.FileEntry, error) {
@@ -561,7 +561,7 @@ func (s *Service) Restore(trashID string) (domain.FileEntry, error) {
 	if _, err := uuid.Parse(trashID); err != nil {
 		return domain.FileEntry{}, ErrInvalidPath
 	}
-	itemDirectory := filepath.Join(s.root, ".flux", "trash", trashID)
+	itemDirectory := filepath.Join(s.root, ".symtab", "trash", trashID)
 	metadata, err := os.ReadFile(filepath.Join(itemDirectory, "metadata.json"))
 	if err != nil {
 		return domain.FileEntry{}, err
@@ -698,7 +698,7 @@ func rejectSymlinks(root, target string) error {
 func IsInternal(relativePath string) bool {
 	first, _, _ := strings.Cut(relativePath, "/")
 	switch first {
-	case ".flux", ".git", ".obsidian":
+	case ".symtab", ".git", ".obsidian":
 		return true
 	default:
 		return false
@@ -711,7 +711,7 @@ func IsInternal(relativePath string) bool {
 func IsIgnored(relativePath string) bool {
 	for _, component := range strings.Split(filepath.ToSlash(relativePath), "/") {
 		switch component {
-		case ".flux", ".git", ".obsidian", ".agents", ".cache", ".codex-plugins", ".next", ".nuxt", ".output", ".svelte-kit", ".turbo", ".vite":
+		case ".symtab", ".git", ".obsidian", ".agents", ".cache", ".codex-plugins", ".next", ".nuxt", ".output", ".svelte-kit", ".turbo", ".vite":
 			return true
 		}
 	}
@@ -750,7 +750,7 @@ func fileEntry(relativePath string, info os.FileInfo) domain.FileEntry {
 }
 
 func writeAtomic(resolvedPath, content string, mode os.FileMode) (os.FileInfo, error) {
-	temporary, err := os.CreateTemp(filepath.Dir(resolvedPath), ".flux-write-*")
+	temporary, err := os.CreateTemp(filepath.Dir(resolvedPath), ".symtab-write-*")
 	if err != nil {
 		return nil, err
 	}

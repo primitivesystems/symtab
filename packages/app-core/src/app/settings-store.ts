@@ -40,7 +40,7 @@ export interface KeychainEntry {
   createdAt: string;
 }
 
-export interface FluxSettings {
+export interface SymtabSettings {
   general: GeneralSettings;
   editor: EditorSettings;
   appearance: AppearanceSettings;
@@ -48,7 +48,7 @@ export interface FluxSettings {
   plugins: Record<string, boolean>;
 }
 
-export const DEFAULT_SETTINGS: FluxSettings = {
+export const DEFAULT_SETTINGS: SymtabSettings = {
   general: {
     launchBehaviour: "last-vault",
     confirmDeleteNote: true,
@@ -99,7 +99,7 @@ export const DEFAULT_SETTINGS: FluxSettings = {
   },
 };
 
-function mergeSettings(settings?: Partial<FluxSettings>): FluxSettings {
+function mergeSettings(settings?: Partial<SymtabSettings>): SymtabSettings {
   return {
     general: { ...DEFAULT_SETTINGS.general, ...settings?.general },
     editor: { ...DEFAULT_SETTINGS.editor, ...settings?.editor },
@@ -109,13 +109,13 @@ function mergeSettings(settings?: Partial<FluxSettings>): FluxSettings {
   };
 }
 
-export const APP_STATE_KEY = "fluxSettings";
+export const APP_STATE_KEY = "symtabSettings";
 
-export function loadSettings(): FluxSettings {
+export function loadSettings(): SymtabSettings {
   return DEFAULT_SETTINGS;
 }
 
-export function saveSettings(settings: FluxSettings): void {
+export function saveSettings(settings: SymtabSettings): void {
   applyAppearanceSettings(settings.appearance);
 }
 
@@ -146,9 +146,9 @@ export function applyAppearanceSettings(appearance: AppearanceSettings): void {
   }
 }
 
-export function useFluxSettings() {
+export function useSymtabSettings() {
   const storedSettings = useAppStore(
-    (state) => state.settings[APP_STATE_KEY] as FluxSettings | undefined
+    (state) => state.settings[APP_STATE_KEY] as SymtabSettings | undefined
   );
   const storedTheme = useAppStore((state) => state.settings.theme);
   const setSetting = useAppStore((state) => state.setSetting);
@@ -172,9 +172,9 @@ export function useFluxSettings() {
   }, [setSetting, settings, storedSettings]);
 
   const updateSettings = useCallback(
-    (updater: (prev: FluxSettings) => FluxSettings) => {
+    (updater: (prev: SymtabSettings) => SymtabSettings) => {
       const current = mergeSettings(
-        useAppStore.getState().settings[APP_STATE_KEY] as FluxSettings | undefined
+        useAppStore.getState().settings[APP_STATE_KEY] as SymtabSettings | undefined
       );
       const next = mergeSettings(updater(current));
       setSetting(APP_STATE_KEY, next);

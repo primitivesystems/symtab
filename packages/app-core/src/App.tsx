@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { VSCodeWorkbench } from "@flux/shared-ui/components/design-system/workbench";
-import { ThemeProvider } from "@flux/shared-ui/components/theme-provider";
+import { VSCodeWorkbench } from "@symtab/shared-ui/components/design-system/workbench";
+import { ThemeProvider } from "@symtab/shared-ui/components/theme-provider";
 import type {
   WorkbenchSnapshot,
   WorkbenchTheme,
   WorkbenchUpdate,
   WorkbenchNativeCommand,
-} from "@flux/shared-ui/components/design-system/workbench";
-import type { FluxClient } from "@flux/bridge-contract";
-import { browserStatePersistence, type FluxStatePersistence } from "./app/state";
+} from "@symtab/shared-ui/components/design-system/workbench";
+import type { SymtabClient } from "@symtab/bridge-contract";
+import { browserStatePersistence, type SymtabStatePersistence } from "./app/state";
 import { MarkdownEditor, type DemoDocument } from "./editor/markdown-editor";
 import { PdfExportDialog } from "./pdf/export";
 import { ConfirmDialog, TrashManager, VaultManager } from "./workspace/dialogs";
@@ -23,16 +23,16 @@ import {
   type RightPane,
 } from "./workspace/sidebars";
 import { WorkbenchGraph } from "./workbench/workbench-graph";
-import type { EditorTab } from "@flux/shared-ui/components/design-system/workbench/editor/editor-area";
-import { OnboardingPage } from "@flux/shared-ui/components/design-system/workbench/chrome/onboarding-page";
+import type { EditorTab } from "@symtab/shared-ui/components/design-system/workbench/editor/editor-area";
+import { OnboardingPage } from "@symtab/shared-ui/components/design-system/workbench/chrome/onboarding-page";
 import { useTrash } from "./trash/use-trash";
 
-export interface FluxRuntime {
+export interface SymtabRuntime {
   label: string;
   connect: () => Promise<string>;
-  client: FluxClient | null;
+  client: SymtabClient | null;
   selectVaultDirectory?: (mode: "open" | "create" | "location") => Promise<string | null>;
-  getPerformanceStats?: () => Promise<FluxPerformanceStats | null>;
+  getPerformanceStats?: () => Promise<SymtabPerformanceStats | null>;
   checkForUpdates?: () => Promise<WorkbenchUpdate>;
   downloadUpdate?: () => Promise<void>;
   installUpdate?: () => Promise<void>;
@@ -45,7 +45,7 @@ export interface FluxRuntime {
   getWindowId?: () => Promise<string>;
   setTheme?: (theme: "system" | "dark" | "light") => Promise<void>;
   setMenuBarIconEnabled?: (enabled: boolean) => Promise<void>;
-  statePersistence?: FluxStatePersistence;
+  statePersistence?: SymtabStatePersistence;
   vaultAccess?: "filesystem" | "registry";
 }
 
@@ -68,13 +68,13 @@ export interface PdfExportOptions {
   scale: number;
 }
 
-export interface FluxPerformanceStats {
+export interface SymtabPerformanceStats {
   cpuPercent: number;
   memoryMB: number;
 }
 
-export interface FluxAppProps {
-  runtime: FluxRuntime;
+export interface SymtabAppProps {
+  runtime: SymtabRuntime;
   windowControlsInset?: number;
 }
 
@@ -89,7 +89,7 @@ function snapshotKey(windowId: string) {
   return `workbench.window.${windowId}`;
 }
 
-export function FluxApp({ runtime, windowControlsInset = 0 }: FluxAppProps) {
+export function SymtabApp({ runtime, windowControlsInset = 0 }: SymtabAppProps) {
   const persistence = runtime.statePersistence ?? browserStatePersistence;
   const [theme, setTheme] = useState<WorkbenchTheme>(preferredTheme);
   const [windowId, setWindowId] = useState<string>();
@@ -110,7 +110,7 @@ export function FluxApp({ runtime, windowControlsInset = 0 }: FluxAppProps) {
   const [pdfDocument, setPdfDocument] = useState<DemoDocument | null>(null);
   const [pdfOpen, setPdfOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [performanceStats, setPerformanceStats] = useState<FluxPerformanceStats | null>(null);
+  const [performanceStats, setPerformanceStats] = useState<SymtabPerformanceStats | null>(null);
   const updateCheckStartedRef = useRef(false);
 
   useEffect(() => {

@@ -28,4 +28,4 @@ Choose **Move to trash** from the item menu. Deleting a folder moves the folder 
 
 ## Files shown by Symtab
 
-Symtab indexes Markdown plus common canvas, base, image, audio, video, and PDF formats. Unsupported source-code and text formats remain on disk but are not listed as vault notes. Protected metadata and cache folders such as `.flux`, `.git`, and `.obsidian` are hidden.
+Symtab indexes Markdown plus common canvas, base, image, audio, video, and PDF formats. Unsupported source-code and text formats remain on disk but are not listed as vault notes. Protected metadata and cache folders such as `.symtab`, `.git`, and `.obsidian` are hidden.

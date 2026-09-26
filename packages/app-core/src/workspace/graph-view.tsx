@@ -22,16 +22,16 @@ import {
   WandSparkles,
   X,
 } from "lucide-react";
-import { MenuItem } from "@flux/shared-ui/components/ui/menu";
+import { MenuItem } from "@symtab/shared-ui/components/ui/menu";
 import { Application, BitmapText, Color, Container, Graphics, Rectangle } from "pixi.js";
-import { FluxEditorPane } from "@flux/shared-ui/components/workspace-tab";
+import { SymtabEditorPane } from "@symtab/shared-ui/components/workspace-tab";
 import type { DemoDocument } from "../editor/markdown-editor";
 import { buildGraph, graphLabelBudget, graphNodeRadius, type GraphNode, type GraphLink } from "./graph/model";
-import { GraphSection as ForceSection, GraphSwitch, GraphSlider } from "@flux/shared-ui/components/design-system/graph/graph-controls";
-import { Button } from "@flux/shared-ui/components/ui/button";
-import { Input } from "@flux/shared-ui/components/ui/input";
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "@flux/shared-ui/components/ui/context-menu";
-import type { VaultGraph } from "@flux/bridge-contract";
+import { GraphSection as ForceSection, GraphSwitch, GraphSlider } from "@symtab/shared-ui/components/design-system/graph/graph-controls";
+import { Button } from "@symtab/shared-ui/components/ui/button";
+import { Input } from "@symtab/shared-ui/components/ui/input";
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "@symtab/shared-ui/components/ui/context-menu";
+import type { VaultGraph } from "@symtab/bridge-contract";
 
 interface GraphViewProps {
   embedded?: boolean;
@@ -903,9 +903,9 @@ export function GraphView({
       </section>
   );
   return embedded ? content : (
-    <FluxEditorPane title="Graph view" menuLabel="More options" menuContent={
+    <SymtabEditorPane title="Graph view" menuLabel="More options" menuContent={
       <GraphViewMenu bookmarked={bookmarked} onBookmarkChange={onBookmarkChange}
         onCopyScreenshot={copyScreenshot} onSplitRight={onSplitRight} onSplitDown={onSplitDown} />
-    }>{content}</FluxEditorPane>
+    }>{content}</SymtabEditorPane>
   );
 }

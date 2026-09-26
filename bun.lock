@@ -16,12 +16,12 @@
       },
     },
     "apps/desktop": {
-      "name": "@flux/desktop",
+      "name": "@symtab/desktop",
       "version": "0.0.1",
       "dependencies": {
-        "@flux/app-core": "workspace:*",
-        "@flux/client-desktop": "workspace:*",
-        "@flux/shared-ui": "workspace:*",
+        "@symtab/app-core": "workspace:*",
+        "@symtab/client-desktop": "workspace:*",
+        "@symtab/shared-ui": "workspace:*",
         "electron-updater": "^6.8.9",
         "react": "^19.2.6",
         "react-dom": "^19.2.6",
@@ -40,12 +40,12 @@
       },
     },
     "apps/web": {
-      "name": "@flux/web",
+      "name": "@symtab/web",
       "version": "0.0.1",
       "dependencies": {
-        "@flux/app-core": "workspace:*",
-        "@flux/client-web": "workspace:*",
-        "@flux/shared-ui": "workspace:*",
+        "@symtab/app-core": "workspace:*",
+        "@symtab/client-web": "workspace:*",
+        "@symtab/shared-ui": "workspace:*",
         "react": "^19.2.6",
         "react-dom": "^19.2.6",
       },
@@ -61,7 +61,7 @@
       },
     },
     "packages/app-core": {
-      "name": "@flux/app-core",
+      "name": "@symtab/app-core",
       "version": "0.0.1",
       "dependencies": {
         "@codemirror/autocomplete": "^6.20.3",
@@ -72,10 +72,10 @@
         "@codemirror/search": "^6.7.1",
         "@codemirror/state": "^6.7.1",
         "@codemirror/view": "6.43.9",
-        "@flux/bridge-contract": "workspace:*",
-        "@flux/plugin-runtime": "workspace:*",
-        "@flux/plugin-sdk": "workspace:*",
-        "@flux/shared-ui": "workspace:*",
+        "@symtab/bridge-contract": "workspace:*",
+        "@symtab/plugin-runtime": "workspace:*",
+        "@symtab/plugin-sdk": "workspace:*",
+        "@symtab/shared-ui": "workspace:*",
         "@lezer/markdown": "^1.7.2",
         "@mdit/plugin-katex": "^1.0.1",
         "codemirror": "^6.0.2",
@@ -107,41 +107,41 @@
       },
     },
     "packages/bridge-contract": {
-      "name": "@flux/bridge-contract",
+      "name": "@symtab/bridge-contract",
       "version": "0.0.1",
       "dependencies": {
-        "@flux/shared-domain": "workspace:*",
+        "@symtab/shared-domain": "workspace:*",
       },
       "devDependencies": {
         "typescript": "^6.0.2",
       },
     },
     "packages/client-desktop": {
-      "name": "@flux/client-desktop",
+      "name": "@symtab/client-desktop",
       "version": "0.0.1",
       "dependencies": {
-        "@flux/client-web": "workspace:*",
+        "@symtab/client-web": "workspace:*",
       },
       "devDependencies": {
         "typescript": "^6.0.2",
       },
     },
     "packages/client-web": {
-      "name": "@flux/client-web",
+      "name": "@symtab/client-web",
       "version": "0.0.1",
       "dependencies": {
-        "@flux/bridge-contract": "workspace:*",
+        "@symtab/bridge-contract": "workspace:*",
       },
       "devDependencies": {
         "typescript": "^6.0.2",
       },
     },
-    "packages/create-flux-plugin": {
-      "name": "create-flux-plugin",
+    "packages/create-symtab-plugin": {
+      "name": "create-symtab-plugin",
       "version": "0.1.0",
       "bin": {
-        "create-flux-plugin": "./dist/cli.js",
-        "flux-plugin": "./dist/cli.js",
+        "create-symtab-plugin": "./dist/cli.js",
+        "symtab-plugin": "./dist/cli.js",
       },
       "devDependencies": {
         "@types/node": "^24.13.3",
@@ -149,10 +149,10 @@
       },
     },
     "packages/plugin-runtime": {
-      "name": "@flux/plugin-runtime",
+      "name": "@symtab/plugin-runtime",
       "version": "0.1.0",
       "dependencies": {
-        "@flux/plugin-sdk": "workspace:*",
+        "@symtab/plugin-sdk": "workspace:*",
         "ses": "^2.0.0",
       },
       "devDependencies": {
@@ -161,21 +161,21 @@
       },
     },
     "packages/plugin-sdk": {
-      "name": "@flux/plugin-sdk",
+      "name": "@symtab/plugin-sdk",
       "version": "0.1.0",
       "devDependencies": {
         "typescript": "^6.0.2",
       },
     },
     "packages/shared-domain": {
-      "name": "@flux/shared-domain",
+      "name": "@symtab/shared-domain",
       "version": "0.0.1",
       "devDependencies": {
         "typescript": "^6.0.2",
       },
     },
     "packages/shared-ui": {
-      "name": "@flux/shared-ui",
+      "name": "@symtab/shared-ui",
       "version": "0.0.1",
       "dependencies": {
         "@assistant-ui/ai-sdk": "^0.0.2",
@@ -561,25 +561,25 @@
 
     "@floating-ui/utils": ["@floating-ui/utils@0.2.12", "", {}, "sha512-HpCo8tmWzLVad5s2d19EhAz5zqrrQ6s69qd6moPMQvkOuSwDT1YgRfWSVuc4ennqrgv3OHppiOGMQ7oC13yIww=="],
 
-    "@flux/app-core": ["@flux/app-core@workspace:packages/app-core"],
+    "@symtab/app-core": ["@symtab/app-core@workspace:packages/app-core"],
 
-    "@flux/bridge-contract": ["@flux/bridge-contract@workspace:packages/bridge-contract"],
+    "@symtab/bridge-contract": ["@symtab/bridge-contract@workspace:packages/bridge-contract"],
 
-    "@flux/client-desktop": ["@flux/client-desktop@workspace:packages/client-desktop"],
+    "@symtab/client-desktop": ["@symtab/client-desktop@workspace:packages/client-desktop"],
 
-    "@flux/client-web": ["@flux/client-web@workspace:packages/client-web"],
+    "@symtab/client-web": ["@symtab/client-web@workspace:packages/client-web"],
 
-    "@flux/desktop": ["@flux/desktop@workspace:apps/desktop"],
+    "@symtab/desktop": ["@symtab/desktop@workspace:apps/desktop"],
 
-    "@flux/plugin-runtime": ["@flux/plugin-runtime@workspace:packages/plugin-runtime"],
+    "@symtab/plugin-runtime": ["@symtab/plugin-runtime@workspace:packages/plugin-runtime"],
 
-    "@flux/plugin-sdk": ["@flux/plugin-sdk@workspace:packages/plugin-sdk"],
+    "@symtab/plugin-sdk": ["@symtab/plugin-sdk@workspace:packages/plugin-sdk"],
 
-    "@flux/shared-domain": ["@flux/shared-domain@workspace:packages/shared-domain"],
+    "@symtab/shared-domain": ["@symtab/shared-domain@workspace:packages/shared-domain"],
 
-    "@flux/shared-ui": ["@flux/shared-ui@workspace:packages/shared-ui"],
+    "@symtab/shared-ui": ["@symtab/shared-ui@workspace:packages/shared-ui"],
 
-    "@flux/web": ["@flux/web@workspace:apps/web"],
+    "@symtab/web": ["@symtab/web@workspace:apps/web"],
 
     "@fontsource-variable/geist": ["@fontsource-variable/geist@5.3.0", "", {}, "sha512-j0m+vLQuG5XAYoHtGCVu0spvlGreR3EzpECUVzkFmI1mTVnAO38l/NEPDCFgZ177JxzYJCLSmTQibIiYPilGrA=="],
 
@@ -1387,7 +1387,7 @@
 
     "crc32-stream": ["crc32-stream@4.0.3", "", { "dependencies": { "crc-32": "^1.2.0", "readable-stream": "^3.4.0" } }, "sha512-NT7w2JVU7DFroFdYkeq8cywxrgjPHWkdX1wjpRQXPX5Asews3tA+Ght6lddQO5Mkumffp3X7GEqku3epj2toIw=="],
 
-    "create-flux-plugin": ["create-flux-plugin@workspace:packages/create-flux-plugin"],
+    "create-symtab-plugin": ["create-symtab-plugin@workspace:packages/create-symtab-plugin"],
 
     "crelt": ["crelt@1.0.7", "", {}, "sha512-aK6BbWfhf4U/wCcLHKPJl/xa6VkVstRaPywWtMKGwuOLc/wZTyQYuoxgvZnNsBvv7Kg3YTBQYYBCggcviQczuA=="],
 
@@ -2905,9 +2905,9 @@
 
     "@eslint-community/eslint-utils/eslint-visitor-keys": ["eslint-visitor-keys@3.4.3", "", {}, "sha512-wpc+LXeiyiisxPlEkUzU6svyS1frIO3Mgxj1fdy7Pm8Ygzguax2N3Fa/D/ag1WqbOprdI+uY6wMUl8/a2G+iag=="],
 
-    "@flux/shared-ui/motion": ["motion@13.1.1", "", { "dependencies": { "framer-motion": "^13.1.1", "tslib": "^2.4.0" }, "peerDependencies": { "react": "^18.0.0 || ^19.0.0", "react-dom": "^18.0.0 || ^19.0.0" }, "optionalPeers": ["react", "react-dom"] }, "sha512-WNZoK6xiF+kkTqkZ5K7FDDh6A8BG4i5Hc7KXtW8gtTxkpJFds+hIOrDaQGKjQj/AE/i4hJqAaUHEqp/Qo02y6Q=="],
+    "@symtab/shared-ui/motion": ["motion@13.1.1", "", { "dependencies": { "framer-motion": "^13.1.1", "tslib": "^2.4.0" }, "peerDependencies": { "react": "^18.0.0 || ^19.0.0", "react-dom": "^18.0.0 || ^19.0.0" }, "optionalPeers": ["react", "react-dom"] }, "sha512-WNZoK6xiF+kkTqkZ5K7FDDh6A8BG4i5Hc7KXtW8gtTxkpJFds+hIOrDaQGKjQj/AE/i4hJqAaUHEqp/Qo02y6Q=="],
 
-    "@flux/shared-ui/shadcn": ["shadcn@4.19.0", "", { "dependencies": { "@babel/core": "^7.28.0", "@babel/parser": "^7.28.0", "@babel/plugin-transform-typescript": "^7.28.0", "@babel/preset-typescript": "^7.27.1", "@dotenvx/dotenvx": "^1.48.4", "@modelcontextprotocol/sdk": "^1.26.0", "@types/validate-npm-package-name": "^4.0.2", "browserslist": "^4.26.2", "commander": "^14.0.0", "cosmiconfig": "^9.0.0", "dedent": "^1.6.0", "deepmerge": "^4.3.1", "diff": "^8.0.2", "execa": "^9.6.0", "fast-glob": "^3.3.3", "fs-extra": "^11.3.1", "fuzzysort": "^3.1.0", "kleur": "^4.1.5", "open": "^11.0.0", "ora": "^8.2.0", "postcss": "^8.5.6", "postcss-selector-parser": "^7.1.0", "prompts": "^2.4.2", "recast": "^0.23.11", "socks": "^2.8.8", "stringify-object": "^5.0.0", "tailwind-merge": "^3.0.1", "ts-morph": "^26.0.0", "tsconfig-paths": "^4.2.0", "undici": "^7.27.2", "validate-npm-package-name": "^7.0.1", "zod": "^3.24.1", "zod-to-json-schema": "^3.24.6" }, "bin": { "shadcn": "dist/index.js" } }, "sha512-EQF6R+CUXTsEP2BpyhxrUEAFesrtFD1POvVOf5jM+wkgtA4kG1EW1+1Wlmi9LqiprSL681JJXBcS0u8WkVVVyQ=="],
+    "@symtab/shared-ui/shadcn": ["shadcn@4.19.0", "", { "dependencies": { "@babel/core": "^7.28.0", "@babel/parser": "^7.28.0", "@babel/plugin-transform-typescript": "^7.28.0", "@babel/preset-typescript": "^7.27.1", "@dotenvx/dotenvx": "^1.48.4", "@modelcontextprotocol/sdk": "^1.26.0", "@types/validate-npm-package-name": "^4.0.2", "browserslist": "^4.26.2", "commander": "^14.0.0", "cosmiconfig": "^9.0.0", "dedent": "^1.6.0", "deepmerge": "^4.3.1", "diff": "^8.0.2", "execa": "^9.6.0", "fast-glob": "^3.3.3", "fs-extra": "^11.3.1", "fuzzysort": "^3.1.0", "kleur": "^4.1.5", "open": "^11.0.0", "ora": "^8.2.0", "postcss": "^8.5.6", "postcss-selector-parser": "^7.1.0", "prompts": "^2.4.2", "recast": "^0.23.11", "socks": "^2.8.8", "stringify-object": "^5.0.0", "tailwind-merge": "^3.0.1", "ts-morph": "^26.0.0", "tsconfig-paths": "^4.2.0", "undici": "^7.27.2", "validate-npm-package-name": "^7.0.1", "zod": "^3.24.1", "zod-to-json-schema": "^3.24.6" }, "bin": { "shadcn": "dist/index.js" } }, "sha512-EQF6R+CUXTsEP2BpyhxrUEAFesrtFD1POvVOf5jM+wkgtA4kG1EW1+1Wlmi9LqiprSL681JJXBcS0u8WkVVVyQ=="],
 
     "@malept/flatpak-bundler/fs-extra": ["fs-extra@9.1.0", "", { "dependencies": { "at-least-node": "^1.0.0", "graceful-fs": "^4.2.0", "jsonfile": "^6.0.1", "universalify": "^2.0.0" } }, "sha512-hcg3ZmepS30/7BSFqRvoo3DOMQu7IjqxO5nCDt+zM9XWjb33Wg7ziNT+Qvqbuc3+gWpzO02JubVyk2G4Zvo1OQ=="],
 
@@ -3161,7 +3161,7 @@
 
     "@electron/universal/plist/@xmldom/xmldom": ["@xmldom/xmldom@0.9.10", "", {}, "sha512-A9gOqLdi6cV4ibazAjcQufGj0B1y/vDqYrcuP6d/6x8P27gRS8643Dj9o1dEKtB6O7fwxb2FgBmJS2mX7gpvdw=="],
 
-    "@flux/shared-ui/motion/framer-motion": ["framer-motion@13.1.1", "", { "dependencies": { "motion-dom": "^13.1.1", "motion-utils": "^13.0.0", "tslib": "^2.4.0" }, "peerDependencies": { "react": "^18.0.0 || ^19.0.0", "react-dom": "^18.0.0 || ^19.0.0" }, "optionalPeers": ["react", "react-dom"] }, "sha512-B/xn2TPS4f61cEBLFjiYlQFnBZUW1YVj/LM+C+N4OP8Rs95VLEI2ot/RlfBg111la/EiyECFaJJi/A3FWA8MUA=="],
+    "@symtab/shared-ui/motion/framer-motion": ["framer-motion@13.1.1", "", { "dependencies": { "motion-dom": "^13.1.1", "motion-utils": "^13.0.0", "tslib": "^2.4.0" }, "peerDependencies": { "react": "^18.0.0 || ^19.0.0", "react-dom": "^18.0.0 || ^19.0.0" }, "optionalPeers": ["react", "react-dom"] }, "sha512-B/xn2TPS4f61cEBLFjiYlQFnBZUW1YVj/LM+C+N4OP8Rs95VLEI2ot/RlfBg111la/EiyECFaJJi/A3FWA8MUA=="],
 
     "@modelcontextprotocol/sdk/ajv/json-schema-traverse": ["json-schema-traverse@1.0.0", "", {}, "sha512-NM8/P9n3XjXhIZn1lLhkFaACTOURQXjWhV4BA/RnOv8xvgqtqpAX9IO4mRQxSx1Rlo4tqzeqb0sOlruaOy3dug=="],
 
@@ -3285,9 +3285,9 @@
 
     "@electron/universal/minimatch/brace-expansion/balanced-match": ["balanced-match@1.0.2", "", {}, "sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw=="],
 
-    "@flux/shared-ui/motion/framer-motion/motion-dom": ["motion-dom@13.1.1", "", { "dependencies": { "motion-utils": "^13.0.0" } }, "sha512-XSf8VYWSB6G/0IY3rWVbyLcxWXtAVHkN1PQE2agTaCv3u8RGvbwu56TyyR/MNzBqqNavEBTZzErcxI1TxBrjcA=="],
+    "@symtab/shared-ui/motion/framer-motion/motion-dom": ["motion-dom@13.1.1", "", { "dependencies": { "motion-utils": "^13.0.0" } }, "sha512-XSf8VYWSB6G/0IY3rWVbyLcxWXtAVHkN1PQE2agTaCv3u8RGvbwu56TyyR/MNzBqqNavEBTZzErcxI1TxBrjcA=="],
 
-    "@flux/shared-ui/motion/framer-motion/motion-utils": ["motion-utils@13.0.0", "", {}, "sha512-7DnN7TmbLcYXcG4RVadXIihWlyuM9afoUww8Y5Agg431kGKiuL2/OMyP4mJ5wLz+pvN3t5ySClLOaVXJ+wekRQ=="],
+    "@symtab/shared-ui/motion/framer-motion/motion-utils": ["motion-utils@13.0.0", "", {}, "sha512-7DnN7TmbLcYXcG4RVadXIihWlyuM9afoUww8Y5Agg431kGKiuL2/OMyP4mJ5wLz+pvN3t5ySClLOaVXJ+wekRQ=="],
 
     "app-builder-lib/@electron/get/fs-extra/jsonfile": ["jsonfile@4.0.0", "", { "optionalDependencies": { "graceful-fs": "^4.1.6" } }, "sha512-m6F1R3z8jjlf2imQHS2Qez5sjKWQzbuuhuJ/FKYFRZvPE3PuHcSMVZzfsLhGVOkfd20obL5SWEBew5ShlquNxg=="],
 

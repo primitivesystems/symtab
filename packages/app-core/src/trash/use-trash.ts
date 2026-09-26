@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { FluxClient, TrashEntry } from "@flux/bridge-contract";
+import type { SymtabClient, TrashEntry } from "@symtab/bridge-contract";
 import { runWithToast } from "../app/toast-feedback";
 
 export function useTrash({
@@ -8,7 +8,7 @@ export function useTrash({
   refreshFiles,
   onStatus,
 }: {
-  client: FluxClient | null;
+  client: SymtabClient | null;
   vaultId?: string;
   refreshFiles: () => Promise<unknown>;
   onStatus: (status: string) => void;

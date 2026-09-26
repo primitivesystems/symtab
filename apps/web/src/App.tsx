@@ -1,15 +1,15 @@
-import { createClientStatePersistence, FluxApp, type FluxRuntime } from "@flux/app-core";
-import { WebFluxClient } from "@flux/client-web";
+import { createClientStatePersistence, SymtabApp, type SymtabRuntime } from "@symtab/app-core";
+import { WebSymtabClient } from "@symtab/client-web";
 
-const client = new WebFluxClient();
+const client = new WebSymtabClient();
 const statePersistence = createClientStatePersistence(client);
-const webRuntime: FluxRuntime = {
+const webRuntime: SymtabRuntime = {
   label: "Web",
   client,
   vaultAccess: "registry",
   statePersistence,
   getWindowId: async () => {
-    const key = "flux-window-id";
+    const key = "symtab-window-id";
     const existing = sessionStorage.getItem(key);
     if (existing) return existing;
     const id = crypto.randomUUID();
@@ -37,5 +37,5 @@ const webRuntime: FluxRuntime = {
 };
 
 export default function App() {
-  return <FluxApp runtime={webRuntime} windowControlsInset={0} />;
+  return <SymtabApp runtime={webRuntime} windowControlsInset={0} />;
 }
