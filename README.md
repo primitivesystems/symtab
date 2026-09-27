@@ -1,6 +1,87 @@
-# Symtab
+<p align="center">
+  <picture>
+    <source
+      media="(prefers-color-scheme: dark)"
+      srcset=".github/workflows/symtab-dark-theme.png">
+    <source
+      media="(prefers-color-scheme: light)"
+      srcset=".github/workflows/symtab-light-theme.png">
+    <img
+      alt="SymTab"
+      src=".github/workflows/symtab-light-theme.png"
+      width="500">
+  </picture>
+</p>
 
-A cross-platform Personal Knowledge Management (PKM) tool designed to compete with Obsidian, Logseq, Notion, Tolaria, and Zennotes.
+<p align="center">
+  Personal Knowledge Management for your ideas, notes, and knowledge.
+</p>
+
+<p align="center">
+  <a href="CONTRIBUTING.md"><strong>Contributing Guidelines</strong></a>
+  ✦
+  <a href="../../releases"><strong>Releases</strong></a>
+  ✦
+  <a href="CODE_OF_CONDUCT.md"><strong>Code Of Conduct</strong></a>
+</p>
+
+<p align="center">
+  <table align="center" cellspacing="0" cellpadding="1" border="0">
+    <tr>
+      <td>
+        <picture>
+          <source
+            media="(prefers-color-scheme: dark)"
+            srcset="https://www.shieldcn.dev/badge/Package_mgr-Bun-000000.svg?logo=bun&variant=branded&size=sm&mode=dark">
+          <img
+            alt="Bun"
+            src="https://www.shieldcn.dev/badge/Package_mgr-Bun-000000.svg?logo=bun&variant=branded&size=sm&mode=light"
+            height="22">
+        </picture><picture>
+          <source
+            media="(prefers-color-scheme: dark)"
+            srcset="https://www.shieldcn.dev/badge/Lint-ESLint-4B32C3.svg?logo=eslint&variant=branded&size=sm&mode=dark">
+          <img
+            alt="ESLint"
+            src="https://www.shieldcn.dev/badge/Lint-ESLint-4B32C3.svg?logo=eslint&variant=branded&size=sm&mode=light"
+            height="22">
+        </picture><picture>
+          <source
+            media="(prefers-color-scheme: dark)"
+            srcset="https://www.shieldcn.dev/badge/Format-Prettier-F7B93E.svg?logo=prettier&variant=branded&size=sm&mode=dark">
+          <img
+            alt="Prettier"
+            src="https://www.shieldcn.dev/badge/Format-Prettier-F7B93E.svg?logo=prettier&variant=branded&size=sm&mode=light"
+            height="22">
+        </picture><picture>
+          <source
+            media="(prefers-color-scheme: dark)"
+            srcset="https://www.shieldcn.dev/badge/Monorepo-Turborepo-EF4444.svg?logo=turborepo&variant=branded&size=sm&mode=dark">
+          <img
+            alt="Turborepo"
+            src="https://www.shieldcn.dev/badge/Monorepo-Turborepo-EF4444.svg?logo=turborepo&variant=branded&size=sm&mode=light"
+            height="22">
+        </picture>
+      </td>
+    </tr>
+  </table>
+</p>
+
+<p align="center">
+  <strong>This project is backed by</strong>
+</p>
+
+<p align="center">
+  <a href="https://vercel.com/oss">
+    <img
+      src="https://vercel.com/oss/program-badge.svg"
+      alt="Vercel OSS Program">
+  </a>
+</p>
+
+
+
+Symtab is a cross-platform Personal Knowledge Management (PKM) tool designed to help you organize, connect, and manage your knowledge across desktop and web.
 
 ## Tech Stack
 
@@ -25,11 +106,11 @@ A cross-platform Personal Knowledge Management (PKM) tool designed to compete wi
 
 Symtab uses a single monorepo with one shared product UI and multiple thin runtime shells:
 
-```
+```text
 symtab/
 ├── apps/
 │   ├── desktop/           # Electron shell, preload, updater, packaging
-│   ├── web/               # Vite/PWA shell and HTTP bridge
+│   └── web/               # Vite/PWA shell and HTTP bridge
 ├── server/                # Go server for self-hosted and hosted deployments
 ├── packages/
 │   ├── app-core/          # Shared React application and renderer logic
@@ -39,19 +120,19 @@ symtab/
 │   ├── shared-domain/     # Shared types and note/task/view models
 │   └── shared-ui/         # Reusable UI primitives
 ├── tooling/
-│   └── scripts/           # Shared tooling hooks and migration scripts
+│   └── scripts/            # Shared tooling hooks and migration scripts
 └── docs/                  # Documentation
 ```
 
 ### Architecture Principles
 
-- **`packages/app-core`** is the source of truth for user-facing features
-- **`packages/shared-ui`** owns reusable components and the shared Tailwind theme
+- **`packages/app-core`** is the source of truth for user-facing features.
+- **`packages/shared-ui`** owns reusable components and the shared Tailwind theme.
 - Platform-specific code stays in the app shells:
   - `apps/desktop` for Electron-only concerns (windows, menus, updater, packaging)
   - `apps/web` for browser/PWA bootstrapping
   - `server` for HTTP/WebSocket serving, vault access, and deployment config
-- The shared UI depends on the typed bridge in `packages/bridge-contract`
+- The shared UI depends on the typed bridge in `packages/bridge-contract`.
 
 ### Deployment Modes
 
@@ -85,6 +166,7 @@ Symtab ships as:
    ```
 
 3. **Set up the backend**
+
    ```bash
    cd server
    go mod download
@@ -106,19 +188,18 @@ bun run dev
 bun run dev:web
 ```
 
-The web app will be available at `http://localhost:3000`
+The web app will be available at `http://localhost:3000`.
 
 #### Backend Server (Local)
 
 ```bash
 # Optionally select the vault whose derived index is stored in <vault>/.symtab/index.db.
 export SYMTAB_VAULT_PATH="/path/to/your/vault"
+
 bun run dev:server
 ```
 
-When omitted, `bun run dev:server` starts without opening a vault. Localhost clients may then
-open any user-selected directory through `POST /api/v1/vaults/open`. Production requires a
-configured vault path. No database service is required for local development.
+When omitted, `bun run dev:server` starts without opening a vault. Localhost clients may then open any user-selected directory through `POST /api/v1/vaults/open`. Production requires a configured vault path. No database service is required for local development.
 
 #### Backend Server (Docker)
 
@@ -127,7 +208,7 @@ cd server
 docker compose up
 ```
 
-The backend will be available at `http://localhost:8080`
+The backend will be available at `http://localhost:8080`.
 
 ### Building
 
@@ -203,10 +284,7 @@ The backend currently provides the first transport-neutral vault/file slice:
 - `DELETE /api/v1/vaults/:vaultId/trash?olderThanDays=30&confirm=true` - Purge entries older than 7, 30, or 90 days
 - `DELETE /api/v1/vaults/:vaultId/trash/:trashId?confirm=true` - Permanently delete one trash entry
 
-Opening a vault starts one recursive filesystem watcher and a periodic reconciliation scan. Moves
-rewrite only wiki/Markdown links that resolve unambiguously by exact vault path, relative path, or a
-unique filename; unresolved and ambiguous links are left untouched. Trash defaults to 30-day
-retention when a vault opens.
+Opening a vault starts one recursive filesystem watcher and a periodic reconciliation scan. Moves rewrite only wiki/Markdown links that resolve unambiguously by exact vault path, relative path, or a unique filename; unresolved and ambiguous links are left untouched. Trash defaults to 30-day retention when a vault opens.
 
 ## Architecture
 
@@ -286,7 +364,9 @@ The output will be in the `dist/` directory and can be deployed to any static ho
 
 ## License
 
-[Your License Here]
+This project is licensed under the Apache License 2.0. See the [LICENSE](https://github.com/primitivesystems/symtab/blob/main/License.md) file for details.
+
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 ## Roadmap
 
