@@ -1,6 +1,6 @@
 <p align="center">
   <img
-    src=".github/workflows/code_of_conduct.png"
+    src=".github/assets/code_of_conduct_header.png"
     alt="Code of Conduct"
     width="700"
     loading="eager"

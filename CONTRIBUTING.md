@@ -1,6 +1,6 @@
 <p align="center">
   <img
-    src=".github/workflows/contributing.png"
+    src=".github/assets/contributing_header.png"
     alt="Contributing Guidelines"
     width="700"
     loading="eager"

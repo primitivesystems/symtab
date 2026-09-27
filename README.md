@@ -1,16 +1,8 @@
 <p align="center">
   <picture>
-    <source
-      media="(prefers-color-scheme: dark)"
-      srcset=".github/workflows/symtab-dark-theme.png">
-    <source
-      media="(prefers-color-scheme: light)"
-      srcset=".github/workflows/symtab-light-theme.png">
-    <img
-      alt="SymTab"
-      src=".github/workflows/symtab-light-theme.png"
-      width="500">
-  </picture>
+  <img alt="Project Banner" src=".github/assets/wordmark.svg">
+</picture>
+
 </p>
 
 <p align="center">
@@ -66,20 +58,6 @@
     </tr>
   </table>
 </p>
-
-<p align="center">
-  <strong>This project is backed by</strong>
-</p>
-
-<p align="center">
-  <a href="https://vercel.com/oss">
-    <img
-      src="https://vercel.com/oss/program-badge.svg"
-      alt="Vercel OSS Program">
-  </a>
-</p>
-
-
 
 Symtab is a cross-platform Personal Knowledge Management (PKM) tool designed to help you organize, connect, and manage your knowledge across desktop and web.
 
