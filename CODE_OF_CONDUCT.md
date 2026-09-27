@@ -1,4 +1,6 @@
-![Code of Conduct](.github/workflows/code_of_conduct.png)
+<p align="center">
+  <img src=".github/workflows/code_of_conduct.png" alt="Code of Conduct">
+</p>
 
 ## Our Pledge
 
