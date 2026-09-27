@@ -1,7 +1,11 @@
 <p align="center">
-  <img src=".github/workflows/contributing.png" alt="Contributing Guidelines">
+  <img
+    src=".github/workflows/contributing.png"
+    alt="Contributing Guidelines"
+    width="700"
+    loading="eager"
+  />
 </p>
-
 Thank you for your interest in contributing to SYMTAB! This document provides guidelines for contributing to the project.
 
 ---

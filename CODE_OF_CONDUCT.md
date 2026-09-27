@@ -1,5 +1,10 @@
 <p align="center">
-  <img src=".github/workflows/code_of_conduct.png" alt="Code of Conduct">
+  <img
+    src=".github/workflows/code_of_conduct.png"
+    alt="Code of Conduct"
+    width="700"
+    loading="eager"
+  />
 </p>
 
 ## Our Pledge
