@@ -1,6 +1,4 @@
-![Code of Conduct](./apps/desktop/assets/code_of_conduct.png)
-
-# Code of Conduct
+![Code of Conduct](.github/workflows/code_of_conduct.png)
 
 ## Our Pledge
 

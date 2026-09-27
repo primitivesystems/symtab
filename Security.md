@@ -6,7 +6,7 @@ If you discover a security vulnerability, **please do not open a public issue**.
 
 Instead, use GitHub’s **private vulnerability reporting feature** to notify the maintainers securely:
 
-👉 [Report a vulnerability](https://github.com/YOUR_ORGANIZATION/YOUR_REPOSITORY/security/advisories/new)
+👉 [Report a vulnerability](https://github.com/primitivesystems/symtab/security/advisories/new)
 
 If this option is unavailable, you can alternatively describe the issue privately to the maintainer team via GitHub (e.g., through a private message or organization contact).
 

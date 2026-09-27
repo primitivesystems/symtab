@@ -1,6 +1,6 @@
-![Contributing Guidelines](apps/desktop/assets/contributing.png)
+![Contributing Guidelines](.github/workflows/contributing.png)
 
-Thank you for your interest in contributing to FLUX! This document provides guidelines for contributing to the project.
+Thank you for your interest in contributing to SYMTAB! This document provides guidelines for contributing to the project.
 
 ---
 
@@ -50,7 +50,7 @@ This helps avoid unnecessary merge conflicts and ensures a smooth review process
 
 1. Fork the repository.
 2. Clone your fork locally.
-3. Navigate to the FLUX directory.
+3. Navigate to the SYMTAB directory.
 4. Install the required dependencies.
 5. Follow the development setup instructions below.
 6. Create a new branch for your feature or fix.
@@ -58,39 +58,6 @@ This helps avoid unnecessary merge conflicts and ensures a smooth review process
 ---
 
 ## Development Setup
-
-FLUX is a cross-platform Personal Knowledge Management (PKM) application built using a monorepo architecture.
-
-### Technology Stack
-
-- **Frontend:** React 19
-- **Web Build Tool:** Vite 8
-- **Desktop Runtime:** Electron
-- **Web Runtime:** Vite + PWA
-- **Styling:** Tailwind CSS 4
-- **UI Components:** Radix UI
-- **Package Manager:** Bun
-- **Build System:** Turborepo
-- **Backend:** Go
-- **Backend Framework:** Gin
-- **ORM:** GORM
-- **Database:** SQLite
-- **Deployment:** Docker
-
-### Project Structure
-
-```text
-flux/
-├── apps/
-│   ├── desktop/       # Electron desktop application
-│   └── web/           # Vite/PWA web application
-├── packages/
-│   └── app-core/      # Shared React application and renderer logic
-├── server/            # Go backend server
-└── ...
-```
-
-### Prerequisites
 
 Make sure the following tools are installed before starting development:
 
@@ -102,10 +69,10 @@ Make sure the following tools are installed before starting development:
 
 ### Install Dependencies
 
-1. **Navigate to the FLUX directory**
+1. **Navigate to the SYMTAB directory**
 
 ```bash
-cd flux
+cd symtab
 ```
 
 2. **Install dependencies**
@@ -121,7 +88,7 @@ cd server
 go mod download
 ```
 
-After installing the backend dependencies, return to the FLUX root directory when running the application commands:
+After installing the backend dependencies, return to the SYMTAB root directory when running the application commands:
 
 ```bash
 cd ..
@@ -133,37 +100,37 @@ cd ..
 
 ### Desktop Application (Development)
 
-From the FLUX root directory:
+From the SYMTAB root directory:
 
 ```bash
 # Default development target
 bun run dev
 ```
 
-This starts the FLUX desktop development environment.
+This starts the SYMTAB desktop development environment.
 
 ### Web Application (Development)
 
-From the FLUX root directory:
+From the SYMTAB root directory:
 
 ```bash
 bun run dev:web
 ```
 
-This starts the FLUX web application in development mode.
+This starts the SYMTAB web application in development mode.
 
 ### Backend Server (Local)
 
 The backend server can optionally use a specific vault whose derived index is stored in:
 
 ```text
-<vault>/.flux/index.db
+<vault>/.symtab/index.db
 ```
 
 Set the vault path using:
 
 ```bash
-export FLUX_VAULT_PATH="/path/to/your/vault"
+export SYMTAB_VAULT_PATH="/path/to/your/vault"
 ```
 
 Then start the backend server:
@@ -198,20 +165,20 @@ http://localhost:8080
 
 ### Desktop Application
 
-From the FLUX root directory:
+From the SYMTAB root directory:
 
 ```bash
-bun run build --filter=@flux/desktop
+bun run build --filter=@symtab/desktop
 ```
 
 The desktop build compiles the Go backend and ships it as one app-scoped sidecar process.
 
 ### Web Application
 
-From the FLUX root directory:
+From the SYMTAB root directory:
 
 ```bash
-bun run build --filter=@flux/web
+bun run build --filter=@symtab/web
 ```
 
 Before submitting a Pull Request, make sure the appropriate build completes successfully without errors.
@@ -220,7 +187,7 @@ Before submitting a Pull Request, make sure the appropriate build completes succ
 
 ## Code Style
 
-When contributing to FLUX:
+When contributing to SYMTAB:
 
 - Follow the existing **React and TypeScript patterns** used throughout the project.
 - Follow the existing **Go conventions** when working on the backend.
@@ -286,13 +253,13 @@ Before creating a Pull Request, run the appropriate build command.
 For the desktop application:
 
 ```bash
-bun run build --filter=@flux/desktop
+bun run build --filter=@symtab/desktop
 ```
 
 For the web application:
 
 ```bash
-bun run build --filter=@flux/web
+bun run build --filter=@symtab/web
 ```
 
 Make sure the build completes successfully without errors.
@@ -317,28 +284,6 @@ Make sure the build completes successfully without errors.
 10. Mention the Pull Request in the appropriate Discord channel after submitting it.
 
 ---
-
-## Pull Request Checklist
-
-Before submitting your Pull Request, make sure:
-
-- [ ] My branch is based on the latest `develop` branch.
-- [ ] I have tested my changes locally.
-- [ ] I have tested the affected desktop functionality where applicable.
-- [ ] I have tested the affected web functionality where applicable.
-- [ ] I have tested backend functionality where applicable.
-- [ ] I have checked responsive behavior where applicable.
-- [ ] I have verified that existing functionality still works.
-- [ ] The appropriate build command completes successfully without errors.
-- [ ] I have added screenshots or a recording for UI-related changes.
-- [ ] I have referenced the related issue number.
-- [ ] I have checked the Discord `#pull-request` channel for duplicate PRs.
-- [ ] I have resolved all merge conflicts.
-- [ ] My commit messages are clear and descriptive.
-- [ ] The Pull Request targets the `develop` branch.
-
----
-
 ## Areas for Contribution
 
 We welcome contributions in the following areas:
@@ -373,11 +318,11 @@ If you are unsure whether your idea would be useful, feel free to discuss it wit
 
 ## Questions?
 
-If you have any questions about contributing to FLUX:
+If you have any questions about contributing to SYMTAB:
 
 - Join our [Discord Server](https://discord.gg/dQUh6SY9Uk) for discussions and faster communication.
 - Check existing issues and Pull Requests before creating a new one.
 - Check the project documentation and README for existing setup instructions.
 - Feel free to open an issue for questions or discussion about potential contributions.
 
-Thank you for contributing to FLUX! ❤️
+Thank you for contributing to SYMTAB! ❤️
