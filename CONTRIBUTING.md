@@ -21,7 +21,7 @@ Thank you for your interest in contributing to SYMTAB! This document provides gu
    This helps the project grow and shows your support.
 
 2. **Join our Discord server** for discussions, questions, and faster PR approvals:  
-   👉 [Join the Discord Server](https://discord.gg/dQUh6SY9Uk)
+   👉 [Join the Discord Server](https://discord.gg/2csxVGQS9)
 
    ⚠️ **Please note:** To quickly get your PRs reviewed and merged, you must be a member of our Discord server.
 
@@ -326,7 +326,7 @@ If you are unsure whether your idea would be useful, feel free to discuss it wit
 
 If you have any questions about contributing to SYMTAB:
 
-- Join our [Discord Server](https://discord.gg/dQUh6SY9Uk) for discussions and faster communication.
+- Join our [Discord Server](https://discord.gg/2csxVGQS9) for discussions and faster communication.
 - Check existing issues and Pull Requests before creating a new one.
 - Check the project documentation and README for existing setup instructions.
 - Feel free to open an issue for questions or discussion about potential contributions.
