@@ -17,47 +17,17 @@
   <a href="CODE_OF_CONDUCT.md"><strong>Code Of Conduct</strong></a>
 </p>
 
-<p align="center">
-  <table align="center" cellspacing="0" cellpadding="1" border="0">
-    <tr>
-      <td>
-        <picture>
-          <source
-            media="(prefers-color-scheme: dark)"
-            srcset="https://www.shieldcn.dev/badge/Package_mgr-Bun-000000.svg?logo=bun&variant=branded&size=sm&mode=dark">
-          <img
-            alt="Bun"
-            src="https://www.shieldcn.dev/badge/Package_mgr-Bun-000000.svg?logo=bun&variant=branded&size=sm&mode=light"
-            height="22">
-        </picture><picture>
-          <source
-            media="(prefers-color-scheme: dark)"
-            srcset="https://www.shieldcn.dev/badge/Lint-ESLint-4B32C3.svg?logo=eslint&variant=branded&size=sm&mode=dark">
-          <img
-            alt="ESLint"
-            src="https://www.shieldcn.dev/badge/Lint-ESLint-4B32C3.svg?logo=eslint&variant=branded&size=sm&mode=light"
-            height="22">
-        </picture><picture>
-          <source
-            media="(prefers-color-scheme: dark)"
-            srcset="https://www.shieldcn.dev/badge/Format-Prettier-F7B93E.svg?logo=prettier&variant=branded&size=sm&mode=dark">
-          <img
-            alt="Prettier"
-            src="https://www.shieldcn.dev/badge/Format-Prettier-F7B93E.svg?logo=prettier&variant=branded&size=sm&mode=light"
-            height="22">
-        </picture><picture>
-          <source
-            media="(prefers-color-scheme: dark)"
-            srcset="https://www.shieldcn.dev/badge/Monorepo-Turborepo-EF4444.svg?logo=turborepo&variant=branded&size=sm&mode=dark">
-          <img
-            alt="Turborepo"
-            src="https://www.shieldcn.dev/badge/Monorepo-Turborepo-EF4444.svg?logo=turborepo&variant=branded&size=sm&mode=light"
-            height="22">
-        </picture>
-      </td>
-    </tr>
-  </table>
-</p>
+<div align="center">
+
+<a href="https://bun.sh/"><img alt="Bun" src="https://www.shieldcn.dev/badge/Package_mgr-Bun-000000.svg?logo=bun&variant=branded&size=sm&mode=light" height="22"></a>
+&nbsp;
+<a href="https://eslint.org/"><img alt="ESLint" src="https://www.shieldcn.dev/badge/Lint-ESLint-4B32C3.svg?logo=eslint&variant=branded&size=sm&mode=light" height="22"></a>
+&nbsp;
+<a href="https://prettier.io/"><img alt="Prettier" src="https://www.shieldcn.dev/badge/Format-Prettier-F7B93E.svg?logo=prettier&variant=branded&size=sm&mode=light" height="22"></a>
+&nbsp;
+<a href="https://turbo.build/"><img alt="Turborepo" src="https://www.shieldcn.dev/badge/Monorepo-Turborepo-EF4444.svg?logo=turborepo&variant=branded&size=sm&mode=light" height="22"></a>
+
+</div>
 
 Symtab is a cross-platform Personal Knowledge Management (PKM) tool designed to help you organize, connect, and manage your knowledge across desktop and web.
 
