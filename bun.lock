@@ -18,7 +18,7 @@
     },
     "apps/desktop": {
       "name": "@symtab/desktop",
-      "version": "0.0.1",
+      "version": "0.0.2",
       "dependencies": {
         "@symtab/app-core": "workspace:*",
         "@symtab/client-desktop": "workspace:*",

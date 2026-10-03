@@ -10,7 +10,7 @@ import type {
 import type { SymtabClient } from "@symtab/bridge-contract";
 import { browserStatePersistence, type SymtabStatePersistence } from "./app/state";
 import { MarkdownEditor, type DemoDocument } from "./editor/markdown-editor";
-import { WebViewEditor } from "@flux/shared-ui/components/design-system/workbench/editor/webview-editor";
+import { WebViewEditor } from "@symtab/shared-ui/components/design-system/workbench/editor/webview-editor";
 import { PdfExportDialog } from "./pdf/export";
 import { ConfirmDialog, TrashManager, VaultManager } from "./workspace/dialogs";
 import { useWorkbenchVault } from "./workbench/use-workbench-vault";
