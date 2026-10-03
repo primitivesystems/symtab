@@ -14,7 +14,7 @@
     "dev:all": "turbo run dev",
     "dev:desktop": "turbo run dev --filter=@symtab/desktop",
     "dev:web": "turbo run dev --filter=@symtab/web",
-    "dev:server": "${GO_BIN:-/usr/local/go/bin/go} -C server run -tags sqlite_fts5 .",
+    "dev:server": "node tooling/scripts/dev-server.mjs",
     "test:server": "${GO_BIN:-/usr/local/go/bin/go} -C server test -tags sqlite_fts5 ./...",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",

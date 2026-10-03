@@ -293,6 +293,10 @@ async function backendReady() {
   }
 }
 
+function getGoCommand() {
+  return process.env.GO_BIN ?? "go";
+}
+
 async function ensureBackend() {
   if (externalBackendOrigin) {
     if (await backendReady()) return;
@@ -323,7 +327,7 @@ async function ensureBackend() {
     // Main-process reload restarts daemon, so go run recompiles backend changes.
     const serverDirectory = path.resolve(currentDirectory, "../../../server");
     backendProcess = spawn(
-      process.env.GO_BIN ?? "/usr/local/go/bin/go",
+      getGoCommand(),
       ["-C", serverDirectory, "run", "-tags", "sqlite_fts5", "."],
       {
         env: backendEnvironment,
