@@ -1,7 +1,11 @@
 import { expect, test } from "bun:test";
 import { movedDocumentPath, singleTextEdit } from "../src/app/helpers";
 import { calendarGrid, noteFileName } from "../src/daily-notes/config";
-import { calendarEntry } from "../src/daily-notes/use-daily-notes";
+import {
+  calendarEntry,
+  journalEntryPath,
+  journalEntrySlug,
+} from "../src/daily-notes/use-daily-notes";
 import { resourcePath } from "../src/workbench/use-workbench-vault";
 
 test("extracted app helpers preserve path, UTF-8 edit, and calendar behavior", () => {
@@ -44,4 +48,15 @@ test("extracted app helpers preserve path, UTF-8 edit, and calendar behavior", (
       tags: ["work"],
     },
   ]);
+});
+
+test("journal entries use readable paths and numeric collision suffixes", () => {
+  const slug = journalEntrySlug("Morning reflection");
+  expect(slug).toBe("morning-reflection");
+  expect(journalEntryPath("Daily/2026-08-23", slug)).toBe(
+    "Daily/2026-08-23/morning-reflection.md"
+  );
+  expect(
+    journalEntryPath("Daily/2026-08-23", slug, ["Daily/2026-08-23/morning-reflection.md"])
+  ).toBe("Daily/2026-08-23/morning-reflection-2.md");
 });

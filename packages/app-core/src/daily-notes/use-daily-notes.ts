@@ -165,14 +165,9 @@ export function useDailyNotes<T>({
   const createEntry = async (selected: string, title: string, tags: string[]) => {
     if (!vault || !client) return;
     const safeTitle = title.trim() || "Journal entry";
-    const slug =
-      safeTitle
-        .normalize("NFKD")
-        .replace(/[^a-zA-Z0-9]+/g, "-")
-        .replace(/^-|-$/g, "")
-        .toLowerCase() || "entry";
+    const slug = journalEntrySlug(safeTitle);
     const folder = `${config.dailyFolder}/${selected}`;
-    const path = `${folder}/${slug}-${crypto.randomUUID().slice(0, 8)}.md`;
+    const path = journalEntryPath(folder, slug, files.map(({ path: filePath }) => filePath));
     const cleanTags = [...new Set(tags.map((tag) => tag.trim().replace(/^#/, "")).filter(Boolean))];
     const content = `---\ntype: journal\ndate: ${selected}\ntags: ${JSON.stringify(cleanTags)}\n---\n\n# ${safeTitle.replace(/[\r\n]+/g, " ")}\n\n`;
     try {
@@ -200,6 +195,32 @@ export function useDailyNotes<T>({
     openWeekly,
     createEntry,
   };
+}
+
+export function journalEntrySlug(title: string) {
+  return (
+    title
+      .normalize("NFKD")
+      .replace(/[^a-zA-Z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")
+      .toLowerCase() || "entry"
+  );
+}
+
+export function journalEntryPath(
+  folder: string,
+  slug: string,
+  existingPaths: readonly string[] = []
+) {
+  const usedPaths = new Set(existingPaths);
+  const basePath = `${folder}/${slug}`;
+  let path = `${basePath}.md`;
+  let suffix = 2;
+  while (usedPaths.has(path)) {
+    path = `${basePath}-${suffix}.md`;
+    suffix += 1;
+  }
+  return path;
 }
 
 export function calendarEntry(path: string, content: string, dailyFolder: string): CalendarEntry[] {
